@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HomePage from './User/HomePage';
 import Footer from './components/footer/Footer';
 import NavBar from './components/navbar/NavBar';
+import StepProgressBar from './components/step-progress-bar/StepProgressBar';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <div className="flex-grow">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/element-test-env" element={<StepProgressBar />} />
           </Routes>
         </div>
         <div className='max-w-boundary mx-auto w-full'>

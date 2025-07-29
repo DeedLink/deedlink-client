@@ -1,6 +1,6 @@
-import { CiLocationOn } from "react-icons/ci";
-import { CiMail } from "react-icons/ci";
-import { BsTelephone } from "react-icons/bs";
+import { FaLocationDot } from "react-icons/fa6";
+import { IoMail } from "react-icons/io5";
+import { BsFillTelephoneFill } from "react-icons/bs";
 import { contact } from "../../constants/const";
 
 const RightFooter=()=>{
@@ -8,7 +8,7 @@ const RightFooter=()=>{
         <div className="h-64 border-t w-full flex flex-col gap-4 items-center justify-center">
             <div className="flex flex-col gap-4">
                 <div className="flex gap-4">
-                    <CiLocationOn className="w-6 h-6"/>
+                    <FaLocationDot className="w-6 h-6"/>
                     <div>
                         <div>
                             {
@@ -33,7 +33,7 @@ const RightFooter=()=>{
                     </div>
                 </div>
                 <div className="flex gap-4">
-                    <CiMail className="w-6 h-6"/>
+                    <IoMail className="w-6 h-6"/>
                     <div>
                         {
                             contact.mail
@@ -41,7 +41,7 @@ const RightFooter=()=>{
                     </div>
                 </div>
                 <div className="flex gap-4">
-                    <BsTelephone className="w-6 h-6"/>
+                    <BsFillTelephoneFill className="w-6 h-6"/>
                     <div>
                         {
                             contact.telephone
