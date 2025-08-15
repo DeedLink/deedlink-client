@@ -3,54 +3,33 @@ import { IoMail } from "react-icons/io5";
 import { BsFillTelephoneFill } from "react-icons/bs";
 import { contact } from "../../constants/const";
 
-const RightFooter=()=>{
-    return(
-        <div className="h-64 border-t w-full flex flex-col gap-4 items-center justify-center">
-            <div className="flex flex-col gap-4">
-                <div className="flex gap-4">
-                    <FaLocationDot className="w-6 h-6"/>
-                    <div>
-                        <div>
-                            {
-                                contact.location.line1
-                            }
-                        </div>
-                        <div>
-                            {
-                                contact.location.line2
-                            }
-                        </div>
-                        <div>
-                            {
-                                contact.location.line3
-                            }
-                        </div>
-                        <div>
-                            {
-                                contact.location.line4
-                            }
-                        </div>
-                    </div>
-                </div>
-                <div className="flex gap-4">
-                    <IoMail className="w-6 h-6"/>
-                    <div>
-                        {
-                            contact.mail
-                        }
-                    </div>
-                </div>
-                <div className="flex gap-4">
-                    <BsFillTelephoneFill className="w-6 h-6"/>
-                    <div>
-                        {
-                            contact.telephone
-                        }
-                    </div>
-                </div>
-            </div>
+const RightFooter = () => {
+  return (
+    <div className="w-full md:w-1/2 lg:w-2/3 border-t md:border-t-0 flex items-center justify-center p-6">
+      <div className="flex flex-col gap-6 text-white max-w-sm w-full">
+        <div className="flex gap-4 items-start hover:text-yellow-300 transition-colors duration-300">
+          <FaLocationDot className="w-6 h-6 flex-shrink-0 mt-1" />
+          <div className="text-sm leading-relaxed">
+            {[contact.location.line1, contact.location.line2, contact.location.line3, contact.location.line4].map((line, idx) => (
+              <div key={idx}>{line}</div>
+            ))}
+          </div>
         </div>
-    )
-}
+        <div className="flex gap-4 items-center hover:text-yellow-300 transition-colors duration-300">
+          <IoMail className="w-6 h-6 flex-shrink-0" />
+          <a href={`mailto:${contact.mail}`} className="text-sm break-all">
+            {contact.mail}
+          </a>
+        </div>
+        <div className="flex gap-4 items-center hover:text-yellow-300 transition-colors duration-300">
+          <BsFillTelephoneFill className="w-6 h-6 flex-shrink-0" />
+          <a href={`tel:${contact.telephone}`} className="text-sm">
+            {contact.telephone}
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default RightFooter;

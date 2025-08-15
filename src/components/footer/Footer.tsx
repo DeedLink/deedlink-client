@@ -3,22 +3,24 @@ import LeftFooter from "./LeftFooter";
 import RightFooter from "./RightFooter";
 import background from "../../assets/images/backgrounds/lands.webp";
 
-const Footer=()=>{
-    return(
-        <div className="bg-transparent w-full bg-cover" style={{backgroundImage: `linear-gradient(rgba(0,60,10,0.8), rgba(0,60,10,0.8)), url(${background})`}}>
-            <div className="w-full flex flex-col md:flex-row items-center justify-center">
-                <div className="w-full flex items-center justify-center">
-                    <LeftFooter/>
-                </div>
-                <div className="w-full flex items-center justify-center">
-                    <RightFooter/>
-                </div>
+const Footer = () => {
+  return (
+    <footer
+      className="w-full bg-cover bg-center"
+      style={{
+        backgroundImage: `linear-gradient(rgba(0,60,10,0.85), rgba(0,60,10,0.85)), url(${background})`,
+      }}
+    >
+        <div className="max-w-boundary mx-auto w-full flex flex-col gap-6 text-white">
+            <div className="flex flex-col md:flex-row items-stretch">
+                <LeftFooter />
+                <RightFooter />
             </div>
-            <div className="w-full flex items-center justify-center">
-                <BottomFooter/>
-            </div>
+
+            <BottomFooter />
         </div>
-    )
-}
+    </footer>
+  );
+};
 
 export default Footer;
