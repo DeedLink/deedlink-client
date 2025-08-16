@@ -1,11 +1,22 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { sampleTokens } from "../constants/const";
 import type { Token } from "../types/types";
 import TokenGrid from "../components/market/TokenGrid";
+import { useLoader } from "../contexts/LoaderContext";
 
 const MarketPage: React.FC = () => {
   const [tokens, _setTokens] = useState<Token[]>(sampleTokens);
   const [filter, setFilter] = useState<"ALL" | "NFT" | "FT">("ALL");
+  const { showLoader, hideLoader } = useLoader();
+
+  useEffect(() => {
+    showLoader();
+    const timer = setTimeout(() => {
+      hideLoader();
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  },[]);
 
   const filteredTokens = filter === "ALL" ? tokens : tokens.filter(t => t.type === filter);
   const myTokens = filteredTokens.filter(t => t.isMine);

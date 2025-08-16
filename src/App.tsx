@@ -9,6 +9,7 @@ import RegistrationPopup from './components/registration/RegistrationPopup';
 import DeedsPage from './pages/DeedsPage';
 import AboutPage from './pages/AboutPage';
 import MarketPage from './pages/MarketPage';
+import { LoaderProvider } from './contexts/LoaderContext';
 
 function App() {
   return (
@@ -21,14 +22,16 @@ function App() {
             </div>
             <LoginPopup />
             <RegistrationPopup/>
-            <div className="flex-grow bg-white">
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/deeds" element={<DeedsPage />} />
-                <Route path="/about" element={<AboutPage/>} />
-                <Route path="/market" element={<MarketPage />} />
-              </Routes>
-            </div>
+            <LoaderProvider>
+              <div className="flex-grow bg-white">
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/deeds" element={<DeedsPage />} />
+                  <Route path="/about" element={<AboutPage/>} />
+                  <Route path="/market" element={<MarketPage />} />
+                </Routes>
+              </div>
+            </LoaderProvider>
             <div className='w-full'>
               <Footer />
             </div>

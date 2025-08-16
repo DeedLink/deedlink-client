@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import DeedsToolbar from "../components/deeds/DeedsToolbar";
 import DeedGrid from "../components/deeds/DeedGrid";
 import DeedViewerPopup from "../components/deeds/DeedViewerPopup";
 import type { Deed } from "../types/types";
 import { CURRENT_USER, SAMPLE_DEEDS } from "../constants/const";
+import { useLoader } from "../contexts/LoaderContext";
 
 type SortKey = "newest" | "value" | "area" | "share";
 
@@ -11,6 +12,16 @@ const DeedsPage = () => {
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("newest");
   const [viewer, setViewer] = useState<Deed | null>(null);
+  const { showLoader, hideLoader } = useLoader();
+
+  useEffect(() => {
+    showLoader();
+    const timer = setTimeout(() => {
+      hideLoader();
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  },[]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
