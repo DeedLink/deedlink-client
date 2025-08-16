@@ -32,13 +32,13 @@ const DeedsToolbar = ({ query, setQuery, sortBy, setSortBy, onReset, total }: To
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by deed number, address, owner..."
-            className="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-green-600 outline-none"
+            className="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-[#00420A]"
           />
         </div>
         {onReset && (
           <button
             onClick={onReset}
-            className="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center gap-2"
+            className="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center gap-2 text-[#00420A]"
             title="Reset filters"
           >
             <FaSync /> Reset
@@ -51,7 +51,7 @@ const DeedsToolbar = ({ query, setQuery, sortBy, setSortBy, onReset, total }: To
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortKey)}
-          className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none"
+          className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-[#00420A]"
         >
           {options.map((o) => (
             <option key={o.key} value={o.key}>

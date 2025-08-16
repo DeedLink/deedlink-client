@@ -30,14 +30,14 @@ const DeedCard = ({ deed, currentUser, onOpen, currency = "USD", areaUnit = "m²
           </div>
           <button
             onClick={() => onOpen(deed)}
-            className="opacity-0 group-hover:opacity-100 transition px-3 py-1.5 rounded-lg border border-green-600 text-green-700 hover:bg-green-50 flex items-center gap-2"
+            className="opacity-0 group-hover:opacity-100 transition px-3 py-1.5 rounded-lg border border-green-600 text-green-700 hover:bg-green-50 flex items-center gap-2 cursor-pointer"
             title="Open details"
           >
             <FaExpand /> View
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mt-4">
+        <div className="grid grid-cols-2 gap-4 mt-4 text-black">
           <div>
             <div className="text-xs text-gray-500">Estimated Value</div>
             <div className="font-semibold">{formatCurrency(deed.value, currency)}</div>

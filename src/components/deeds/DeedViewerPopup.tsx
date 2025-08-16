@@ -14,7 +14,7 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²" }: 
   if (!deed) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] px-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] px-4 text-black" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <div className="p-5 border-b border-black/5 flex items-start justify-between">
           <div>
@@ -26,7 +26,7 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²" }: 
               Signed by {shortAddress(deed.signedby)} • {timeAgo(deed.timestamp)}
             </p>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 p-2">
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 p-2 cursor-pointer">
             <IoClose size={20} />
           </button>
         </div>
@@ -47,12 +47,12 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²" }: 
               </div>
             </section>
 
-            <section className="rounded-xl border border-black/5 p-4">
+            <section className="rounded-xl border border-black/5 p-4 h-fit">
               <div className="flex items-center gap-2 mb-3">
                 <FaLayerGroup className="text-green-700" />
                 <h4 className="font-semibold">Title History</h4>
               </div>
-              <div className="space-y-3 max-h-56 overflow-auto pr-1">
+              <div className="space-y-3 overflow-auto pr-1 py-1">
                 {deed.title.length === 0 && <p className="text-gray-500 text-sm">No transfers recorded.</p>}
                 {deed.title.map((t) => (
                   <div key={t._id} className="flex items-center justify-between text-sm">

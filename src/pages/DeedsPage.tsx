@@ -71,7 +71,7 @@ const DeedsPage = () => {
         <DeedGrid deeds={results} currentUser={CURRENT_USER} onOpen={setViewer} />
       </main>
 
-      <DeedViewerPopup deed={viewer} onClose={() => setViewer(null)} />
+      <DeedViewerPopup currency="LKR" deed={viewer} onClose={() => setViewer(null)} />
     </div>
   );
 };

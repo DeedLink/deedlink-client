@@ -20,7 +20,7 @@ const DeedGrid = ({ deeds, currentUser, onOpen }: Props) => {
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {deeds.map((d) => (
-        <DeedCard key={d._id} deed={d} currentUser={currentUser} onOpen={onOpen} />
+        <DeedCard key={d._id} deed={d} currentUser={currentUser} currency="LKR" onOpen={onOpen} />
       ))}
     </div>
   );

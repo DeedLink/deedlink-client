@@ -51,7 +51,7 @@ const RegistrationPopup = () => {
 
         <button
           onClick={closeSignup}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 cursor-pointer"
         >
           <IoClose size={20} />
         </button>

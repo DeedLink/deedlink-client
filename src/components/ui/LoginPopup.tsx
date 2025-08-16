@@ -33,7 +33,7 @@ const LoginPopup = () => {
       >
         <button
           onClick={closeLogin}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 cursor-pointer"
         >
           <IoClose size={20} />
         </button>
@@ -62,7 +62,7 @@ const LoginPopup = () => {
         <button
           onClick={handleWalletConnect}
           disabled={walletConnected}
-          className={`w-full flex items-center justify-center gap-2 border border-green-600 py-2 rounded-lg transition ${
+          className={`w-full flex items-center justify-center gap-2 border border-green-600 py-2 rounded-lg transition cursor-pointer ${
             walletConnected
               ? "bg-green-600 text-white cursor-default"
               : "text-green-700 hover:bg-green-50"
