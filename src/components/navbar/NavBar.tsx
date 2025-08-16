@@ -1,15 +1,15 @@
 import { useState } from "react";
-import logo from "../../assets/images/logo/main.webp";
+import logo from "../../assets/images/logo/main1.jpg";
 import { about } from "../../constants/const";
 import { HiMenu, HiX } from "react-icons/hi";
 import NavLinks from "./NavLinks";
 import MobileMenu from "./MobileMenu";
 
 const navLinks = [
-  { label: "Home", href: "#" },
-  { label: "About", href: "#about" },
-  { label: "Services", href: "#services" },
-  { label: "Contact", href: "#contact" },
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Deeds", href: "/deeds" },
+  { label: "Contact", href: "/contact" },
 ];
 
 const NavBar = () => {
@@ -22,7 +22,7 @@ const NavBar = () => {
           <img
             src={logo}
             alt="logo"
-            className="w-10 h-10 rounded-xl border-2 border-white/30"
+            className="w-10 h-10 rounded-full border-2 border-white/30"
           />
           {about.title}
         </div>
