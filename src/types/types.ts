@@ -38,3 +38,13 @@ export interface Deed {
   deedNumber: string;
   timestamp: number;
 }
+
+export interface Token {
+  id: string;
+  deedNumber: string;
+  type: "NFT" | "FT";
+  owner: string;
+  share?: number;
+  price: number;
+  isMine?: boolean;
+}

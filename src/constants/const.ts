@@ -1,4 +1,4 @@
-import type { Deed } from "../types/types";
+import type { Deed, Token } from "../types/types";
 
 export const contact = {
     location: {
@@ -147,3 +147,11 @@ export const SAMPLE_DEEDS: Deed[] = [
 ];
 
 export const CURRENT_USER = "0x1234567890abcdef1234567890abcdef12345678";
+
+export const sampleTokens: Token[] = [
+  { id: "1", deedNumber: "A-2024-0001", type: "NFT", owner: "0xAAAA...1111", price: 50000, isMine: true },
+  { id: "2", deedNumber: "B-2024-0002", type: "FT", owner: "0xBBBB...2222", share: 25, price: 15000 },
+  { id: "3", deedNumber: "C-2024-0003", type: "FT", owner: "0xCCCC...3333", share: 10, price: 6000 },
+  { id: "4", deedNumber: "D-2024-0004", type: "NFT", owner: "0xDDDD...4444", price: 70000 },
+  { id: "5", deedNumber: "E-2024-0005", type: "FT", owner: "0xEEEE...5555", share: 50, price: 30000, isMine: true },
+];

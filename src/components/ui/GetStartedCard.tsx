@@ -3,11 +3,11 @@ import { FaLock, FaLockOpen } from "react-icons/fa6";
 import { useState } from "react";
 
 const GetStartedCard = () => {
-  const [isLocked, setIsLocked] = useState(true);
+  const [isLocked, _setIsLocked] = useState(true);
 
-  const lockUnlock = (status: boolean) => {
-    setIsLocked(!status);
-  };
+  // const lockUnlock = (status: boolean) => {
+  //   setIsLocked(!status);
+  // };
 
   return (
     <div className="bg-white shadow-lg rounded-xl p-6 max-w-xs w-full text-center md:ml-auto border border-gray-200 h-fit min-h-[480px] flex flex-col justify-between">
