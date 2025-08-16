@@ -1,18 +1,37 @@
 import ProgressiveLine from "./ProgressiveLine";
 import Step from "./Step";
 
-const StepProgressBar = () => {
-    return(
-        <div className="w-full h-fit p-2 flex items-center justify-center max-w-[800px] mx-auto">
-            <Step value="1" status="done" />
-            <ProgressiveLine status="done" />
-            <Step value="2" status="progressing" />
-            <ProgressiveLine status="progressing" />
-            <Step value="3" status="none" />
-            <ProgressiveLine status="none" />
-            <Step value="4" status="none" />
-        </div>
-    )
+interface StepProgressBarProps {
+  steps: number;
+  currentStep: number;
 }
+
+const StepProgressBar: React.FC<StepProgressBarProps> = ({ steps, currentStep }) => {
+  return (
+    <div className="w-full h-fit p-2 flex items-center justify-center">
+      {Array.from({ length: steps }).map((_, index) => {
+        const stepIndex = index + 1;
+
+        let status: "done" | "progressing" | "none" = "none";
+        if (stepIndex < currentStep) status = "done";
+        else if (stepIndex === currentStep) status = "progressing";
+
+        return (
+          <div key={stepIndex} className="flex items-center w-fit border justify-center">
+            <div className="">
+            <Step value={stepIndex.toString()} status={status} />
+            </div>
+            {
+                stepIndex < steps ?
+                <div className="w-full min-w-10">
+                    <ProgressiveLine status={status} />
+                </div> : null
+            }
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 export default StepProgressBar;

@@ -7,9 +7,9 @@ const Step = ({ value, status}: { value: string; status: "done" | "progressing" 
 
     return (
         <div className={`border w-10 h-10 border-black rounded-full relative flex items-center justify-center ${getBgColor()}`}      >
-        <div className="absolute z-10 text-black">{value}</div>
+        <div className="absolute z-10 text-[#00420A]">{value}</div>
         {status === "progressing" && (
-            <div className="absolute w-full h-full bg-blue-500 opacity-50 animate-pulse rounded-full" />
+            <div className="absolute w-full h-full bg-yellow-500 animate-pulse rounded-full" />
         )}
         </div>
     );

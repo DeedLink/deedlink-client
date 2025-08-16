@@ -1,8 +1,10 @@
 import background from "../assets/images/backgrounds/home.webp";
 import { useLogin } from "../contexts/LoginContext";
+import { useSignup } from "../contexts/SignupContext";
 
 const HeroSection = () => {
   const { openLogin } = useLogin();
+  const { openSignup } = useSignup();
 
   return (
     <section
@@ -34,7 +36,7 @@ const HeroSection = () => {
           <button onClick={openLogin} className="text-[#00420A] bg-white px-6 py-3 rounded-lg shadow hover:bg-green-100 transition cursor-pointer">
             Login
           </button>
-          <button className="bg-green-600 text-white px-6 py-3 rounded-lg shadow hover:bg-green-700 transition cursor-pointer">
+          <button onClick={openSignup} className="bg-green-600 text-white px-6 py-3 rounded-lg shadow hover:bg-green-700 transition cursor-pointer">
             Register
           </button>
         </div>

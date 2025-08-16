@@ -1,11 +1,9 @@
-import { useState } from "react";
 import GetStartedCard from "../components/ui/GetStartedCard";
 import HeroSection from "../sections/HeroSection";
 import WhyChooseSection from "../sections/WhyChooseSection";
 
 const HomePage = () => {
-  const [showLogin, setShowLogin] = useState(false);
-  
+
   return (
     <main className="">
       <HeroSection />
