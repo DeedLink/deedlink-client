@@ -6,6 +6,7 @@ import MapPreview from "./MapPreview";
 import MapPopup from "./MapPopup";
 import { useState } from "react";
 import { FaExpand } from "react-icons/fa";
+import { getCenterOfLocations } from "../../utils/functions";
 
 interface Props {
   deed: Deed | null;
@@ -17,10 +18,11 @@ interface Props {
 const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²" }: Props) => {
   if (!deed) return null;
   const [isMapOpen, setIsMapOpen] = useState(false);
+  const centerLocation = getCenterOfLocations(deed.location);
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] px-4 text-black" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden relative max-h-[calc(100%-100px)] h-fit overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="p-5 border-b border-black/5 flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -90,13 +92,12 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²" }: 
                 <h4 className="font-semibold">Location</h4>
               </div>
               <div className="text-sm text-gray-700">
-                Lat {deed.location.latitude.toFixed(6)} <br />
-                Lng {deed.location.longitude.toFixed(6)}
+                Lat {centerLocation && centerLocation.latitude.toFixed(6)} <br />
+                Lng {centerLocation && centerLocation.longitude.toFixed(6)}
               </div>
               <div className="relative group mt-3 h-28 w-full rounded-lg border border-black/5 overflow-hidden">
                 <MapPreview
-                  latitude={deed.location.latitude}
-                  longitude={deed.location.longitude}
+                  points={deed.location}
                 />
                 <button
                   onClick={() => setIsMapOpen(true)}
@@ -127,8 +128,7 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²" }: 
         <div className="h-1 bg-gradient-to-r from-green-600 via-emerald-500 to-green-700" />
       </div>
       <MapPopup
-        latitude={deed.location.latitude}
-        longitude={deed.location.longitude}
+        points={deed.location}
         isOpen={isMapOpen}
         onClose={() => setIsMapOpen(false)}
       />

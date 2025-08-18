@@ -14,6 +14,15 @@ const DeedsPage = () => {
   const [viewer, setViewer] = useState<Deed | null>(null);
   const { showLoader, hideLoader } = useLoader();
 
+  useEffect(()=>{
+    if(viewer) { 
+      document.body.classList.add('no-scroll');
+    }
+    else { 
+      document.body.classList.remove('no-scroll');
+    }
+  },[viewer])
+
   useEffect(() => {
     showLoader();
     const timer = setTimeout(() => {

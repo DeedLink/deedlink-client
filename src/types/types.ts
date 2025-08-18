@@ -16,7 +16,7 @@ export interface Owner {
   share: number;
 }
 
-export interface Location {
+export interface LocationPoint {
   longitude: number;
   latitude: number;
 }
@@ -33,7 +33,7 @@ export interface Deed {
   signedby: Address;
   area: number;
   value: number; 
-  location: Location;
+  location: LocationPoint[];
   sides: Side[];
   deedNumber: string;
   timestamp: number;

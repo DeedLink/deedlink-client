@@ -1,8 +1,20 @@
-import { FaFileSignature, FaMapMarkerAlt, FaRegClock, FaCoins, FaExpand } from "react-icons/fa";
-import { formatCurrency, formatNumber, shortAddress, timeAgo } from "../../utils/format";
+import {
+  FaFileSignature,
+  FaMapMarkerAlt,
+  FaRegClock,
+  FaCoins,
+  FaExpand,
+} from "react-icons/fa";
+import {
+  formatCurrency,
+  formatNumber,
+  shortAddress,
+  timeAgo,
+} from "../../utils/format";
 import ShareBadge from "./ShareBadge";
 import OwnerChips from "./OwnerChips";
 import type { Deed } from "../../types/types";
+import { getCenterOfLocations } from "../../utils/functions";
 
 export interface DeedCardProps {
   deed: Deed;
@@ -12,11 +24,23 @@ export interface DeedCardProps {
   areaUnit?: "m²" | "perch" | "acre";
 }
 
-const DeedCard = ({ deed, currentUser, onOpen, currency = "USD", areaUnit = "m²" }: DeedCardProps) => {
-  const myShare = deed.owners.find((o) => o.address.toLowerCase() === currentUser.toLowerCase())?.share ?? 0;
+const DeedCard = ({
+  deed,
+  currentUser,
+  onOpen,
+  currency = "USD",
+  areaUnit = "m²",
+}: DeedCardProps) => {
+  const myShare =
+    deed.owners.find(
+      (o) => o.address.toLowerCase() === currentUser.toLowerCase()
+    )?.share ?? 0;
+  
+  const centerLocation = getCenterOfLocations(deed.location);
 
   return (
-    <div className="group bg-white rounded-2xl shadow-sm border border-black/5 hover:shadow-xl transition overflow-hidden">
+    <div className="group bg-white rounded-2xl shadow border border-black/5 hover:shadow-xl transition overflow-hidden">
+      {/* Header */}
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -26,8 +50,11 @@ const DeedCard = ({ deed, currentUser, onOpen, currency = "USD", areaUnit = "m²
                 Deed #{deed.deedNumber}
               </h3>
             </div>
-            <p className="text-xs text-gray-500 mt-0.5">Signed by {shortAddress(deed.signedby)}</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Signed by {shortAddress(deed.signedby)}
+            </p>
           </div>
+
           <button
             onClick={() => onOpen(deed)}
             className="opacity-0 group-hover:opacity-100 transition px-3 py-1.5 rounded-lg border border-green-600 text-green-700 hover:bg-green-50 flex items-center gap-2 cursor-pointer"
@@ -37,28 +64,39 @@ const DeedCard = ({ deed, currentUser, onOpen, currency = "USD", areaUnit = "m²
           </button>
         </div>
 
+        {/* Info grid */}
         <div className="grid grid-cols-2 gap-4 mt-4 text-black">
           <div>
             <div className="text-xs text-gray-500">Estimated Value</div>
-            <div className="font-semibold">{formatCurrency(deed.value, currency)}</div>
+            <div className="font-semibold">
+              {formatCurrency(deed.value, currency)}
+            </div>
           </div>
           <div>
             <div className="text-xs text-gray-500">Area</div>
-            <div className="font-semibold">{formatNumber(deed.area)} {areaUnit}</div>
+            <div className="font-semibold">
+              {formatNumber(deed.area)} {areaUnit}
+            </div>
           </div>
+
           <div className="col-span-2">
             <div className="text-xs text-gray-500">Owners</div>
             <OwnerChips owners={deed.owners} />
           </div>
+
           <div className="flex items-center gap-2">
             <FaMapMarkerAlt className="text-gray-500" />
             <span className="text-sm text-gray-700">
-              {deed.location.latitude.toFixed(4)}, {deed.location.longitude.toFixed(4)}
+              { centerLocation && centerLocation.longitude.toFixed(4)},{" "}
+              { centerLocation && centerLocation.latitude.toFixed(4)}
             </span>
           </div>
+
           <div className="flex items-center gap-2">
             <FaRegClock className="text-gray-500" />
-            <span className="text-sm text-gray-700">{timeAgo(deed.timestamp)}</span>
+            <span className="text-sm text-gray-700">
+              {timeAgo(deed.timestamp)}
+            </span>
           </div>
         </div>
 
@@ -70,6 +108,7 @@ const DeedCard = ({ deed, currentUser, onOpen, currency = "USD", areaUnit = "m²
           <ShareBadge share={myShare} />
         </div>
       </div>
+
       <div className="h-1 bg-gradient-to-r from-green-600 via-emerald-500 to-green-700" />
     </div>
   );

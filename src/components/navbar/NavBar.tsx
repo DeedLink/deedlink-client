@@ -9,7 +9,6 @@ const navLinks = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
   { label: "Deeds", href: "/deeds" },
-  { label: "Contact", href: "/contact" },
   { label: "Market", href: "/market" }
 ];
 
@@ -28,7 +27,10 @@ const NavBar = () => {
           {about.title}
         </div>
 
-        <NavLinks links={navLinks} />
+      <div className="cursor-pointer flex gap-8 items-center justify-center">
+          <NavLinks links={navLinks} />
+          <div className="px-2 py-1 border rounded-2xl bg-green-600">Connect Wallet</div>
+      </div>
 
         <button
           className="md:hidden text-white text-3xl"

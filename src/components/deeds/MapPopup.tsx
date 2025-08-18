@@ -1,6 +1,7 @@
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polygon, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { useEffect } from "react";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -11,15 +12,27 @@ L.Icon.Default.mergeOptions({
 });
 
 interface MapPopupProps {
-  latitude: number;
-  longitude: number;
-  zoom?: number;
+  points: { latitude: number; longitude: number }[];
   isOpen: boolean;
   onClose: () => void;
 }
 
-const MapPopup: React.FC<MapPopupProps> = ({ latitude, longitude, zoom = 15, isOpen, onClose }) => {
-  if (!isOpen) return null;
+const FitBounds: React.FC<{ coords: [number, number][] }> = ({ coords }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (coords.length > 0) {
+      const bounds = L.latLngBounds(coords);
+      map.fitBounds(bounds, { padding: [500, 500] });
+    }
+  }, [coords, map]);
+  return null;
+};
+
+const MapPopup: React.FC<MapPopupProps> = ({ points, isOpen, onClose }) => {
+  if (!isOpen || !points || points.length === 0) return null;
+
+  const coords = points.map(p => [p.latitude, p.longitude] as [number, number]);
+  const center = coords[0];
 
   return (
     <div
@@ -37,8 +50,8 @@ const MapPopup: React.FC<MapPopupProps> = ({ latitude, longitude, zoom = 15, isO
           ✕
         </button>
         <MapContainer
-          center={[latitude, longitude]}
-          zoom={zoom}
+          center={center}
+          zoom={15}
           scrollWheelZoom={true}
           className="w-full h-full"
         >
@@ -46,11 +59,17 @@ const MapPopup: React.FC<MapPopupProps> = ({ latitude, longitude, zoom = 15, isO
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          <Marker position={[latitude, longitude]}>
-            <Popup>
-              Location: {latitude.toFixed(6)}, {longitude.toFixed(6)}
-            </Popup>
-          </Marker>
+          <FitBounds coords={coords} />
+          {coords.map((c, i) => (
+            <Marker key={i} position={c}>
+              <Popup>
+                Location: {c[0].toFixed(6)}, {c[1].toFixed(6)}
+              </Popup>
+            </Marker>
+          ))}
+          {coords.length > 1 && (
+            <Polygon positions={coords} pathOptions={{ color: "green", fillOpacity: 0.3 }} />
+          )}
         </MapContainer>
       </div>
     </div>

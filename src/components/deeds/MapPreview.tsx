@@ -1,25 +1,20 @@
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import { MapContainer, TileLayer, Polygon } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
+import type { LocationPoint } from "../../types/types";
 
 interface MapPreviewProps {
-  latitude: number;
-  longitude: number;
+  points: LocationPoint[];
   zoom?: number;
 }
 
-const MapPreview: React.FC<MapPreviewProps> = ({ latitude, longitude, zoom = 15 }) => {
+const MapPreview: React.FC<MapPreviewProps> = ({ points, zoom = 16 }) => {
+  if (!points || points.length === 0) return null;
+  const polygonCoords = points.map(p => [p.latitude, p.longitude] as [number, number]);
+  const center = polygonCoords[0];
+
   return (
     <MapContainer
-      center={[latitude, longitude]}
+      center={center}
       zoom={zoom}
       scrollWheelZoom={false}
       className="h-28 w-full rounded-lg z-0"
@@ -28,7 +23,10 @@ const MapPreview: React.FC<MapPreviewProps> = ({ latitude, longitude, zoom = 15 
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      <Marker position={[latitude, longitude]} />
+      <Polygon
+        positions={polygonCoords}
+        pathOptions={{ color: "green", fillOpacity: 0.3 }}
+      />
     </MapContainer>
   );
 };
