@@ -10,7 +10,7 @@ const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
       className={`${
         isMobile
           ? "flex flex-col items-center gap-4 py-4"
-          : "hidden md:flex gap-8 font-medium text-white"
+          : "hidden md:flex gap-8 font-medium text-white items-center"
       }`}
     >
       {links.map((link) => (
@@ -32,6 +32,14 @@ const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
           )}
         </a>
       ))}
+      <button
+          className={`mt-2 px-4 py-2 bg-green-600 rounded-2xl text-white font-semibold cursor-pointer ${isMobile ? "min-w-[240px]" : ""}`}
+          onClick={() => {
+            console.log("Connect Wallet clicked");
+          }}
+        >
+          Connect Wallet
+        </button>
     </div>
   );
 };

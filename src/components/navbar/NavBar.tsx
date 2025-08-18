@@ -29,7 +29,6 @@ const NavBar = () => {
 
       <div className="cursor-pointer flex gap-8 items-center justify-center">
           <NavLinks links={navLinks} />
-          <div className="px-2 py-1 border rounded-2xl bg-green-600">Connect Wallet</div>
       </div>
 
         <button
