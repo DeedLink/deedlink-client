@@ -10,34 +10,37 @@ import DeedsPage from './pages/DeedsPage';
 import AboutPage from './pages/AboutPage';
 import MarketPage from './pages/MarketPage';
 import { LoaderProvider } from './contexts/LoaderContext';
+import { WalletProvider } from './contexts/WalletContext';
 
 function App() {
   return (
     <BrowserRouter>
-      <LoginProvider>
-        <SignupProvider>
-          <div className="flex flex-col min-h-screen font-spectral text-white bg-black">
-            <div className='w-full'>
-              <NavBar />
-            </div>
-            <LoginPopup />
-            <RegistrationPopup/>
-            <LoaderProvider>
-              <div className="flex-grow bg-white">
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/deeds" element={<DeedsPage />} />
-                  <Route path="/about" element={<AboutPage/>} />
-                  <Route path="/market" element={<MarketPage />} />
-                </Routes>
+      <WalletProvider>
+        <LoginProvider>
+          <SignupProvider>
+            <div className="flex flex-col min-h-screen font-spectral text-white bg-black">
+              <div className='w-full'>
+                <NavBar />
               </div>
-            </LoaderProvider>
-            <div className='w-full'>
-              <Footer />
+              <LoginPopup />
+              <RegistrationPopup/>
+              <LoaderProvider>
+                <div className="flex-grow bg-white">
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/deeds" element={<DeedsPage />} />
+                    <Route path="/about" element={<AboutPage/>} />
+                    <Route path="/market" element={<MarketPage />} />
+                  </Routes>
+                </div>
+              </LoaderProvider>
+              <div className='w-full'>
+                <Footer />
+              </div>
             </div>
-          </div>
-        </SignupProvider>
-      </LoginProvider>
+          </SignupProvider>
+        </LoginProvider>
+      </WalletProvider>
     </BrowserRouter>
   );
 }

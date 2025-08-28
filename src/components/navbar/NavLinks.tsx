@@ -1,3 +1,6 @@
+import { useWallet } from "../../contexts/WalletContext";
+import { compressAddress } from "../../utils/format";
+
 interface NavLinksProps {
   links: { label: string; href: string }[];
   onClick?: () => void;
@@ -5,6 +8,8 @@ interface NavLinksProps {
 }
 
 const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
+  const { account, connect, disconnect } = useWallet();
+
   return (
     <div
       className={`${
@@ -32,14 +37,26 @@ const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
           )}
         </a>
       ))}
-      <button
-          className={`mt-2 px-4 py-2 bg-green-600 rounded-2xl text-white font-semibold cursor-pointer ${isMobile ? "min-w-[240px]" : ""}`}
-          onClick={() => {
-            console.log("Connect Wallet clicked");
-          }}
+      {account ? (
+        <button
+          onClick={disconnect}
+          className="group px-4 py-2 bg-red-600 hover:bg-red-500 rounded-2xl text-white font-semibold cursor-pointer w-38"
+        >
+          <span className="block group-hover:hidden">
+            {compressAddress(account)}
+          </span>
+          <span className="hidden group-hover:block">
+            Disconnect
+          </span>
+        </button>
+      ) : (
+        <button
+          onClick={connect}
+          className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-2xl text-white font-semibold cursor-pointer w-38"
         >
           Connect Wallet
         </button>
+      )}
     </div>
   );
 };

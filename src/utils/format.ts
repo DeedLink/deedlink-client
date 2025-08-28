@@ -27,3 +27,7 @@ export const percentBarClass = (pct: number) => {
   if (pct >= 34) return "bg-yellow-500";
   return "bg-red-500";
 };
+
+export const compressAddress = (address : string) => {
+  return `${address.slice(0, 6)}`+'...'+`${address.slice(-4)}`
+}
