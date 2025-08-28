@@ -1,3 +1,5 @@
+import { useWallet } from "../../contexts/WalletContext";
+
 interface NavLinksProps {
   links: { label: string; href: string }[];
   onClick?: () => void;
@@ -5,6 +7,8 @@ interface NavLinksProps {
 }
 
 const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
+  const { account, connect, disconnect } = useWallet();
+
   return (
     <div
       className={`${
@@ -32,14 +36,21 @@ const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
           )}
         </a>
       ))}
-      <button
-          className={`mt-2 px-4 py-2 bg-green-600 rounded-2xl text-white font-semibold cursor-pointer ${isMobile ? "min-w-[240px]" : ""}`}
-          onClick={() => {
-            console.log("Connect Wallet clicked");
-          }}
+      {account ? (
+        <button
+          className="mt-2 px-4 py-2 bg-red-600 rounded-2xl text-white font-semibold cursor-pointer"
+          onClick={disconnect}
+        >
+          Disconnect ({account.slice(0, 6)}...{account.slice(-4)})
+        </button>
+      ) : (
+        <button
+          className="mt-2 px-4 py-2 bg-green-600 rounded-2xl text-white font-semibold cursor-pointer"
+          onClick={connect}
         >
           Connect Wallet
         </button>
+      )}
     </div>
   );
 };
