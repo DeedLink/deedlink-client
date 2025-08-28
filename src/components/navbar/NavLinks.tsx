@@ -1,4 +1,5 @@
 import { useWallet } from "../../contexts/WalletContext";
+import { compressAddress } from "../../utils/format";
 
 interface NavLinksProps {
   links: { label: string; href: string }[];
@@ -38,15 +39,20 @@ const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
       ))}
       {account ? (
         <button
-          className="mt-2 px-4 py-2 bg-red-600 rounded-2xl text-white font-semibold cursor-pointer"
           onClick={disconnect}
+          className="group mt-2 px-4 py-2 bg-red-600 hover:bg-red-500 rounded-2xl text-white font-semibold cursor-pointer w-38"
         >
-          Disconnect ({account.slice(0, 6)}...{account.slice(-4)})
+          <span className="block group-hover:hidden">
+            {compressAddress(account)}
+          </span>
+          <span className="hidden group-hover:block">
+            Disconnect
+          </span>
         </button>
       ) : (
         <button
-          className="mt-2 px-4 py-2 bg-green-600 rounded-2xl text-white font-semibold cursor-pointer"
           onClick={connect}
+          className="mt-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-2xl text-white font-semibold cursor-pointer w-38"
         >
           Connect Wallet
         </button>
