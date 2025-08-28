@@ -40,7 +40,7 @@ const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
       {account ? (
         <button
           onClick={disconnect}
-          className="group mt-2 px-4 py-2 bg-red-600 hover:bg-red-500 rounded-2xl text-white font-semibold cursor-pointer w-38"
+          className="group px-4 py-2 bg-red-600 hover:bg-red-500 rounded-2xl text-white font-semibold cursor-pointer w-38"
         >
           <span className="block group-hover:hidden">
             {compressAddress(account)}
@@ -52,7 +52,7 @@ const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
       ) : (
         <button
           onClick={connect}
-          className="mt-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-2xl text-white font-semibold cursor-pointer w-38"
+          className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-2xl text-white font-semibold cursor-pointer w-38"
         >
           Connect Wallet
         </button>
