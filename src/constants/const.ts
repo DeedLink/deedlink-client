@@ -23,6 +23,7 @@ export const SAMPLE_DEEDS: Deed[] = [
   {
     _id: "1",
     deedNumber: "A-2024-0001",
+    landType: "Highland",
     title: [
       {
         _id: "t1",
@@ -65,6 +66,7 @@ export const SAMPLE_DEEDS: Deed[] = [
   {
     _id: "2",
     deedNumber: "B-2021-3410",
+    landType: "Paddy land",
     title: [],
     owners: [
       { address: "0x1234567890abcdef1234567890abcdef12345678", share: 100 },
@@ -92,6 +94,7 @@ export const SAMPLE_DEEDS: Deed[] = [
   {
     _id: "3",
     deedNumber: "C-2020-7777",
+    landType: "Highland",
     title: [],
     owners: [
       {
@@ -123,6 +126,7 @@ export const SAMPLE_DEEDS: Deed[] = [
   {
     _id: "4",
     deedNumber: "D-2022-5555",
+    landType: "Paddy land",
     title: [
       {
         _id: "t3",

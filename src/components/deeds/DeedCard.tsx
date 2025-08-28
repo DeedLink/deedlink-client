@@ -35,12 +35,11 @@ const DeedCard = ({
     deed.owners.find(
       (o) => o.address.toLowerCase() === currentUser.toLowerCase()
     )?.share ?? 0;
-  
+
   const centerLocation = getCenterOfLocations(deed.location);
 
   return (
     <div className="group bg-white rounded-2xl shadow border border-black/5 hover:shadow-xl transition overflow-hidden">
-      {/* Header */}
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -64,7 +63,6 @@ const DeedCard = ({
           </button>
         </div>
 
-        {/* Info grid */}
         <div className="grid grid-cols-2 gap-4 mt-4 text-black">
           <div>
             <div className="text-xs text-gray-500">Estimated Value</div>
@@ -72,10 +70,18 @@ const DeedCard = ({
               {formatCurrency(deed.value, currency)}
             </div>
           </div>
+
           <div>
             <div className="text-xs text-gray-500">Area</div>
             <div className="font-semibold">
               {formatNumber(deed.area)} {areaUnit}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-gray-500">Land Type</div>
+            <div className="font-semibold capitalize">
+              {deed.landType ?? "Unknown"}
             </div>
           </div>
 
@@ -87,8 +93,8 @@ const DeedCard = ({
           <div className="flex items-center gap-2">
             <FaMapMarkerAlt className="text-gray-500" />
             <span className="text-sm text-gray-700">
-              { centerLocation && centerLocation.longitude.toFixed(4)},{" "}
-              { centerLocation && centerLocation.latitude.toFixed(4)}
+              {centerLocation && centerLocation.longitude.toFixed(4)},{" "}
+              {centerLocation && centerLocation.latitude.toFixed(4)}
             </span>
           </div>
 

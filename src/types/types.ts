@@ -1,6 +1,7 @@
 export type Address = string;
 
 export type Directions = "North" | "South" | "East" | "West";
+export type LandType = "Paddy land" | "Highland";
 
 export interface Tnx {
   _id: string;
@@ -36,6 +37,7 @@ export interface Deed {
   location: LocationPoint[];
   sides: Side[];
   deedNumber: string;
+  landType: LandType;
   timestamp: number;
 }
 
