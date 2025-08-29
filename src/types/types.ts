@@ -96,4 +96,4 @@ export interface KYCUploadResponse {
 
 export type StorageType = "local" | "session";
 
-export type StorageKey = "token" | "user";
+export type StorageKey = "token" | "user" | "walletConnected";
