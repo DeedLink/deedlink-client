@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { useSignup } from "../../contexts/SignupContext";
 import StepEmailWallet from "./StepEmailWallet";
@@ -19,6 +19,16 @@ const RegistrationPopup = () => {
   const [confirm, setConfirm] = useState("");
   const [done, setDone] = useState(false);
   const { account , connect } = useWallet();
+
+  useEffect(()=>{
+    console.log({
+      "email": email,
+      "nic": nic,
+      "key": key,
+      "password": password,
+      "account": account
+    })
+  },[step]);
 
   if (!isOpen) return null;
 
