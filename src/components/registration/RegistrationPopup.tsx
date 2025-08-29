@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { useSignup } from "../../contexts/SignupContext";
 import StepEmailWallet from "./StepEmailWallet";
@@ -11,24 +11,29 @@ import { useWallet } from "../../contexts/WalletContext";
 const RegistrationPopup = () => {
   const { isOpen, closeSignup } = useSignup();
   const [step, setStep] = useState(1);
-
   const [email, setEmail] = useState("");
   const [nic, setNic] = useState("");
+  const [nicFrontSide, setNicFrontSide] = useState<File | null>(null);
+  const [nicBackSide, setNicBackSide] = useState<File | null>(null);
+  const [userFrontImage, setUserFrontSide] = useState<File | null>(null);
   const [key, setKey] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [done, setDone] = useState(false);
   const { account , connect } = useWallet();
 
-  useEffect(()=>{
+  const submitForKYC=()=>{
     console.log({
       "email": email,
       "nic": nic,
+      "nicFrontSide": nicFrontSide?.name,
+      "nicBackSide": nicBackSide?.name,
+      "userFrontImage": userFrontImage?.name,
       "key": key,
       "password": password,
       "account": account
-    })
-  },[step]);
+    });
+  }
 
   if (!isOpen) return null;
 
@@ -37,7 +42,7 @@ const RegistrationPopup = () => {
 
   const canGoNext = () => {
     if (step === 1) return email.includes("@") && account != null;
-    if (step === 2) return nic.trim().length >= 6;
+    if (step === 2) return nic.trim().length >= 6 && nicFrontSide != null && nicBackSide!=null && userFrontImage!=null;
     if (step === 3) return key.trim().length > 0;
     return false;
   };
@@ -82,11 +87,18 @@ const RegistrationPopup = () => {
 
         {step === 2 && (
           <StepKYC
+            setNicFrontSide={setNicFrontSide}
+            setNicBackSide={setNicBackSide}
+            setUserFrontImage={setUserFrontSide}
+            nicFrontSide={nicFrontSide}
+            nicBackSide={nicBackSide}
+            userFrontImage={userFrontImage}
             nic={nic}
             setNic={setNic}
             canGoNext={canGoNext}
             nextStep={nextStep}
             prevStep={prevStep}
+            submitForKYC={submitForKYC}
           />
         )}
 
