@@ -3,7 +3,6 @@ import Footer from './components/footer/Footer';
 import NavBar from './components/navbar/NavBar';
 import HomePage from './pages/HomePage';
 import { LoginProvider } from './contexts/LoginContext';
-import LoginPopup from './components/ui/LoginPopup';
 import { SignupProvider } from './contexts/SignupContext';
 import RegistrationPopup from './components/registration/RegistrationPopup';
 import DeedsPage from './pages/DeedsPage';
@@ -11,6 +10,7 @@ import AboutPage from './pages/AboutPage';
 import MarketPage from './pages/MarketPage';
 import { LoaderProvider } from './contexts/LoaderContext';
 import { WalletProvider } from './contexts/WalletContext';
+import LoginPopup from './components/signin/LoginPopup';
 
 function App() {
   return (
