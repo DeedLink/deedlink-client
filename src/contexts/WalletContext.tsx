@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import { BrowserProvider, JsonRpcSigner } from "ethers";
 import { connectWallet } from "../web3.0/wallet";
+import { removeItem, setItem } from "../storage/storage";
 
 interface WalletContextProps {
   account: string | null;
@@ -23,7 +24,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setAccount(res.account);
       setProvider(res.provider);
       setSigner(res.signer);
-      localStorage.setItem("walletConnected", "true");
+      setItem("local", "walletConnected", true);
     }
   };
 
@@ -31,7 +32,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setAccount(null);
     setProvider(null);
     setSigner(null);
-    localStorage.removeItem("walletConnected");
+    removeItem("local", "walletConnected");
   };
 
   return (
