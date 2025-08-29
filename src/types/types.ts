@@ -50,3 +50,50 @@ export interface Token {
   price: number;
   isMine?: boolean;
 }
+
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  walletAddress?: string | null;
+  nic: string;
+  kycDocumentHash?: string;
+  kycStatus: "pending" | "verified" | "rejected";
+  role: "user" | "registrar" | "admin";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  nic: string;
+  password?: string;
+  walletAddress?: string;
+  signature?: string;
+  role?: "user" | "registrar" | "admin";
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface VerifyKYCRequest {
+  status: "verified" | "rejected";
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+export interface KYCUploadResponse {
+  message: string;
+  kycDocumentHash: string;
+  user: User;
+}
+
+export type StorageType = "local" | "session";
+
+export type StorageKey = "token" | "user";
