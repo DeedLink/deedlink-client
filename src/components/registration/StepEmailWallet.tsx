@@ -1,4 +1,6 @@
 import { FaEnvelope, FaWallet, FaCheckCircle } from "react-icons/fa";
+import { useWallet } from "../../contexts/WalletContext";
+import { compressAddress } from "../../utils/format";
 
 type Props = {
   email: string;
@@ -17,6 +19,8 @@ const StepEmailWallet = ({
   canGoNext,
   nextStep,
 }: Props) => {
+  const { account } = useWallet();
+
   return (
     <div className="mt-6">
       <div className="flex items-center gap-2 mb-4">
@@ -41,9 +45,9 @@ const StepEmailWallet = ({
             : "text-green-700 hover:bg-green-50"
         }`}
       >
-        {walletConnected ? (
+        {walletConnected && account ? (
           <>
-            <FaCheckCircle /> Wallet Connected
+            <FaCheckCircle /> {compressAddress(account)}
           </>
         ) : (
           <>

@@ -2,24 +2,19 @@ import { useState } from "react";
 import { FaWallet, FaLock, FaCheckCircle } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { useLogin } from "../../contexts/LoginContext";
+import { useWallet } from "../../contexts/WalletContext";
+import { compressAddress } from "../../utils/format";
 
 const LoginPopup = () => {
   const { isOpen, closeLogin } = useLogin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [walletConnected, setWalletConnected] = useState(false);
+  const { account, connect } = useWallet();
 
   if (!isOpen) return null;
 
   const handleLogin = () => {
-    console.log("Logging in:", { email, password, walletConnected });
-  };
-
-  const handleWalletConnect = () => {
-    console.log("Connecting wallet...");
-    setTimeout(() => {
-      setWalletConnected(true);
-    }, 800);
+    console.log("Logging in:", { email, password, account });
   };
 
   return (
@@ -60,18 +55,18 @@ const LoginPopup = () => {
         />
 
         <button
-          onClick={handleWalletConnect}
-          disabled={walletConnected}
+          onClick={connect}
+          disabled={account != null}
           className={`w-full flex items-center justify-center gap-2 border border-green-600 py-2 rounded-lg transition cursor-pointer ${
-            walletConnected
+            account
               ? "bg-green-600 text-white cursor-default"
               : "text-green-700 hover:bg-green-50"
           }`}
         >
-          {walletConnected ? (
+          {account ? (
             <>
               <FaCheckCircle />
-              Wallet Connected
+              {compressAddress(account)}
             </>
           ) : (
             <>
@@ -83,9 +78,9 @@ const LoginPopup = () => {
 
         <button
           onClick={handleLogin}
-          disabled={!walletConnected}
+          disabled={!account}
           className={`w-full py-2 rounded-lg mt-4 transition ${
-            walletConnected
+            account
               ? "bg-green-600 text-white hover:bg-green-700"
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
           }`}

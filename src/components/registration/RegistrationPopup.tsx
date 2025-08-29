@@ -6,18 +6,19 @@ import StepKYC from "./StepKYC";
 import StepVerification from "./StepVerification";
 import StepPassword from "./StepPassword";
 import StepProgressBar from "../step-progress-bar/StepProgressBar";
+import { useWallet } from "../../contexts/WalletContext";
 
 const RegistrationPopup = () => {
   const { isOpen, closeSignup } = useSignup();
   const [step, setStep] = useState(1);
 
   const [email, setEmail] = useState("");
-  const [walletConnected, setWalletConnected] = useState(false);
   const [nic, setNic] = useState("");
   const [key, setKey] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [done, setDone] = useState(false);
+  const { account , connect } = useWallet();
 
   if (!isOpen) return null;
 
@@ -25,7 +26,7 @@ const RegistrationPopup = () => {
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   const canGoNext = () => {
-    if (step === 1) return email.includes("@") && walletConnected;
+    if (step === 1) return email.includes("@") && account != null;
     if (step === 2) return nic.trim().length >= 6;
     if (step === 3) return key.trim().length > 0;
     return false;
@@ -62,8 +63,8 @@ const RegistrationPopup = () => {
           <StepEmailWallet
             email={email}
             setEmail={setEmail}
-            walletConnected={walletConnected}
-            setWalletConnected={setWalletConnected}
+            walletConnected={account!=null}
+            setWalletConnected={connect}
             canGoNext={canGoNext}
             nextStep={nextStep}
           />
