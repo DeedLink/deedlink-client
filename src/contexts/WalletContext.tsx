@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import { BrowserProvider, JsonRpcSigner } from "ethers";
 import { connectWallet } from "../web3.0/wallet";
-import { removeItem, setItem } from "../storage/storage";
+import { getItem, removeItem, setItem } from "../storage/storage";
 
 interface WalletContextProps {
   account: string | null;
@@ -14,9 +14,9 @@ interface WalletContextProps {
 const WalletContext = createContext<WalletContextProps | undefined>(undefined);
 
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [account, setAccount] = useState<string | null>(null);
-  const [provider, setProvider] = useState<BrowserProvider | null>(null);
-  const [signer, setSigner] = useState<JsonRpcSigner | null>(null);
+  const [account, setAccount] = useState<string | null>(getItem("local", "account"));
+  const [provider, setProvider] = useState<BrowserProvider | null>(getItem("local", "provider"));
+  const [signer, setSigner] = useState<JsonRpcSigner | null>(getItem("local", "signer"));
 
   const connect = async () => {
     const res = await connectWallet();
@@ -25,6 +25,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setProvider(res.provider);
       setSigner(res.signer);
       setItem("local", "walletConnected", true);
+      setItem("local", "account", res.account);
+      setItem("local", "provider", res.provider);
+      setItem("local", "signer", res.signer);
     }
   };
 
@@ -33,6 +36,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setProvider(null);
     setSigner(null);
     removeItem("local", "walletConnected");
+    removeItem("local", "account");
+    removeItem("local", "provider");
+    removeItem("local", "signer");
   };
 
   return (

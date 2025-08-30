@@ -109,8 +109,9 @@ export interface userStatusNotRegisteredResponse {
 }
 
 export type UserStatus = "pending" | "verified" | "rejected";
+
 export type UserNotRegistered = "not_registered";
 
 export type StorageType = "local" | "session";
 
-export type StorageKey = "token" | "user" | "walletConnected";
+export type StorageKey = "token" | "user" | "walletConnected" | "account" | "provider" | "signer";
