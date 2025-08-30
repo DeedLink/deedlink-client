@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { useSignup } from "../../contexts/SignupContext";
 import StepEmailWallet from "./StepEmailWallet";
@@ -7,6 +7,8 @@ import StepVerification from "./StepVerification";
 import StepPassword from "./StepPassword";
 import StepProgressBar from "../step-progress-bar/StepProgressBar";
 import { useWallet } from "../../contexts/WalletContext";
+import { getUserState, uploadKYC } from "../../api/api";
+import AleadyHaveAnAccount from "./AlreadyHaveAnAccount";
 
 const RegistrationPopup = () => {
   const { isOpen, closeSignup } = useSignup();
@@ -21,18 +23,47 @@ const RegistrationPopup = () => {
   const [confirm, setConfirm] = useState("");
   const [done, setDone] = useState(false);
   const { account , connect } = useWallet();
+  const [userState, setUserState] = useState<string | null>(null);
 
-  const submitForKYC=()=>{
-    console.log({
-      "email": email,
-      "nic": nic,
-      "nicFrontSide": nicFrontSide?.name,
-      "nicBackSide": nicBackSide?.name,
-      "userFrontImage": userFrontImage?.name,
-      "key": key,
-      "password": password,
-      "account": account
-    });
+  const getUserStatus = async () => {
+    if (account) {
+      const userStatus = await getUserState(account);
+      if (!userStatus) return;
+
+      if ("kycStatus" in userStatus) {
+        setUserState(userStatus.kycStatus);
+      } else if ("status" in userStatus && userStatus.status === "not_registered") {
+        setUserState("not_registered");
+      }
+    }
+  };
+
+  useEffect(()=>{
+    if(isOpen && account){
+      getUserStatus();
+    }
+  },[isOpen, account])
+
+  useEffect(() => {
+    console.log(userState);
+    if(userState==="pending"){
+      setStep(3);
+    }
+  }, [userState, isOpen]);
+
+  const submitForKYC=async()=>{
+    // console.log({
+    //   "email": email,
+    //   "nic": nic,
+    //   "nicFrontSide": nicFrontSide?.name,
+    //   "nicBackSide": nicBackSide?.name,
+    //   "userFrontImage": userFrontImage?.name,
+    //   "key": key,
+    //   "password": password,
+    //   "account": account
+    // });
+    const res = await uploadKYC(nic, nicFrontSide, nicBackSide, userFrontImage);
+    console.log(res);
   }
 
   if (!isOpen) return null;
@@ -72,9 +103,12 @@ const RegistrationPopup = () => {
           <IoClose size={20} />
         </button>
 
-        <StepProgressBar currentStep={step} steps={4} />
+        {
+          userState != "verified" &&
+            <StepProgressBar currentStep={step} steps={4} />
+        }
 
-        {step === 1 && (
+        {(step === 1 && userState != "verified") && (
           <StepEmailWallet
             email={email}
             setEmail={setEmail}
@@ -85,7 +119,7 @@ const RegistrationPopup = () => {
           />
         )}
 
-        {step === 2 && (
+        {(step === 2 && userState != "verified") && (
           <StepKYC
             setNicFrontSide={setNicFrontSide}
             setNicBackSide={setNicBackSide}
@@ -102,17 +136,18 @@ const RegistrationPopup = () => {
           />
         )}
 
-        {step === 3 && (
+        {(step === 3 && userState != "verified") && (
           <StepVerification
             keyValue={key}
             setKey={setKey}
             canGoNext={canGoNext}
             nextStep={nextStep}
             prevStep={prevStep}
+            canBack={userState!="pending"}
           />
         )}
 
-        {step === 4 && (
+        {(step === 4 && userState != "verified") && (
           <StepPassword
             password={password}
             setPassword={setPassword}
@@ -122,6 +157,10 @@ const RegistrationPopup = () => {
             done={done}
             prevStep={prevStep}
           />
+        )}
+
+        {(userState === "verified" &&
+          <AleadyHaveAnAccount/>
         )}
       </div>
     </div>
