@@ -94,6 +94,23 @@ export interface KYCUploadResponse {
   user: User;
 }
 
+export interface userStatusResponse {
+    walletAddress: string,
+    kycStatus: UserStatus,
+    userData: {
+        name: string,
+        email: string
+  }
+}
+
+export interface userStatusNotRegisteredResponse {
+    walletAddress: string,
+    status: UserNotRegistered
+}
+
+export type UserStatus = "pending" | "verified" | "rejected";
+export type UserNotRegistered = "not_registered";
+
 export type StorageType = "local" | "session";
 
 export type StorageKey = "token" | "user" | "walletConnected";

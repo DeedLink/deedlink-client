@@ -1,6 +1,6 @@
 import axios, { type AxiosResponse } from "axios";
 import { getItem, setItem } from "../storage/storage";
-import type { AuthResponse, KYCUploadResponse, LoginRequest, RegisterRequest, User, VerifyKYCRequest } from "../types/types";
+import type { AuthResponse, KYCUploadResponse, LoginRequest, RegisterRequest, User, userStatusNotRegisteredResponse, userStatusResponse, VerifyKYCRequest } from "../types/types";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/users";
 
@@ -39,15 +39,32 @@ export const getProfile = async (): Promise<User> => {
   return res.data;
 };
 
-// Upload KYC document (protected, multipart/form-data)
-export const uploadKYC = async (file: File): Promise<KYCUploadResponse> => {
-  const formData = new FormData();
-  formData.append("kyc", file);
+// Upload KYC documents (protected, multipart/form-data)
+export const uploadKYC = async (
+    nic: string,
+    nicFrontSide: File | null,
+    nicBackSide: File | null,
+    userFrontImage: File | null
+): Promise<KYCUploadResponse> => {
+    const formData = new FormData();
+    formData.append("nic", nic);
+    if (nicFrontSide) formData.append("nicFrontSide", nicFrontSide);
+    if (nicBackSide) formData.append("nicBackSide", nicBackSide);
+    if (userFrontImage) formData.append("userFrontImage", userFrontImage);
+    console.log("form data: ", formData.get("nicFrontSide"));
 
-  const res: AxiosResponse<KYCUploadResponse> = await api.post("/upload-kyc", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return res.data;
+    const res: AxiosResponse<KYCUploadResponse> = await api.post(
+        "/upload-kyc",
+        formData,
+        {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${getItem("local", "token") || ""}`,
+            },
+        }
+    );
+
+    return res.data;
 };
 
 // Verify KYC (registrar/admin only)
@@ -65,6 +82,12 @@ export const verifyKYC = async (
 // List pending KYC (registrar/admin only)
 export const listPendingKYC = async (): Promise<User[]> => {
   const res: AxiosResponse<User[]> = await api.get("/pending-kyc");
+  return res.data;
+};
+
+// Get user state by wallet address (public)
+export const getUserState = async (walletAddress: string): Promise<userStatusResponse | userStatusNotRegisteredResponse> => {
+  const res: AxiosResponse<userStatusResponse | userStatusNotRegisteredResponse> = await api.get(`/status/${walletAddress}`);
   return res.data;
 };
 
