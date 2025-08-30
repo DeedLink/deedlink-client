@@ -4,18 +4,29 @@ import { IoClose } from "react-icons/io5";
 import { useLogin } from "../../contexts/LoginContext";
 import { useWallet } from "../../contexts/WalletContext";
 import { compressAddress } from "../../utils/format";
+import { loginUser } from "../../api/api";
 
 const LoginPopup = () => {
-  const { isOpen, closeLogin } = useLogin();
+  const { isOpen, closeLogin, setToken, setUser } = useLogin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { account, connect } = useWallet();
 
-  if (!isOpen) return null;
-
-  const handleLogin = () => {
-    console.log("Logging in:", { email, password, account });
+  const handleLogin = async () => {
+    try {
+      console.log("Logging in:", { email, password, account });
+      const res = await loginUser({ email, password });
+      if (res) {
+        setUser(res.user);
+        setToken(res.token);
+        closeLogin();
+      }
+    } catch (err) {
+      console.error("Login failed:", err);
+    }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div
@@ -78,9 +89,9 @@ const LoginPopup = () => {
 
         <button
           onClick={handleLogin}
-          disabled={!account}
+          disabled={!account || !email || !password}
           className={`w-full py-2 rounded-lg mt-4 transition ${
-            account
+            (account && email && password)
               ? "bg-green-600 text-white hover:bg-green-700"
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
           }`}
