@@ -3,7 +3,7 @@ import { useLogin } from "../contexts/LoginContext";
 import { useSignup } from "../contexts/SignupContext";
 
 const HeroSection = () => {
-  const { openLogin } = useLogin();
+  const { openLogin, user, logout } = useLogin();
   const { openSignup } = useSignup();
 
   return (
@@ -33,9 +33,15 @@ const HeroSection = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4">
-          <button onClick={openLogin} className="text-[#00420A] bg-white px-6 py-3 rounded-lg shadow hover:bg-green-100 transition cursor-pointer">
-            Login
-          </button>
+          {!user ? (
+            <button onClick={openLogin} className="text-[#00420A] bg-white px-6 py-3 rounded-lg shadow hover:bg-green-100 transition cursor-pointer">
+              Login
+            </button>
+          ) : (
+            <button onClick={logout} className="px-6 py-3 rounded-lg shadow bg-red-600 hover:bg-red-500 transition cursor-pointer text-white">
+              Logout
+            </button>
+          )}
           <button onClick={openSignup} className="bg-green-600 text-white px-6 py-3 rounded-lg shadow hover:bg-green-700 transition cursor-pointer">
             Register
           </button>
