@@ -15,8 +15,8 @@ import LoginPopup from './components/signin/LoginPopup';
 function App() {
   return (
     <BrowserRouter>
-      <WalletProvider>
-        <LoginProvider>
+      <LoginProvider>
+        <WalletProvider>
           <SignupProvider>
             <div className="flex flex-col min-h-screen font-spectral text-white bg-black">
               <div className='w-full'>
@@ -39,8 +39,8 @@ function App() {
               </div>
             </div>
           </SignupProvider>
-        </LoginProvider>
-      </WalletProvider>
+        </WalletProvider>
+      </LoginProvider>
     </BrowserRouter>
   );
 }

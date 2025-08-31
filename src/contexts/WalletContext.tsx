@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState } from "react";
 import { BrowserProvider, JsonRpcSigner } from "ethers";
 import { connectWallet } from "../web3.0/wallet";
 import { getItem, removeItem, setItem } from "../storage/storage";
+import { useLogin } from "./LoginContext";
 
 interface WalletContextProps {
   account: string | null;
@@ -17,6 +18,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [account, setAccount] = useState<string | null>(getItem("local", "account"));
   const [provider, setProvider] = useState<BrowserProvider | null>(getItem("local", "provider"));
   const [signer, setSigner] = useState<JsonRpcSigner | null>(getItem("local", "signer"));
+  const { logout } = useLogin();
 
   const connect = async () => {
     const res = await connectWallet();
@@ -39,6 +41,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     removeItem("local", "account");
     removeItem("local", "provider");
     removeItem("local", "signer");
+    logout();
   };
 
   return (
