@@ -77,6 +77,7 @@ export interface RegisterRequest {
 export interface LoginRequest {
   email: string;
   password: string;
+  walletAddress: string;
 }
 
 export interface VerifyKYCRequest {

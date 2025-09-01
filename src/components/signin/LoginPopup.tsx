@@ -14,12 +14,15 @@ const LoginPopup = () => {
 
   const handleLogin = async () => {
     try {
-      console.log("Logging in:", { email, password, account });
-      const res = await loginUser({ email, password });
-      if (res) {
-        setUser(res.user);
-        setToken(res.token);
-        closeLogin();
+      if(account){
+        console.log("Logging in:", { email, password, account });
+        const walletAddress = account;
+        const res = await loginUser({ email, password, walletAddress });
+        if (res) {
+          setUser(res.user);
+          setToken(res.token);
+          closeLogin();
+        }
       }
     } catch (err) {
       console.error("Login failed:", err);
