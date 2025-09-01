@@ -4,17 +4,19 @@ import { about } from "../../constants/const";
 import { HiMenu, HiX } from "react-icons/hi";
 import NavLinks from "./NavLinks";
 import MobileMenu from "./MobileMenu";
+import { useLogin } from "../../contexts/LoginContext";
 
 const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Deeds Registration", href: "/deeds-registration" },
-  { label: "Deeds", href: "/deeds" },
-  { label: "Market", href: "/market" }
+  { label: "Home", href: "/" , protected: false},
+  { label: "About", href: "/about", protected: false },
+  { label: "Deeds Registration", href: "/deeds-registration", protected: true },
+  { label: "Deeds", href: "/deeds", protected: true },
+  { label: "Market", href: "/market", protected: true }
 ];
 
 const NavBar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user } = useLogin();
 
   return (
     <nav className="bg-[#00420A]/40 backdrop-blur-xl w-full fixed top-0 left-0 z-50 shadow-md">
@@ -29,7 +31,7 @@ const NavBar = () => {
         </div>
 
       <div className="cursor-pointer flex gap-8 items-center justify-center">
-          <NavLinks links={navLinks} />
+          <NavLinks links={user?.kycStatus==="verified"? navLinks :navLinks.filter((link)=>!link.protected)} />
       </div>
 
         <button
@@ -42,7 +44,7 @@ const NavBar = () => {
 
       <MobileMenu
         isOpen={menuOpen}
-        links={navLinks}
+        links={user?.kycStatus==="verified"? navLinks :navLinks.filter((link)=>!link.protected)}
         onClose={() => setMenuOpen(false)}
       />
     </nav>
