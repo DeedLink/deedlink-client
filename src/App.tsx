@@ -11,6 +11,7 @@ import MarketPage from './pages/MarketPage';
 import { LoaderProvider } from './contexts/LoaderContext';
 import { WalletProvider } from './contexts/WalletContext';
 import LoginPopup from './components/signin/LoginPopup';
+import DeedRegistrationPage from './pages/DeedRegistrationPage';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
                     <Route path="/deeds" element={<DeedsPage />} />
                     <Route path="/about" element={<AboutPage/>} />
                     <Route path="/market" element={<MarketPage />} />
+                    <Route path="/deeds-registration" element={<DeedRegistrationPage/>} />
                   </Routes>
                 </div>
               </LoaderProvider>

@@ -108,6 +108,15 @@ export interface userStatusNotRegisteredResponse {
     status: UserNotRegistered
 }
 
+export interface RequestRegisteringDeed {
+  id: string;
+  owner: string;
+  address: string;
+  status: DeedRegisterStatus;
+}
+
+export type DeedRegisterStatus = "Pending" | "Approved" | "Minted" | "Rejected";
+
 export type UserStatus = "pending" | "verified" | "rejected";
 
 export type UserNotRegistered = "not_registered";

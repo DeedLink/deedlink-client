@@ -8,6 +8,7 @@ import MobileMenu from "./MobileMenu";
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
+  { label: "Deeds Registration", href: "/deeds-registration" },
   { label: "Deeds", href: "/deeds" },
   { label: "Market", href: "/market" }
 ];
