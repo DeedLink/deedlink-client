@@ -12,6 +12,7 @@ import { LoaderProvider } from './contexts/LoaderContext';
 import { WalletProvider } from './contexts/WalletContext';
 import LoginPopup from './components/signin/LoginPopup';
 import DeedRegistrationPage from './pages/DeedRegistrationPage';
+import ProtectedRoute from './contexts/ProtectedRoute';
 
 function App() {
   return (
@@ -29,10 +30,22 @@ function App() {
                 <div className="flex-grow bg-white">
                   <Routes>
                     <Route path="/" element={<HomePage />} />
-                    <Route path="/deeds" element={<DeedsPage />} />
+                    <Route path="/deeds" element={
+                      <ProtectedRoute>
+                        <DeedsPage />
+                      </ProtectedRoute>
+                      } />
                     <Route path="/about" element={<AboutPage/>} />
-                    <Route path="/market" element={<MarketPage />} />
-                    <Route path="/deeds-registration" element={<DeedRegistrationPage/>} />
+                    <Route path="/market" element={
+                      <ProtectedRoute>
+                        <MarketPage />
+                      </ProtectedRoute>
+                      } />
+                    <Route path="/deeds-registration" element={
+                      <ProtectedRoute>
+                        <DeedRegistrationPage/>
+                      </ProtectedRoute>
+                      } />
                   </Routes>
                 </div>
               </LoaderProvider>
