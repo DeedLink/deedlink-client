@@ -33,7 +33,7 @@ export interface Deed {
   owners: Owner[];
   signedby: Address;
   area: number;
-  value: number; 
+  value: number;
   location: LocationPoint[];
   sides: Side[];
   deedNumber: string;
