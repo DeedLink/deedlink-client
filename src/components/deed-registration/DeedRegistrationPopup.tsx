@@ -28,6 +28,8 @@ const LandRegistrationPopup = ({
     deedNumber: "",
     notaryName: "",
     registrationDate: "",
+    deedDocument: null as File | null,
+    titleDocument: null as File | null,
   });
 
   const [activeSection, setActiveSection] = useState<string | null>("owner");
@@ -209,39 +211,73 @@ const LandRegistrationPopup = ({
 
             {/* Supporting Details */}
             <div>
-              <h3
-                onClick={() => toggleSection("support")}
-                className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center"
-              >
-                Supporting Details
-                <span>{activeSection === "support" ? "−" : "+"}</span>
-              </h3>
-              {activeSection === "support" && (
+                <h3 onClick={() => toggleSection("support")} className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center">
+                    Supporting Details
+                    <span>{activeSection === "support" ? "−" : "+"}</span>
+                </h3>
+                {activeSection === "support" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <input
-                    name="deedNumber"
-                    placeholder="Deed Number"
-                    value={formData.deedNumber}
-                    onChange={handleChange}
-                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
-                  />
-                  <input
-                    name="notaryName"
-                    placeholder="Notary Name"
-                    value={formData.notaryName}
-                    onChange={handleChange}
-                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
-                  />
-                  <input
-                    type="date"
-                    name="registrationDate"
-                    value={formData.registrationDate}
-                    onChange={handleChange}
-                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 sm:col-span-2"
-                  />
+                    <input
+                        name="deedNumber"
+                        placeholder="Deed Number"
+                        value={formData.deedNumber}
+                        onChange={handleChange}
+                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+                    />
+                    <input
+                        name="notaryName"
+                        placeholder="Notary Name"
+                        value={formData.notaryName}
+                        onChange={handleChange}
+                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+                    />
+                    <input
+                        type="date"
+                        name="registrationDate"
+                        value={formData.registrationDate}
+                        onChange={handleChange}
+                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 sm:col-span-2"
+                    />
+
+                    {/* Deed Document Upload */}
+                    <div className="sm:col-span-2">
+                        <label className="block text-sm font-medium mb-1">Upload Deed Document (optional)</label>
+                        <input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) =>
+                            setFormData({ ...formData, deedDocument: e.target.files?.[0] || null })
+                        }
+                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+                        />
+                        {formData.deedDocument && (
+                        <p className="text-xs text-gray-500 mt-1">
+                            Selected: {formData.deedDocument.name}
+                        </p>
+                        )}
                 </div>
-              )}
+
+                {/* Title Document Upload */}
+                <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium mb-1">Upload Title Document (optional)</label>
+                    <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={(e) =>
+                        setFormData({ ...formData, titleDocument: e.target.files?.[0] || null })
+                    }
+                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+                    />
+                    {formData.titleDocument && (
+                    <p className="text-xs text-gray-500 mt-1">
+                        Selected: {formData.titleDocument.name}
+                    </p>
+                    )}
+                </div>
+                </div>
+            )}
             </div>
+
 
             {/* Buttons */}
             <div className="flex flex-col sm:flex-row justify-between mt-6 gap-3">
