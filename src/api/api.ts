@@ -48,6 +48,7 @@ export const getProfile = async (): Promise<User> => {
 
 // Upload KYC documents (protected, multipart/form-data)
 export const uploadKYC = async (
+    id: string,
     nic: string,
     nicFrontSide: File | null,
     nicBackSide: File | null,
@@ -55,6 +56,7 @@ export const uploadKYC = async (
 ): Promise<KYCUploadResponse> => {
     const formData = new FormData();
     formData.append("nic", nic);
+    formData.append("userId", id);
     if (nicFrontSide) formData.append("nicFrontSide", nicFrontSide);
     if (nicBackSide) formData.append("nicBackSide", nicBackSide);
     if (userFrontImage) formData.append("userFrontImage", userFrontImage);

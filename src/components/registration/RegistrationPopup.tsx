@@ -63,7 +63,6 @@ const RegistrationPopup = () => {
     //   "password": password,
     //   "account": account
     // });
-    const res = await uploadKYC(nic, nicFrontSide, nicBackSide, userFrontImage);
     const submissionStatus = await registerUser({
       "name": "Registar Completion",
       "email": email,
@@ -72,6 +71,13 @@ const RegistrationPopup = () => {
       "signature": await getSignature(`Registering wallet: ${account || ""}`),
       "role": "user"
     });
+
+    if(!submissionStatus || !submissionStatus.user){
+      alert("Registration failed. Please try again.");
+      return;
+    }
+
+    const res = await uploadKYC(submissionStatus.user._id, nic, nicFrontSide, nicBackSide, userFrontImage);
     console.log(res, submissionStatus);
   }
 
