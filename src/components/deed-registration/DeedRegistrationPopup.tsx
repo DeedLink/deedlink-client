@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useWallet } from "../../contexts/WalletContext";
 import { getItem } from "../../storage/storage";
 import { type User } from "../../types/types";
+import { LandUnitSelectItems } from "../ui/LandUnitSelectItems";
 
 const LandRegistrationPopup = ({
   isOpen,
@@ -97,18 +98,20 @@ const LandRegistrationPopup = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <input
                     name="ownerFullName"
+                    disabled={true}
                     placeholder="Full Name"
                     value={formData.ownerFullName || user?.name || ""}
                     onChange={handleChange}
-                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 bg-gray-100 text-gray-500"
                     required
                   />
                   <input
                     name="ownerNIC"
+                    disabled={true}
                     placeholder="NIC Number"
                     value={formData.ownerNIC || user?.nic || ""}
                     onChange={handleChange}
-                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 bg-gray-100 text-gray-500"
                     required
                   />
                   <input
@@ -163,16 +166,7 @@ const LandRegistrationPopup = ({
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                   />
-                  <select
-                    name="landSizeUnit"
-                    value={formData.landSizeUnit}
-                    onChange={handleChange}
-                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
-                  >
-                    <option>Perches</option>
-                    <option>Acres</option>
-                    <option>Square Feet</option>
-                  </select>
+                  <LandUnitSelectItems formData={formData} handleChange={handleChange} />
                   <input
                     name="landType"
                     placeholder="Land Type (e.g. Residential)"
