@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useWallet } from "../../contexts/WalletContext";
+import { getItem } from "../../storage/storage";
+import { type User } from "../../types/types";
 
 const LandRegistrationPopup = ({
   isOpen,
@@ -11,6 +13,7 @@ const LandRegistrationPopup = ({
   if (!isOpen) return null;
 
   const { account } = useWallet();
+  const [user, _setUser] = useState<User | null>(getItem("session", "user"));
   const [formData, setFormData] = useState({
     ownerFullName: "",
     ownerNIC: "",
@@ -95,7 +98,7 @@ const LandRegistrationPopup = ({
                   <input
                     name="ownerFullName"
                     placeholder="Full Name"
-                    value={formData.ownerFullName}
+                    value={formData.ownerFullName || user?.name || ""}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                     required
@@ -103,7 +106,7 @@ const LandRegistrationPopup = ({
                   <input
                     name="ownerNIC"
                     placeholder="NIC Number"
-                    value={formData.ownerNIC}
+                    value={formData.ownerNIC || user?.nic || ""}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                     required
