@@ -1,6 +1,6 @@
 import axios, { type AxiosResponse } from "axios";
 import { getItem, setItem } from "../storage/storage";
-import type { AuthResponse, KYCUploadResponse, LoginRequest, RegisterRequest, User, userStatusNotRegisteredResponse, userStatusResponse, VerifyKYCRequest } from "../types/types";
+import type { AuthResponse, KYCUploadResponse, LoginRequest, RegisterRequest, SetPasswordRequest, User, userStatusNotRegisteredResponse, userStatusResponse, VerifyKYCRequest } from "../types/types";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/users";
 
@@ -22,6 +22,13 @@ api.interceptors.request.use((config) => {
 // Register user
 export const registerUser = async (data: RegisterRequest): Promise<AuthResponse> => {
   const res: AxiosResponse<AuthResponse> = await api.post("/register", data);
+  setItem("local", "token", res.data.token);
+  return res.data;
+};
+
+// Set password for user
+export const setPasswordForUser = async (data: SetPasswordRequest): Promise<AuthResponse> => {
+  const res: AxiosResponse<AuthResponse> = await api.post("/set-password", data);
   setItem("local", "token", res.data.token);
   return res.data;
 };
