@@ -7,8 +7,9 @@ import StepVerification from "./StepVerification";
 import StepPassword from "./StepPassword";
 import StepProgressBar from "../step-progress-bar/StepProgressBar";
 import { useWallet } from "../../contexts/WalletContext";
-import { getUserState, uploadKYC } from "../../api/api";
+import { getUserState, registerUser, setPasswordForUser, uploadKYC } from "../../api/api";
 import AleadyHaveAnAccount from "./AlreadyHaveAnAccount";
+import { getSignature } from "../../web3.0/wallet";
 
 const RegistrationPopup = () => {
   const { isOpen, closeSignup } = useSignup();
@@ -22,7 +23,7 @@ const RegistrationPopup = () => {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [done, setDone] = useState(false);
-  const { account , connect } = useWallet();
+  const { account, connect } = useWallet();
   const [userState, setUserState] = useState<string | null>(null);
 
   const getUserStatus = async () => {
@@ -63,7 +64,15 @@ const RegistrationPopup = () => {
     //   "account": account
     // });
     const res = await uploadKYC(nic, nicFrontSide, nicBackSide, userFrontImage);
-    console.log(res);
+    const submissionStatus = await registerUser({
+      "name": "Registar Completion",
+      "email": email,
+      "nic": nic,
+      "walletAddress": account || "",
+      "signature": await getSignature(`Registering wallet: ${account || ""}`),
+      "role": "user"
+    });
+    console.log(res, submissionStatus);
   }
 
   if (!isOpen) return null;
@@ -78,13 +87,28 @@ const RegistrationPopup = () => {
     return false;
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     if (password === confirm && password.length >= 6) {
-      setDone(true);
+      try {
+        const res = await setPasswordForUser({
+          "email": email,
+          "walletAddress": account || "",
+          "signature": await getSignature(`Setting password for wallet: ${account || ""}`),
+          "newPassword": password,
+          "confirmPassword": confirm,
+          "otp": key
+        });
+        console.log(res);
+        setDone(true);
+      } catch (err) {
+        console.error(err);
+        alert("Failed to set password.");
+      }
     } else {
-      alert("Passwords must match and be at least 6 characters.");
+      alert("Passwords must match and be at least 8 characters.");
     }
   };
+
 
   return (
     <div

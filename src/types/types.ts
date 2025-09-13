@@ -74,6 +74,15 @@ export interface RegisterRequest {
   role?: "user" | "registrar" | "admin";
 }
 
+export interface SetPasswordRequest {
+  email: string;
+  walletAddress: string;
+  signature: string;
+  newPassword: string;
+  confirmPassword: string;
+  otp: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;
