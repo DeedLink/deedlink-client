@@ -148,3 +148,7 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.toast {
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
