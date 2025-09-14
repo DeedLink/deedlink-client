@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import type { User } from "../types/types";
 import { getItem, removeItem, setItem } from "../storage/storage";
+import { useToast } from "./ToastContext";
 
 
 type LoginContextType = {
@@ -22,6 +23,7 @@ export const LoginProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [token, _setToken] = useState<string | null>(() => localStorage.getItem("token"));
   const [user, _setUser] = useState<User | null>(getItem("session", "user"));
+  const { showToast } = useToast();
 
   const setToken = (newToken: string | null) => {
     _setToken(newToken);
@@ -48,6 +50,7 @@ export const LoginProvider = ({ children }: { children: ReactNode }) => {
     setToken(null);
     setUser(null);
     closeLogin();
+    showToast("Logged out successfully", "error");
   };
 
   const openLogin = () => {

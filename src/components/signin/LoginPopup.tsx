@@ -17,7 +17,6 @@ const LoginPopup = () => {
   const handleLogin = async () => {
     try {
       if(account){
-        //console.log("Logging in:", { email, password, account });
         const walletAddress = account;
         const res = await loginUser({ email, password, walletAddress });
         if (res) {
@@ -29,7 +28,6 @@ const LoginPopup = () => {
       }
     } catch (err) {
       showToast("Login failed. Check your credentials.", "error");
-      //console.error("Login failed:", err);
     }
   };
 
