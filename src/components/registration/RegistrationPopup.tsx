@@ -10,6 +10,7 @@ import { useWallet } from "../../contexts/WalletContext";
 import { getUserState, registerUser, setPasswordForUser, uploadKYC } from "../../api/api";
 import AleadyHaveAnAccount from "./AlreadyHaveAnAccount";
 import { getSignature } from "../../web3.0/wallet";
+import { isValidEmail, isValidNIC } from "../../utils/functions";
 
 const RegistrationPopup = () => {
   const { isOpen, closeSignup } = useSignup();
@@ -87,8 +88,8 @@ const RegistrationPopup = () => {
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   const canGoNext = () => {
-    if (step === 1) return email.includes("@") && account != null;
-    if (step === 2) return nic.trim().length >= 6 && nicFrontSide != null && nicBackSide!=null && userFrontImage!=null;
+    if (step === 1) return isValidEmail(email) && account != null;
+    if (step === 2) return isValidNIC(nic) && nicFrontSide != null && nicBackSide!=null && userFrontImage!=null;
     if (step === 3) return key.trim().length > 0;
     return false;
   };
