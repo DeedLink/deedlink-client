@@ -6,6 +6,7 @@ import { useWallet } from "../../contexts/WalletContext";
 import { compressAddress } from "../../utils/format";
 import { loginUser } from "../../api/api";
 import { useToast } from "../../contexts/ToastContext";
+import { roleBarier } from "../../utils/functions";
 
 const LoginPopup = () => {
   const { isOpen, closeLogin, setToken, setUser } = useLogin();
@@ -20,6 +21,10 @@ const LoginPopup = () => {
         const walletAddress = account;
         const res = await loginUser({ email, password, walletAddress });
         if (res) {
+          if(roleBarier(res.user.role, ["user"])===false) {
+            showToast("Access denied: Unauthorized role", "error");
+            return;
+          }
           setUser(res.user);
           setToken(res.token);
           closeLogin();
