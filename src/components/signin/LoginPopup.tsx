@@ -6,7 +6,7 @@ import { useWallet } from "../../contexts/WalletContext";
 import { compressAddress } from "../../utils/format";
 import { loginUser } from "../../api/api";
 import { useToast } from "../../contexts/ToastContext";
-import { roleBarier } from "../../utils/functions";
+import { isValidEmail, isValidPassword, roleBarier } from "../../utils/functions";
 
 const LoginPopup = () => {
   const { isOpen, closeLogin, setToken, setUser } = useLogin();
@@ -99,9 +99,9 @@ const LoginPopup = () => {
 
         <button
           onClick={handleLogin}
-          disabled={!account || !email || !password}
+          disabled={!account || !isValidEmail(email) || !isValidPassword(password)}
           className={`w-full py-2 rounded-lg mt-4 transition ${
-            (account && email && password)
+            (account && isValidEmail(email) && isValidPassword(password))
               ? "bg-green-600 text-white hover:bg-green-700"
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
           }`}
