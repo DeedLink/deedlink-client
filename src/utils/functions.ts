@@ -16,3 +16,7 @@ export function getCenterOfLocations(locations: LocationPoint[]): LocationPoint 
     longitude: totalLng / locations.length,
   };
 }
+
+export function roleBarier(role: string, allowedRoles: string[]): boolean {
+  return allowedRoles.includes(role);
+};
