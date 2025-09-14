@@ -10,7 +10,8 @@ import { useWallet } from "../../contexts/WalletContext";
 import { getUserState, registerUser, setPasswordForUser, uploadKYC } from "../../api/api";
 import AleadyHaveAnAccount from "./AlreadyHaveAnAccount";
 import { getSignature } from "../../web3.0/wallet";
-import { isValidEmail, isValidNIC } from "../../utils/functions";
+import { isValidEmail, isValidNIC, isValidPassword } from "../../utils/functions";
+import { useToast } from "../../contexts/ToastContext";
 
 const RegistrationPopup = () => {
   const { isOpen, closeSignup } = useSignup();
@@ -26,6 +27,7 @@ const RegistrationPopup = () => {
   const [done, setDone] = useState(false);
   const { account, connect } = useWallet();
   const [userState, setUserState] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   const getUserStatus = async () => {
     if (account) {
@@ -51,7 +53,7 @@ const RegistrationPopup = () => {
     if(userState==="pending"){
       setStep(3);
     }
-  }, [userState, isOpen]);
+  }, [userState, isOpen]);showToast
 
   const submitForKYC=async()=>{
     // console.log({
@@ -74,7 +76,7 @@ const RegistrationPopup = () => {
     });
 
     if(!submissionStatus || !submissionStatus.user){
-      alert("Registration failed. Please try again.");
+      showToast("KYC submission failed. Please try again.", "error");
       return;
     }
 
@@ -95,9 +97,9 @@ const RegistrationPopup = () => {
   };
 
   const handleFinish = async () => {
-    if (password === confirm && password.length >= 6) {
+    if (password === confirm && isValidPassword(password)) {
       try {
-        const res = await setPasswordForUser({
+        await setPasswordForUser({
           "email": email,
           "walletAddress": account || "",
           "signature": await getSignature(`Setting password for wallet: ${account || ""}`),
@@ -105,14 +107,14 @@ const RegistrationPopup = () => {
           "confirmPassword": confirm,
           "otp": key
         });
-        console.log(res);
+        showToast("Password set successfully!", "success");
         setDone(true);
       } catch (err) {
         console.error(err);
-        alert("Failed to set password.");
+        showToast("Failed to set password. Please try again.", "error");
       }
     } else {
-      alert("Passwords must match and be at least 8 characters.");
+      showToast("Passwords do not match or are invalid.", "error");
     }
   };
 
