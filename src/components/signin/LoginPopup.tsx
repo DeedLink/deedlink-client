@@ -5,27 +5,31 @@ import { useLogin } from "../../contexts/LoginContext";
 import { useWallet } from "../../contexts/WalletContext";
 import { compressAddress } from "../../utils/format";
 import { loginUser } from "../../api/api";
+import { useToast } from "../../contexts/ToastContext";
 
 const LoginPopup = () => {
   const { isOpen, closeLogin, setToken, setUser } = useLogin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { account, connect } = useWallet();
+  const { showToast } = useToast();
 
   const handleLogin = async () => {
     try {
       if(account){
-        console.log("Logging in:", { email, password, account });
+        //console.log("Logging in:", { email, password, account });
         const walletAddress = account;
         const res = await loginUser({ email, password, walletAddress });
         if (res) {
           setUser(res.user);
           setToken(res.token);
           closeLogin();
+          showToast("Login successful!", "success");
         }
       }
     } catch (err) {
-      console.error("Login failed:", err);
+      showToast("Login failed. Check your credentials.", "error");
+      //console.error("Login failed:", err);
     }
   };
 
