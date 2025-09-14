@@ -45,6 +45,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     removeItem("local", "provider");
     removeItem("local", "signer");
     logout();
+    showToast("Wallet disconnected", "error");
   };
 
   return (
