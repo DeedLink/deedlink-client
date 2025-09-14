@@ -53,7 +53,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed bottom-4 right-4 flex flex-col gap-3 z-50 pointer-events-none">
+      <div className="fixed bottom-4 right-4 flex flex-col gap-3 z-50 pointer-events-none font-spectral">
         {toasts.map((toast, index) => (
           <div
             key={toast.id}
@@ -63,7 +63,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
               transform transition-all duration-500 ease-out
               cursor-pointer pointer-events-auto
               hover:scale-105 hover:shadow-3xl
-              backdrop-blur-sm
+              backdrop-blur-sm relative overflow-hidden
               ${
                 toast.type === "success"
                   ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
@@ -84,7 +84,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
               transformOrigin: "right center"
             }}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 relative z-10">
               <div className="flex-shrink-0">
                 {toast.type === "success" && (
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -102,23 +102,30 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
                   </svg>
                 )}
               </div>
-              <div className="font-medium text-sm leading-relaxed">
+              <div className="font-extrabold text-sm leading-relaxed">
                 {toast.message}
               </div>
             </div>
-
-            <div className="absolute bottom-0 left-0 h-1 bg-white bg-opacity-30 rounded-b-xl overflow-hidden">
+            
+            <div className="absolute top-[0px] left-0 h-full w-full rounded-xl overflow-hidden">
               <div 
-                className="h-full bg-white bg-opacity-60 rounded-b-xl transition-all duration-3500 ease-linear"
+                className="h-full bg-yellow-500 bg-opacity-90 rounded-xl"
                 style={{
-                  width: toast.leaving ? '0%' : '100%',
-                  transitionDelay: toast.entering ? '50ms' : '0ms'
+                  animation: toast.entering ? 'none' : 'toast-progress 3500ms linear forwards'
                 }}
               />
             </div>
           </div>
         ))}
       </div>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes toast-progress {
+            from { width: 100%; }
+            to { width: 0%; }
+          }
+        `
+      }} />
     </ToastContext.Provider>
   );
 };
