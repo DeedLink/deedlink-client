@@ -117,3 +117,31 @@ export const searchUsers = async (query: string): Promise<User[]> => {
   const res: AxiosResponse<User[]> = await api.get(`/search-user?query=${encodeURIComponent(query)}`);
   return res.data;
 };
+
+
+// Pinata api calls
+const PINATA_API_URL = import.meta.env.VITE_PINATA_API_URL || "http://localhost:6000/ipfs";
+
+const pinataApi = axios.create({
+  baseURL: PINATA_API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export const uploadMetadata = async (data: object, type: 'NFT' | 'FT' | 'USER'): Promise<{ uri: string }> => {
+  const res: AxiosResponse<{ uri: string }> = await pinataApi.post(`/upload/metadata?type=${type}`, data);
+  return res.data;
+};
+
+export const uploadFile = async (file: File): Promise<{ uri: string }> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res: AxiosResponse<{ uri: string }> = await pinataApi.post('/upload/file', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return res.data;
+}
