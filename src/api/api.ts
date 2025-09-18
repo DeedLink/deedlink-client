@@ -2,10 +2,11 @@ import axios, { type AxiosResponse } from "axios";
 import { getItem, setItem } from "../storage/storage";
 import type { AuthResponse, KYCUploadResponse, LoginRequest, RegisterRequest, SetPasswordRequest, User, userPasswordStatusResponse, userStatusNotRegisteredResponse, userStatusResponse, VerifyKYCRequest } from "../types/types";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/users";
+const USER_API_URL = import.meta.env.VITE_USER_API_URL || "http://localhost:5000/api/users";
+const DEED_API_URL = import.meta.env.VITE_DEED_API_URL || "http://localhost:5000/api/deeds";
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: USER_API_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -118,8 +119,42 @@ export const searchUsers = async (query: string): Promise<User[]> => {
   return res.data;
 };
 
+// Deed related api calls
+const deedApi = axios.create({
+  baseURL: DEED_API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
-// Pinata api calls
+deedApi.interceptors.request.use((config) => {
+  const token = getItem("local", "token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Register a deed (protected)
+export const registerDeed = async (data: { ownerId: string; address: string; area: number; description: string; documentUri: string; }): Promise<{ message: string; deedId: string }> => {
+  const res: AxiosResponse<{ message: string; deedId: string }> = await deedApi.post("/register", data);
+  return res.data;
+};
+
+// Get deeds by owner ID (protected)
+export const getDeedsByOwner = async (ownerId: string): Promise<any[]> => {
+  const res: AxiosResponse<any[]> = await deedApi.get(`/owner/${ownerId}`);
+  return res.data;
+};
+
+// Get deed by ID (protected)
+export const getDeedById = async (deedId: string): Promise<any> => {
+  const res: AxiosResponse<any> = await deedApi.get(`/${deedId}`);
+  return res.data;
+};
+
+
+// -------------------- Pinata API Calls --------------------
 const PINATA_API_URL = import.meta.env.VITE_PINATA_API_URL || "http://localhost:6000/ipfs";
 
 const pinataApi = axios.create({
