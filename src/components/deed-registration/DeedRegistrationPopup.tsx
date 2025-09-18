@@ -30,9 +30,9 @@ const LandRegistrationPopup = ({
     district: "",
     division: "",
     deedNumber: "",
-    notaryName: "",
+    notary: "",
     IVSL: "",
-    surveyorName: "",
+    surveyor: "",
     registrationDate: "",
     deedDocument: null as File | null,
     titleDocument: null as File | null,
@@ -224,9 +224,9 @@ const LandRegistrationPopup = ({
                         className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                     />
                     <input
-                        name="notaryName"
-                        placeholder="Notary Name"
-                        value={formData.notaryName}
+                        name="notary"
+                        placeholder="Notary"
+                        value={formData.notary}
                         onChange={handleChange}
                         className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                     />
@@ -286,16 +286,16 @@ const LandRegistrationPopup = ({
                 {activeSection === "authorities" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <input
-                        name="surveyorName"
-                        placeholder="Surveyor Name"
-                        value={formData.surveyorName}
+                        name="surveyor"
+                        placeholder="Surveyor"
+                        value={formData.surveyor}
                         onChange={handleChange}
                         className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                     />
                     <input
-                        name="notaryName"
-                        placeholder="Notary Name"
-                        value={formData.notaryName}
+                        name="notary"
+                        placeholder="Notary"
+                        value={formData.notary}
                         onChange={handleChange}
                         className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                     />
@@ -309,7 +309,6 @@ const LandRegistrationPopup = ({
                 </div>
             )}
             </div>
-
 
             {/* Buttons */}
             <div className="flex flex-col sm:flex-row justify-between mt-6 gap-3">
