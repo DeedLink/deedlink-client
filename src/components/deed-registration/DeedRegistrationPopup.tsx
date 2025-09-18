@@ -39,7 +39,11 @@ const LandRegistrationPopup = ({
     titleDocument: null as File | null,
   });
   const [activeSection, setActiveSection] = useState<string | null>("owner");
-  const [suggestions, setSuggestions] = useState<User[]>([]);
+
+  const [surveyorSuggestions, setSurveyorSuggestions] = useState<User[]>([]);
+  const [notarySuggestions, setNotarySuggestions] = useState<User[]>([]);
+  const [ivslSuggestions, setIvslSuggestions] = useState<User[]>([]);
+
   const [activeField, setActiveField] = useState<string | null>(null);
 
   const toggleSection = (section: string) => {
@@ -53,26 +57,37 @@ const LandRegistrationPopup = ({
   ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+
     if (["surveyor", "notary", "IVSL"].includes(name)) {
       if (value.trim().length < 2) {
-        setSuggestions([]);
+        if (name === "surveyor") setSurveyorSuggestions([]);
+        if (name === "notary") setNotarySuggestions([]);
+        if (name === "IVSL") setIvslSuggestions([]);
         return;
       }
+
       setActiveField(name);
+
       try {
         const res = await searchUsers(value);
-        setSuggestions(res || []);
+        const data: User[] = res;
+
+        if (name === "surveyor") setSurveyorSuggestions(data.filter(u=>u.role==="surveyor"));
+        if (name === "notary") setNotarySuggestions(data.filter(u=>u.role==="notary"));
+        if (name === "IVSL") setIvslSuggestions(data.filter(u=>u.role==="IVSL"));
       } catch {
-        setSuggestions([]);
+        if (name === "surveyor") setSurveyorSuggestions([]);
+        if (name === "notary") setNotarySuggestions([]);
+        if (name === "IVSL") setIvslSuggestions([]);
       }
     }
   };
 
-  const handleSelect = (user: User) => {
-    if (activeField) {
-      setFormData((prev) => ({ ...prev, [activeField]: user.name }));
-    }
-    setSuggestions([]);
+  const handleSelect = (field: string, user: User) => {
+    setFormData((prev) => ({ ...prev, [field]: user.name }));
+    if (field === "surveyor") setSurveyorSuggestions([]);
+    if (field === "notary") setNotarySuggestions([]);
+    if (field === "IVSL") setIvslSuggestions([]);
     setActiveField(null);
   };
 
@@ -81,6 +96,35 @@ const LandRegistrationPopup = ({
     console.log("Land Registration Data:", formData);
     onClose();
   };
+
+  const renderAutocompleteInput = (
+    field: "surveyor" | "notary" | "IVSL",
+    placeholder: string,
+    suggestions: User[]
+  ) => (
+    <div className="relative">
+      <input
+        name={field}
+        placeholder={placeholder}
+        value={formData[field]}
+        onChange={handleChange}
+        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+      />
+      {activeField === field && suggestions.length > 0 && (
+        <ul className="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
+          {suggestions.map((s) => (
+            <li
+              key={s._id}
+              onClick={() => handleSelect(field, s)}
+              className="px-4 py-2 hover:bg-green-100 cursor-pointer"
+            >
+              {s.name} {s.email && <span className="text-sm text-gray-500">({s.email})</span>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 
   return (
     <div className="w-full h-full fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md">
@@ -96,8 +140,7 @@ const LandRegistrationPopup = ({
             Register New Land
           </h2>
           <p className="text-gray-700 text-sm mb-6 text-center">
-            Please provide all required details to securely register your
-            property.
+            Please provide all required details to securely register your property.
           </p>
           <form onSubmit={handleSubmit} className="space-y-6 text-gray-700">
             <div>
@@ -111,6 +154,7 @@ const LandRegistrationPopup = ({
                 className="w-full border rounded-lg px-4 py-2 bg-gray-100 text-gray-500"
               />
             </div>
+
             <div>
               <h3
                 onClick={() => toggleSection("owner")}
@@ -156,6 +200,7 @@ const LandRegistrationPopup = ({
                 </div>
               )}
             </div>
+
             <div>
               <h3
                 onClick={() => toggleSection("land")}
@@ -231,6 +276,7 @@ const LandRegistrationPopup = ({
                 </div>
               )}
             </div>
+
             <div>
               <h3
                 onClick={() => toggleSection("support")}
@@ -240,18 +286,11 @@ const LandRegistrationPopup = ({
                 <span>{activeSection === "support" ? "−" : "+"}</span>
               </h3>
               {activeSection === "support" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <input
                     name="deedNumber"
                     placeholder="Deed Number"
                     value={formData.deedNumber}
-                    onChange={handleChange}
-                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
-                  />
-                  <input
-                    name="notary"
-                    placeholder="Notary"
-                    value={formData.notary}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                   />
@@ -262,6 +301,7 @@ const LandRegistrationPopup = ({
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 sm:col-span-2"
                   />
+
                   <div className="sm:col-span-2">
                     <label className="block text-sm font-medium mb-1">
                       Upload Deed Document (optional)
@@ -283,6 +323,7 @@ const LandRegistrationPopup = ({
                       </p>
                     )}
                   </div>
+
                   <div className="sm:col-span-2">
                     <label className="block text-sm font-medium mb-1">
                       Upload Title Document (optional)
@@ -307,50 +348,28 @@ const LandRegistrationPopup = ({
                 </div>
               )}
             </div>
+
             <div>
               <h3
                 onClick={() => toggleSection("authorities")}
                 className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center"
               >
-                Relavent Authorities
+                Relevant Authorities
                 <span>{activeSection === "authorities" ? "−" : "+"}</span>
               </h3>
               {activeSection === "authorities" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
-                  {["surveyor", "notary", "IVSL"].map((field) => (
-                    <div key={field} className="relative">
-                      <input
-                        name={field}
-                        placeholder={
-                          field.charAt(0).toUpperCase() + field.slice(1)
-                        }
-                        value={formData[field as keyof typeof formData] as string}
-                        onChange={handleChange}
-                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
-                      />
-                      {activeField === field && suggestions.length > 0 && (
-                        <ul className="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
-                          {suggestions.map((s) => (
-                            <li
-                              key={s._id}
-                              onClick={() => handleSelect(s)}
-                              className="px-4 py-2 hover:bg-green-100 cursor-pointer"
-                            >
-                              {s.name}{" "}
-                              {s.email && (
-                                <span className="text-sm text-gray-500">
-                                  ({s.email})
-                                </span>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {renderAutocompleteInput(
+                    "surveyor",
+                    "Surveyor",
+                    surveyorSuggestions
+                  )}
+                  {renderAutocompleteInput("notary", "Notary", notarySuggestions)}
+                  {renderAutocompleteInput("IVSL", "IVSL", ivslSuggestions)}
                 </div>
               )}
             </div>
+
             <div className="flex flex-col sm:flex-row justify-between mt-6 gap-3">
               <button
                 type="button"
@@ -374,3 +393,4 @@ const LandRegistrationPopup = ({
 };
 
 export default LandRegistrationPopup;
+
