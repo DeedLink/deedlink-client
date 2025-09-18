@@ -113,6 +113,16 @@ export interface userStatusResponse {
   }
 }
 
+export interface userPasswordStatusResponse {
+    walletAddress: string,
+    passwordStatus: UserPasswordStatus,
+    userData?: {
+        name: string,
+        email: string
+  }
+}
+
+
 export interface userStatusNotRegisteredResponse {
     walletAddress: string,
     status: UserNotRegistered
@@ -128,6 +138,8 @@ export interface RequestRegisteringDeed {
 export type DeedRegisterStatus = "Pending" | "Approved" | "Minted" | "Rejected";
 
 export type UserStatus = "pending" | "verified" | "rejected";
+
+export type UserPasswordStatus = "set" | "unset";
 
 export type UserNotRegistered = "not_registered";
 
