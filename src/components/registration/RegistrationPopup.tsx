@@ -61,7 +61,7 @@ const RegistrationPopup = () => {
       getUserPasswordStatus();
       if(userState==="verified" && userPasswordState==="set"){
         setStep(4);
-      } else if(userState==="verified" && userPasswordState==="unset"){
+      } else if(userState==="verified" && userPasswordState!="set"){
         setStep(3);
       } else if(userState==="pending"){
         setStep(3);
@@ -69,7 +69,21 @@ const RegistrationPopup = () => {
         setStep(1);
       }
     }
-  },[isOpen, account])
+  },[isOpen, account]);
+
+    useEffect(()=>{
+    if(isOpen && account){
+      if(userState==="verified" && userPasswordState==="set"){
+        setStep(4);
+      } else if(userState==="verified" && userPasswordState!="set"){
+        setStep(3);
+      } else if(userState==="pending"){
+        setStep(3);
+      } else {
+        setStep(1);
+      }
+    }
+  },[isOpen, account, userState, userPasswordState]);
 
   useEffect(() => {
     console.log(userState);
