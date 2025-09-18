@@ -7,7 +7,7 @@ import StepVerification from "./StepVerification";
 import StepPassword from "./StepPassword";
 import StepProgressBar from "../step-progress-bar/StepProgressBar";
 import { useWallet } from "../../contexts/WalletContext";
-import { getUserState, registerUser, setPasswordForUser, uploadKYC } from "../../api/api";
+import { getUserPasswordState, getUserState, registerUser, setPasswordForUser, uploadKYC } from "../../api/api";
 import AleadyHaveAnAccount from "./AlreadyHaveAnAccount";
 import { getSignature } from "../../web3.0/wallet";
 import { isValidEmail, isValidNIC, isValidPassword } from "../../utils/functions";
@@ -27,6 +27,7 @@ const RegistrationPopup = () => {
   const [done, setDone] = useState(false);
   const { account, connect } = useWallet();
   const [userState, setUserState] = useState<string | null>(null);
+  const [userPasswordState, setUserPasswordState] = useState<"set" | "unset" | null>(null); 
   const { showToast } = useToast();
 
   const getUserStatus = async () => {
@@ -42,9 +43,31 @@ const RegistrationPopup = () => {
     }
   };
 
+  const getUserPasswordStatus = async () => {
+    if (account) {
+      const userPasswordStatus = await getUserPasswordState(account);
+      console.log("User Password Status: ", userPasswordStatus.passwordStatus);
+      if (!userPasswordStatus) return;
+
+      if ("passwordStatus" in userPasswordStatus) {
+        setUserPasswordState(userPasswordStatus.passwordStatus);
+      }
+    }
+  };
+
   useEffect(()=>{
     if(isOpen && account){
       getUserStatus();
+      getUserPasswordStatus();
+      if(userState==="verified" && userPasswordState==="set"){
+        setStep(4);
+      } else if(userState==="verified" && userPasswordState==="unset"){
+        setStep(3);
+      } else if(userState==="pending"){
+        setStep(3);
+      } else {
+        setStep(1);
+      }
     }
   },[isOpen, account])
 
@@ -137,7 +160,7 @@ const RegistrationPopup = () => {
         </button>
 
         {
-          userState != "verified" &&
+          (userState != "verified" || userPasswordState!="set") &&
             <StepProgressBar currentStep={step} steps={4} />
         }
 
@@ -169,7 +192,7 @@ const RegistrationPopup = () => {
           />
         )}
 
-        {(step === 3 && userState != "verified") && (
+        {(step === 3 && (userState != "verified" || userPasswordState != "set")) && (
           <StepVerification
             keyValue={key}
             setKey={setKey}
@@ -180,7 +203,7 @@ const RegistrationPopup = () => {
           />
         )}
 
-        {(step === 4 && userState != "verified") && (
+        {(step === 4 && (userState != "verified" || userPasswordState != "set")) && (
           <StepPassword
             password={password}
             setPassword={setPassword}
@@ -192,7 +215,7 @@ const RegistrationPopup = () => {
           />
         )}
 
-        {(userState === "verified" &&
+        {((userState === "verified" && userPasswordState === "set") &&
           <AleadyHaveAnAccount/>
         )}
       </div>

@@ -1,6 +1,6 @@
 import axios, { type AxiosResponse } from "axios";
 import { getItem, setItem } from "../storage/storage";
-import type { AuthResponse, KYCUploadResponse, LoginRequest, RegisterRequest, SetPasswordRequest, User, userStatusNotRegisteredResponse, userStatusResponse, VerifyKYCRequest } from "../types/types";
+import type { AuthResponse, KYCUploadResponse, LoginRequest, RegisterRequest, SetPasswordRequest, User, userPasswordStatusResponse, userStatusNotRegisteredResponse, userStatusResponse, VerifyKYCRequest } from "../types/types";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/users";
 
@@ -97,6 +97,12 @@ export const listPendingKYC = async (): Promise<User[]> => {
 // Get user state by wallet address (public)
 export const getUserState = async (walletAddress: string): Promise<userStatusResponse | userStatusNotRegisteredResponse> => {
   const res: AxiosResponse<userStatusResponse | userStatusNotRegisteredResponse> = await api.get(`/status/${walletAddress}`);
+  return res.data;
+};
+
+// Get user password state by wallet address (public)
+export const getUserPasswordState = async (walletAddress: string): Promise<userPasswordStatusResponse> => {
+  const res: AxiosResponse<userPasswordStatusResponse> = await api.get(`/status/password/${walletAddress}`);
   return res.data;
 };
 
