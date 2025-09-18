@@ -31,6 +31,8 @@ const LandRegistrationPopup = ({
     division: "",
     deedNumber: "",
     notaryName: "",
+    IVSL: "",
+    surveyorName: "",
     registrationDate: "",
     deedDocument: null as File | null,
     titleDocument: null as File | null,
@@ -271,6 +273,39 @@ const LandRegistrationPopup = ({
                     </p>
                     )}
                 </div>
+                </div>
+            )}
+            </div>
+
+            {/* Relavent Authorities */}
+            <div>
+                <h3 onClick={() => toggleSection("authorities")} className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center">
+                    Relavent Authorities
+                    <span>{activeSection === "authorities" ? "−" : "+"}</span>
+                </h3>
+                {activeSection === "authorities" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input
+                        name="surveyorName"
+                        placeholder="Surveyor Name"
+                        value={formData.surveyorName}
+                        onChange={handleChange}
+                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+                    />
+                    <input
+                        name="notaryName"
+                        placeholder="Notary Name"
+                        value={formData.notaryName}
+                        onChange={handleChange}
+                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+                    />
+                    <input
+                        name="IVSL"
+                        placeholder="IVSL"
+                        value={formData.IVSL}
+                        onChange={handleChange}
+                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+                    />
                 </div>
             )}
             </div>
