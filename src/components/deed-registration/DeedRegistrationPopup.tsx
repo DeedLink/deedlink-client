@@ -3,6 +3,7 @@ import { useWallet } from "../../contexts/WalletContext";
 import { getItem } from "../../storage/storage";
 import { type User } from "../../types/types";
 import { LandUnitSelectItems } from "../ui/LandUnitSelectItems";
+import { searchUsers } from "../../api/api";
 
 const LandRegistrationPopup = ({
   isOpen,
@@ -14,7 +15,7 @@ const LandRegistrationPopup = ({
   if (!isOpen) return null;
 
   const { account } = useWallet();
-  const [user, _setUser] = useState<User | null>(getItem("session", "user"));
+  const [user] = useState<User | null>(getItem("session", "user"));
   const [formData, setFormData] = useState({
     ownerFullName: "",
     ownerNIC: "",
@@ -37,17 +38,42 @@ const LandRegistrationPopup = ({
     deedDocument: null as File | null,
     titleDocument: null as File | null,
   });
-
   const [activeSection, setActiveSection] = useState<string | null>("owner");
+  const [suggestions, setSuggestions] = useState<User[]>([]);
+  const [activeField, setActiveField] = useState<string | null>(null);
 
   const toggleSection = (section: string) => {
     setActiveSection(activeSection === section ? null : section);
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  const handleChange = async (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (["surveyor", "notary", "IVSL"].includes(name)) {
+      if (value.trim().length < 2) {
+        setSuggestions([]);
+        return;
+      }
+      setActiveField(name);
+      try {
+        const res = await searchUsers(value);
+        setSuggestions(res || []);
+      } catch {
+        setSuggestions([]);
+      }
+    }
+  };
+
+  const handleSelect = (user: User) => {
+    if (activeField) {
+      setFormData((prev) => ({ ...prev, [activeField]: user.name }));
+    }
+    setSuggestions([]);
+    setActiveField(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -66,18 +92,18 @@ const LandRegistrationPopup = ({
           >
             ✕
           </button>
-
           <h2 className="text-2xl font-bold text-green-900 mb-2 text-center">
             Register New Land
           </h2>
           <p className="text-gray-700 text-sm mb-6 text-center">
-            Please provide all required details to securely register your property.
+            Please provide all required details to securely register your
+            property.
           </p>
-
           <form onSubmit={handleSubmit} className="space-y-6 text-gray-700">
-            {/* Wallet Address */}
             <div>
-              <label className="text-lg font-semibold text-green-800 mb-2 flex justify-between items-center">Wallet Address</label>
+              <label className="text-lg font-semibold text-green-800 mb-2 flex justify-between items-center">
+                Wallet Address
+              </label>
               <input
                 type="text"
                 disabled
@@ -85,9 +111,6 @@ const LandRegistrationPopup = ({
                 className="w-full border rounded-lg px-4 py-2 bg-gray-100 text-gray-500"
               />
             </div>
-
-            {/* Sections */}
-            {/* Owner Details */}
             <div>
               <h3
                 onClick={() => toggleSection("owner")}
@@ -133,8 +156,6 @@ const LandRegistrationPopup = ({
                 </div>
               )}
             </div>
-
-            {/* Land Details */}
             <div>
               <h3
                 onClick={() => toggleSection("land")}
@@ -168,7 +189,10 @@ const LandRegistrationPopup = ({
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                   />
-                  <LandUnitSelectItems formData={formData} handleChange={handleChange} />
+                  <LandUnitSelectItems
+                    formData={formData}
+                    handleChange={handleChange}
+                  />
                   <input
                     name="landType"
                     placeholder="Land Type (e.g. Residential)"
@@ -207,110 +231,126 @@ const LandRegistrationPopup = ({
                 </div>
               )}
             </div>
-
-            {/* Supporting Details */}
             <div>
-                <h3 onClick={() => toggleSection("support")} className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center">
-                    Supporting Details
-                    <span>{activeSection === "support" ? "−" : "+"}</span>
-                </h3>
-                {activeSection === "support" && (
+              <h3
+                onClick={() => toggleSection("support")}
+                className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center"
+              >
+                Supporting Details
+                <span>{activeSection === "support" ? "−" : "+"}</span>
+              </h3>
+              {activeSection === "support" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input
-                        name="deedNumber"
-                        placeholder="Deed Number"
-                        value={formData.deedNumber}
-                        onChange={handleChange}
-                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
-                    />
-                    <input
-                        name="notary"
-                        placeholder="Notary"
-                        value={formData.notary}
-                        onChange={handleChange}
-                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
-                    />
-                    <input
-                        type="date"
-                        name="registrationDate"
-                        value={formData.registrationDate}
-                        onChange={handleChange}
-                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 sm:col-span-2"
-                    />
-
-                    {/* Deed Document Upload */}
-                    <div className="sm:col-span-2">
-                        <label className="block text-sm font-medium mb-1">Upload Deed Document (optional)</label>
-                        <input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) =>
-                            setFormData({ ...formData, deedDocument: e.target.files?.[0] || null })
-                        }
-                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
-                        />
-                        {formData.deedDocument && (
-                        <p className="text-xs text-gray-500 mt-1">
-                            Selected: {formData.deedDocument.name}
-                        </p>
-                        )}
-                </div>
-
-                {/* Title Document Upload */}
-                <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium mb-1">Upload Title Document (optional)</label>
-                    <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) =>
-                        setFormData({ ...formData, titleDocument: e.target.files?.[0] || null })
-                    }
+                  <input
+                    name="deedNumber"
+                    placeholder="Deed Number"
+                    value={formData.deedNumber}
+                    onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+                  />
+                  <input
+                    name="notary"
+                    placeholder="Notary"
+                    value={formData.notary}
+                    onChange={handleChange}
+                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+                  />
+                  <input
+                    type="date"
+                    name="registrationDate"
+                    value={formData.registrationDate}
+                    onChange={handleChange}
+                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 sm:col-span-2"
+                  />
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium mb-1">
+                      Upload Deed Document (optional)
+                    </label>
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          deedDocument: e.target.files?.[0] || null,
+                        })
+                      }
+                      className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+                    />
+                    {formData.deedDocument && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Selected: {formData.deedDocument.name}
+                      </p>
+                    )}
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium mb-1">
+                      Upload Title Document (optional)
+                    </label>
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          titleDocument: e.target.files?.[0] || null,
+                        })
+                      }
+                      className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                     />
                     {formData.titleDocument && (
-                    <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 mt-1">
                         Selected: {formData.titleDocument.name}
-                    </p>
+                      </p>
                     )}
+                  </div>
                 </div>
-                </div>
-            )}
+              )}
             </div>
-
-            {/* Relavent Authorities */}
             <div>
-                <h3 onClick={() => toggleSection("authorities")} className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center">
-                    Relavent Authorities
-                    <span>{activeSection === "authorities" ? "−" : "+"}</span>
-                </h3>
-                {activeSection === "authorities" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input
-                        name="surveyor"
-                        placeholder="Surveyor"
-                        value={formData.surveyor}
+              <h3
+                onClick={() => toggleSection("authorities")}
+                className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center"
+              >
+                Relavent Authorities
+                <span>{activeSection === "authorities" ? "−" : "+"}</span>
+              </h3>
+              {activeSection === "authorities" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
+                  {["surveyor", "notary", "IVSL"].map((field) => (
+                    <div key={field} className="relative">
+                      <input
+                        name={field}
+                        placeholder={
+                          field.charAt(0).toUpperCase() + field.slice(1)
+                        }
+                        value={formData[field as keyof typeof formData] as string}
                         onChange={handleChange}
                         className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
-                    />
-                    <input
-                        name="notary"
-                        placeholder="Notary"
-                        value={formData.notary}
-                        onChange={handleChange}
-                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
-                    />
-                    <input
-                        name="IVSL"
-                        placeholder="IVSL"
-                        value={formData.IVSL}
-                        onChange={handleChange}
-                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
-                    />
+                      />
+                      {activeField === field && suggestions.length > 0 && (
+                        <ul className="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
+                          {suggestions.map((s) => (
+                            <li
+                              key={s._id}
+                              onClick={() => handleSelect(s)}
+                              className="px-4 py-2 hover:bg-green-100 cursor-pointer"
+                            >
+                              {s.name}{" "}
+                              {s.email && (
+                                <span className="text-sm text-gray-500">
+                                  ({s.email})
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
                 </div>
-            )}
+              )}
             </div>
-
-            {/* Buttons */}
             <div className="flex flex-col sm:flex-row justify-between mt-6 gap-3">
               <button
                 type="button"

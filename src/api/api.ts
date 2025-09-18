@@ -114,6 +114,6 @@ export const getUsers = async (): Promise<User[]> => {
 
 // Search users by name, email or wallet address (public)
 export const searchUsers = async (query: string): Promise<User[]> => {
-  const res: AxiosResponse<User[]> = await api.get(`/search?query=${encodeURIComponent(query)}`);
+  const res: AxiosResponse<User[]> = await api.get(`/search-user?query=${encodeURIComponent(query)}`);
   return res.data;
 };
