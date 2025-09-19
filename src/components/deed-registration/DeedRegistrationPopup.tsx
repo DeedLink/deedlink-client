@@ -81,7 +81,7 @@ const LandRegistrationPopup = ({
         if (name === "notary") setNotarySuggestions([]);
         if (name === "IVSL") setIvslSuggestions([]);
       }
-    }
+    }																						
   };
 
   const handleSelect = (field: string, user: User) => {
@@ -395,4 +395,3 @@ const LandRegistrationPopup = ({
 };
 
 export default LandRegistrationPopup;
-
