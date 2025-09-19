@@ -4,6 +4,7 @@ import { getItem } from "../../storage/storage";
 import { type User } from "../../types/types";
 import { LandUnitSelectItems } from "../ui/LandUnitSelectItems";
 import { searchUsers } from "../../api/api";
+import { reg_mintNFT } from "../../offonchaincalls/calls";
 
 const LandRegistrationPopup = ({
   isOpen,
@@ -94,6 +95,7 @@ const LandRegistrationPopup = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Land Registration Data:", formData);
+    reg_mintNFT(account || "", formData);
     onClose();
   };
 

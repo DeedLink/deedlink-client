@@ -4,7 +4,11 @@
 import { uploadMetadata } from "../api/api"
 import { mintNFT } from "../web3.0/contractService";
 
-export const reg_mintNFT = async (to: string, data: JSON) => {
+export const reg_mintNFT = async (to: string, data: any) => {
+    console.log({
+        to: to,
+        data: data
+    })
     const pinata_res = await uploadMetadata(data, 'NFT');
     if(pinata_res.uri){
         const nft = await mintNFT(to, pinata_res.uri);
