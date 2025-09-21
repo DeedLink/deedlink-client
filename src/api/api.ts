@@ -1,6 +1,7 @@
 import axios, { type AxiosResponse } from "axios";
 import { getItem, setItem } from "../storage/storage";
 import type { AuthResponse, KYCUploadResponse, LoginRequest, RegisterRequest, SetPasswordRequest, User, userPasswordStatusResponse, userStatusNotRegisteredResponse, userStatusResponse, VerifyKYCRequest } from "../types/types";
+import type { RegisterDeedRequest } from "../types/regitseringdeedtype";
 
 const USER_API_URL = import.meta.env.VITE_USER_API_URL || "http://localhost:5000/api/users";
 const DEED_API_URL = import.meta.env.VITE_DEED_API_URL || "http://localhost:5000/api/deeds";
@@ -136,8 +137,9 @@ deedApi.interceptors.request.use((config) => {
 });
 
 // Register a deed (protected)
-export const registerDeed = async (data: { ownerId: string; address: string; area: number; description: string; documentUri: string; }): Promise<{ message: string; deedId: string }> => {
-  const res: AxiosResponse<{ message: string; deedId: string }> = await deedApi.post("/register", data);
+export const registerDeed = async (data: RegisterDeedRequest) => {
+  console.log("Registering deed with data:", data);
+  const res: AxiosResponse<{ message: string; deedId: string }> = await deedApi.post("/", data);
   return res.data;
 };
 

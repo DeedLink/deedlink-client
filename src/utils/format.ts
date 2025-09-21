@@ -1,3 +1,6 @@
+import type { RegisterDeedFormData } from "../types/registerdeedformdata";
+import type { RegisterDeedRequest } from "../types/regitseringdeedtype";
+
 export const shortAddress = (addr: string, left = 6, right = 4) =>
   addr.length > left + right ? `${addr.slice(0, left)}…${addr.slice(-right)}` : addr;
 
@@ -31,3 +34,33 @@ export const percentBarClass = (pct: number) => {
 export const compressAddress = (address : string) => {
   return `${address.slice(0, 6)}`+'...'+`${address.slice(-4)}`
 }
+
+export const deedRequestDataFormatter = (
+  data: RegisterDeedFormData
+): RegisterDeedRequest => {
+  return {
+    owners: [], 
+    location: [],
+    deedType: {
+      deedType: "Other",
+      deedNumber: data.deedNumber,
+    },
+    value: 0,
+    deedNumber: data.deedNumber,
+    landType: data.landType === "" ? "Paddy land" : data.landType,
+    timestamp: Date.now(),
+    ownerFullName: data.ownerFullName,
+    ownerNIC: data.ownerNIC,
+    ownerAddress: data.ownerAddress,
+    ownerPhone: data.ownerPhone,
+    landTitleNumber: data.landTitleNumber,
+    landAddress: data.landAddress,
+    landArea: parseFloat(data.landArea) || 0,
+    landSizeUnit: data.landSizeUnit,
+    surveyPlanNumber: data.surveyPlanNumber || undefined,
+    boundaries: data.boundaries || undefined,
+    district: data.district,
+    division: data.division,
+    registrationDate: new Date(data.registrationDate).toISOString(),
+  };
+};
