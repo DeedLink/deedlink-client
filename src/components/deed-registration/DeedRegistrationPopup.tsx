@@ -4,6 +4,7 @@ import { getItem } from "../../storage/storage";
 import { type User } from "../../types/types";
 import { LandUnitSelectItems } from "../ui/LandUnitSelectItems";
 import { searchUsers } from "../../api/api";
+import { reg_mintNFT } from "../../offonchaincalls/calls";
 
 const LandRegistrationPopup = ({
   isOpen,
@@ -17,8 +18,8 @@ const LandRegistrationPopup = ({
   const { account } = useWallet();
   const [user] = useState<User | null>(getItem("session", "user"));
   const [formData, setFormData] = useState({
-    ownerFullName: "",
-    ownerNIC: "",
+    ownerFullName: user?.name,
+    ownerNIC: user?.nic,
     ownerAddress: "",
     ownerPhone: "",
     landTitleNumber: "",
@@ -32,8 +33,11 @@ const LandRegistrationPopup = ({
     division: "",
     deedNumber: "",
     notary: "",
+    notaryName: "",
     IVSL: "",
+    IVSLName: "",
     surveyor: "",
+    surveyorName: "",
     registrationDate: "",
     deedDocument: null as File | null,
     titleDocument: null as File | null,
@@ -58,11 +62,11 @@ const LandRegistrationPopup = ({
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    if (["surveyor", "notary", "IVSL"].includes(name)) {
+    if (["surveyorName", "notaryName", "IVSLName"].includes(name)) {
       if (value.trim().length < 2) {
-        if (name === "surveyor") setSurveyorSuggestions([]);
-        if (name === "notary") setNotarySuggestions([]);
-        if (name === "IVSL") setIvslSuggestions([]);
+        if (name === "surveyorName") setSurveyorSuggestions([]);
+        if (name === "notaryName") setNotarySuggestions([]);
+        if (name === "IVSLName") setIvslSuggestions([]);
         return;
       }
 
@@ -72,29 +76,34 @@ const LandRegistrationPopup = ({
         const res = await searchUsers(value);
         const data: User[] = res;
 
-        if (name === "surveyor") setSurveyorSuggestions(data.filter(u=>u.role==="surveyor"));
-        if (name === "notary") setNotarySuggestions(data.filter(u=>u.role==="notary"));
-        if (name === "IVSL") setIvslSuggestions(data.filter(u=>u.role==="IVSL"));
+        if (name === "surveyorName") setSurveyorSuggestions(data.filter(u=>u.role==="surveyor"));
+        if (name === "notaryName") setNotarySuggestions(data.filter(u=>u.role==="notary"));
+        if (name === "IVSLName") setIvslSuggestions(data.filter(u=>u.role==="IVSL"));
       } catch {
-        if (name === "surveyor") setSurveyorSuggestions([]);
-        if (name === "notary") setNotarySuggestions([]);
-        if (name === "IVSL") setIvslSuggestions([]);
+        if (name === "surveyorName") setSurveyorSuggestions([]);
+        if (name === "notaryName") setNotarySuggestions([]);
+        if (name === "IVSLName") setIvslSuggestions([]);
       }
-    }
+    }																						
   };
 
   const handleSelect = (field: string, user: User) => {
-    setFormData((prev) => ({ ...prev, [field]: user.name }));
-    if (field === "surveyor") setSurveyorSuggestions([]);
-    if (field === "notary") setNotarySuggestions([]);
-    if (field === "IVSL") setIvslSuggestions([]);
-    setActiveField(null);
+      setFormData((prev) => ({
+        ...prev,
+        [`${field}`]: user.walletAddress,
+        [`${field}Name`]: user.name
+      }));
+      if (field === "surveyor") setSurveyorSuggestions([]);
+      if (field === "notary") setNotarySuggestions([]);
+      if (field === "IVSL") setIvslSuggestions([]);
+      setActiveField(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Land Registration Data:", formData);
-    onClose();
+    reg_mintNFT(account || "", formData);
+    //onClose();
   };
 
   const renderAutocompleteInput = (
@@ -104,13 +113,13 @@ const LandRegistrationPopup = ({
   ) => (
     <div className="relative">
       <input
-        name={field}
+        name={`${field}Name`}
         placeholder={placeholder}
-        value={formData[field]}
+        value={formData[`${field}Name`]}
         onChange={handleChange}
         className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
       />
-      {activeField === field && suggestions.length > 0 && (
+      {activeField === `${field}Name` && suggestions.length > 0 && (
         <ul className="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
           {suggestions.map((s) => (
             <li
@@ -393,4 +402,3 @@ const LandRegistrationPopup = ({
 };
 
 export default LandRegistrationPopup;
-

@@ -22,11 +22,11 @@ export const LandUnitSelectItems: React.FC<SelectItemsProps> = ({ formData, hand
                     <option key={option} value={option}>{option}</option>
                 )) : (
                     <>
-                        <option value="sqft">Square Feet (sqft)</option>
-                        <option value="sqm">Square Meters (sqm)</option>
-                        <option value="perc">Perches (perc)</option>
-                        <option value="acre">Acres (acre)</option>
-                        <option value="hectare">Hectares (hectare)</option>
+                        <option value="Sqft">Square Feet (sqft)</option>
+                        <option value="Sqm">Square Meters (sqm)</option>
+                        <option value="Perches">Perches (perc)</option>
+                        <option value="Acres">Acres (acre)</option>
+                        <option value="Hectares">Hectares (hectare)</option>
                     </>
                 )}
             </select>
