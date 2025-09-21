@@ -78,5 +78,9 @@ export interface RegisterDeedRequest {
   district: string;
   division: string;
 
+  surveyAssigned: string;
+  notaryAssigned: string;
+  IVSLAssigned: string;
+
   registrationDate: string;
 }

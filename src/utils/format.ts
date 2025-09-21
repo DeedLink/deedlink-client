@@ -61,6 +61,9 @@ export const deedRequestDataFormatter = (
     boundaries: data.boundaries || undefined,
     district: data.district,
     division: data.division,
+    surveyAssigned: data.surveyor,
+    notaryAssigned: data.notary,
+    IVSLAssigned: data.IVSL,
     registrationDate: new Date(data.registrationDate).toISOString(),
   };
 };
