@@ -33,7 +33,7 @@ export const percentBarClass = (pct: number) => {
 
 export const compressAddress = (address : string) => {
   return `${address.slice(0, 6)}`+'...'+`${address.slice(-4)}`
-}
+};
 
 export const deedRequestDataFormatter = (
   data: RegisterDeedFormData

@@ -18,8 +18,8 @@ const LandRegistrationPopup = ({
   const { account } = useWallet();
   const [user] = useState<User | null>(getItem("session", "user"));
   const [formData, setFormData] = useState({
-    ownerFullName: "",
-    ownerNIC: "",
+    ownerFullName: user?.name,
+    ownerNIC: user?.nic,
     ownerAddress: "",
     ownerPhone: "",
     landTitleNumber: "",
