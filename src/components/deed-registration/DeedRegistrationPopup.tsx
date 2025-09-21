@@ -85,11 +85,15 @@ const LandRegistrationPopup = ({
   };
 
   const handleSelect = (field: string, user: User) => {
-    setFormData((prev) => ({ ...prev, [field]: user.name }));
-    if (field === "surveyor") setSurveyorSuggestions([]);
-    if (field === "notary") setNotarySuggestions([]);
-    if (field === "IVSL") setIvslSuggestions([]);
-    setActiveField(null);
+      setFormData((prev) => ({
+        ...prev,
+        [`${field}`]: user.walletAddress,
+        [`${field}Name`]: user.name
+      }));
+      if (field === "surveyor") setSurveyorSuggestions([]);
+      if (field === "notary") setNotarySuggestions([]);
+      if (field === "IVSL") setIvslSuggestions([]);
+      setActiveField(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
