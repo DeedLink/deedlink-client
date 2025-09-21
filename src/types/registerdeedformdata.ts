@@ -6,7 +6,7 @@ export interface RegisterDeedFormData {
   landTitleNumber: string;
   landAddress: string;
   landArea: string;
-  landSizeUnit: "Perches" | "Acres" | "Hectares";
+  landSizeUnit: "Perches"| "Acres"| "Hectares"| "Sqm"| "Sqft";
   landType: "Paddy land" | "Highland" | "";
   surveyPlanNumber: string;
   boundaries: string;

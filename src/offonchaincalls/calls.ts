@@ -11,8 +11,8 @@ export const reg_mintNFT = async (to: string, data: any) => {
         data: data
     });
     const reg = await registerDeed(deedRequestDataFormatter(data));
-    console.log(reg);
-    if(!reg.deedId){
+    console.log("regitered: ",reg);
+    if(!(reg.status==201)){
         throw new Error("Failed to register deed");
     };
     const pinata_res = await uploadMetadata(data, 'NFT');

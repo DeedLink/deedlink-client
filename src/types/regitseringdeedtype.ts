@@ -71,7 +71,7 @@ export interface RegisterDeedRequest {
   landTitleNumber: string;
   landAddress: string;
   landArea: number;
-  landSizeUnit?: "Perches" | "Acres" | "Hectares";
+  landSizeUnit?: "Perches"| "Acres"| "Hectares"| "Sqm"| "Sqft";
   surveyPlanNumber?: string;
   boundaries?: string;
 

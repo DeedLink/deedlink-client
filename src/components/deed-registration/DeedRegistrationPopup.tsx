@@ -96,7 +96,7 @@ const LandRegistrationPopup = ({
     e.preventDefault();
     console.log("Land Registration Data:", formData);
     reg_mintNFT(account || "", formData);
-    onClose();
+    //onClose();
   };
 
   const renderAutocompleteInput = (
