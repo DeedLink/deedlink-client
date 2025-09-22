@@ -17,6 +17,7 @@ const RegistrationPopup = () => {
   const { isOpen, closeSignup } = useSignup();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
+  const [ name, setName ] = useState("");
   const [nic, setNic] = useState("");
   const [nicFrontSide, setNicFrontSide] = useState<File | null>(null);
   const [nicBackSide, setNicBackSide] = useState<File | null>(null);
@@ -104,7 +105,7 @@ const RegistrationPopup = () => {
     //   "account": account
     // });
     const submissionStatus = await registerUser({
-      "name": "Registar Completion",
+      "name": name,
       "email": email,
       "nic": nic,
       "walletAddress": account || "",
@@ -181,6 +182,8 @@ const RegistrationPopup = () => {
         {(step === 1 && userState != "verified") && (
           <StepEmailWallet
             email={email}
+            name={name}
+            setName={setName}
             setEmail={setEmail}
             walletConnected={account!=null}
             setWalletConnected={connect}
