@@ -4,7 +4,9 @@ import { compressAddress } from "../../utils/format";
 
 type Props = {
   email: string;
+  name: string;
   setEmail: (val: string) => void;
+  setName: (val: string) => void;
   walletConnected: boolean;
   setWalletConnected: (val: boolean) => void;
   canGoNext: () => boolean;
@@ -13,6 +15,8 @@ type Props = {
 
 const StepEmailWallet = ({
   email,
+  name,
+  setName,
   setEmail,
   walletConnected,
   setWalletConnected,
@@ -25,7 +29,7 @@ const StepEmailWallet = ({
     <div className="mt-6">
       <div className="flex items-center gap-2 mb-4">
         <FaEnvelope className="text-green-700" />
-        <h2 className="text-lg font-bold text-[#00420A]">Email & Wallet</h2>
+        <h2 className="text-lg font-bold text-[#00420A]">Email, Full Name & Wallet</h2>
       </div>
 
       <input
@@ -35,6 +39,13 @@ const StepEmailWallet = ({
         onChange={(e) => setEmail(e.target.value)}
         className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 focus:ring-2 focus:ring-green-600 outline-none text-[#00420A]"
       />
+      <input
+        type="text"
+        placeholder="Full Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-600 outline-none text-[#00420A]"
+      />'
 
       <button
         onClick={() => setWalletConnected(true)}
