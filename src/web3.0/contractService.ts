@@ -36,9 +36,9 @@ async function getFractionalTokenContract(address: string) {
 }
 
 // -------------------- PropertyNFT Functions --------------------
-export async function mintNFT(to: string, uri: string) {
+export async function mintNFT(to: string, ipfsuri: string, dburi:string) {
   const nft = await getPropertyNFTContract();
-  const tx = await nft.mintProperty(to, uri);
+  const tx = await nft.mintProperty(to, ipfsuri, dburi);
   return await tx.wait();
 }
 

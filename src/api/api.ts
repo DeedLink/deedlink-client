@@ -139,7 +139,7 @@ deedApi.interceptors.request.use((config) => {
 // Register a deed (protected)
 export const registerDeed = async (data: RegisterDeedRequest) => {
   console.log("Registering deed with data:", data);
-  const res: AxiosResponse<{ status: Number; deed: any }> = await deedApi.post("/", data);
+  const res: AxiosResponse = await deedApi.post("/", data);
   return res;
 };
 

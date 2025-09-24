@@ -11,14 +11,17 @@ export const reg_mintNFT = async (to: string, data: any) => {
         data: data
     });
     const reg = await registerDeed(deedRequestDataFormatter(data));
-    console.log("regitered: ",reg);
     if(!(reg.status==201)){
         throw new Error("Failed to register deed");
     };
     const pinata_res = await uploadMetadata(data, 'NFT');
-    console.log(pinata_res);
     if(pinata_res.uri){
-        const nft = await mintNFT(to, pinata_res.uri);
+        const nft = await mintNFT(to, pinata_res.uri, reg.data._id);
+        console.log({
+            to: to,
+            pinata_uri: pinata_res.uri,
+            db_uri: reg.data._id
+        });
         return nft;
     } else {
         throw new Error("Failed to upload metadata");
