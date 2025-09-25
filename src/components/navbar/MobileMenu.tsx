@@ -9,7 +9,7 @@ interface MobileMenuProps {
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, links, onClose }) => {
   return (
     <div
-      className={`md:hidden bg-white/10 backdrop-blur-md text-white overflow-hidden transition-all duration-300 ${
+      className={`lg:hidden bg-white/10 backdrop-blur-md text-white overflow-hidden transition-all duration-300 ${
         isOpen ? "max-h-96" : "max-h-0"
       }`}
     >

@@ -15,7 +15,7 @@ const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
       className={`${
         isMobile
           ? "flex flex-col items-center gap-4 py-4"
-          : "hidden md:flex gap-8 font-medium text-white items-center"
+          : "hidden lg:flex gap-8 font-medium text-white items-center"
       }`}
     >
       {links.map((link) => (

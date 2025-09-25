@@ -35,7 +35,7 @@ const NavBar = () => {
       </div>
 
         <button
-          className="md:hidden text-white text-3xl"
+          className="lg:hidden text-white text-3xl"
           onClick={() => setMenuOpen(!menuOpen)}
         >
           {menuOpen ? <HiX /> : <HiMenu />}
