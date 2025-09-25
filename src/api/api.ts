@@ -155,7 +155,6 @@ export const getDeedById = async (deedId: string): Promise<any> => {
   return res.data;
 };
 
-
 // -------------------- Pinata API Calls --------------------
 const PINATA_API_URL = import.meta.env.VITE_PINATA_API_URL || "http://localhost:6000/ipfs";
 
