@@ -36,10 +36,28 @@ async function getFractionalTokenContract(address: string) {
 }
 
 // -------------------- PropertyNFT Functions --------------------
-export async function mintNFT(to: string, ipfsuri: string, dburi:string) {
+export async function mintNFT(to: string, ipfsuri: string, dburi: string) {
   const nft = await getPropertyNFTContract();
+
   const tx = await nft.mintProperty(to, ipfsuri, dburi);
-  return await tx.wait();
+  const receipt = await tx.wait();
+
+  let tokenId: string | undefined;
+
+  for (const log of receipt.logs) {
+    let parsed: ethers.LogDescription | null = null;
+
+    try {
+      parsed = nft.interface.parseLog(log);
+    } catch {
+    }
+
+    if (parsed && parsed.name === "Transfer") {
+      tokenId = parsed.args.tokenId.toString();
+      break;
+    }
+  }
+  return { tokenId, txHash: (receipt as any).hash ?? (receipt as any).transactionHash };
 }
 
 export async function approveNFT(to: string, tokenId: number) {

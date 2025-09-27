@@ -22,8 +22,9 @@ export const reg_mintNFT = async (to: string, data: any) => {
             pinata_uri: pinata_res.uri,
             db_uri: reg.data._id
         });
+        console.log("NFT: ", nft);
 
-        if(nft){
+        if(nft && nft.tokenId){
             const update_res = await updateTokenId(reg.data.deedNumber, nft.tokenId)
             console.log(update_res);
         }
