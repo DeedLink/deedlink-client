@@ -143,6 +143,13 @@ export const registerDeed = async (data: RegisterDeedRequest) => {
   return res;
 };
 
+// Register a deed (protected)
+export const updateTokenId = async (deedNumber: string, tokenId: string) => {
+  console.log("Registering deed with data:", {deedNumber, tokenId});
+  const res: AxiosResponse = await deedApi.post("/set-token", {deedNumber, tokenId});
+  return res;
+};
+
 // Get deeds by owner ID (protected)
 export const getDeedsByOwner = async (ownerId: string): Promise<any[]> => {
   const res: AxiosResponse<any[]> = await deedApi.get(`/owner/${ownerId}`);
