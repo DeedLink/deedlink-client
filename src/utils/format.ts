@@ -39,7 +39,11 @@ export const deedRequestDataFormatter = (
   data: RegisterDeedFormData
 ): RegisterDeedRequest => {
   return {
-    owners: [], 
+    owners: [
+      {
+        address: data.ownerWalletAddress,
+        share: 100,
+      }], 
     location: [],
     deedType: {
       deedType: "Other",

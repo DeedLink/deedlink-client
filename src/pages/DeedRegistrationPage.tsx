@@ -5,6 +5,8 @@ import DeedTable from "../components/deed-registration/DeedTable";
 import { useLoader } from "../contexts/LoaderContext";
 import type { RequestRegisteringDeed } from "../types/types";
 import { mockDeeds } from "../constants/const";
+import { getDeedsByOwner } from "../api/api";
+import { useLogin } from "../contexts/LoginContext";
 
 const DeedRegistrationPage = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +14,16 @@ const DeedRegistrationPage = () => {
   const [selectedDeed, setSelectedDeed] = useState<RequestRegisteringDeed | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const { showLoader, hideLoader } = useLoader();
+  const { user } = useLogin();
+
+  const getDeeds = async()=>{
+    const res = await getDeedsByOwner(user?._id || "");
+    console.log(res);
+  }
+
+  useEffect(()=>{
+    getDeeds();
+  },[user]);
 
   const handleViewDeed = (deed: RequestRegisteringDeed) => {
     setSelectedDeed(deed);

@@ -1,4 +1,5 @@
 export interface RegisterDeedFormData {
+  ownerWalletAddress: string;
   ownerFullName: string;
   ownerNIC: string;
   ownerAddress: string;
