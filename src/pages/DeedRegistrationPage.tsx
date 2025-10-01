@@ -6,7 +6,7 @@ import { useLoader } from "../contexts/LoaderContext";
 import type { RequestRegisteringDeed } from "../types/types";
 import { mockDeeds } from "../constants/const";
 import { getDeedsByOwner } from "../api/api";
-import { useLogin } from "../contexts/LoginContext";
+import { useWallet } from "../contexts/WalletContext";
 
 const DeedRegistrationPage = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,16 +14,16 @@ const DeedRegistrationPage = () => {
   const [selectedDeed, setSelectedDeed] = useState<RequestRegisteringDeed | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const { showLoader, hideLoader } = useLoader();
-  const { user } = useLogin();
+  const { account } = useWallet();
 
   const getDeeds = async()=>{
-    const res = await getDeedsByOwner(user?._id || "");
+    const res = await getDeedsByOwner(account || "");
     console.log(res);
   }
 
   useEffect(()=>{
     getDeeds();
-  },[user]);
+  },[account]);
 
   const handleViewDeed = (deed: RequestRegisteringDeed) => {
     setSelectedDeed(deed);
