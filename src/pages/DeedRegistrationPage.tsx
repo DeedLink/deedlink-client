@@ -3,8 +3,7 @@ import DeedRegistrationPopup from "../components/deed-registration/DeedRegistrat
 import DeedDetailsPopup from "../components/deed-registration/DeedDetailsPopup";
 import DeedTable from "../components/deed-registration/DeedTable";
 import { useLoader } from "../contexts/LoaderContext";
-import type { RequestRegisteringDeed } from "../types/types";
-import { mockDeeds } from "../constants/const";
+import { type Deed, type RequestRegisteringDeed } from "../types/types";
 import { getDeedsByOwner } from "../api/api";
 import { useWallet } from "../contexts/WalletContext";
 
@@ -15,10 +14,12 @@ const DeedRegistrationPage = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const { showLoader, hideLoader } = useLoader();
   const { account } = useWallet();
+  const [deeds, setDeeds] = useState<Deed[]>();
 
   const getDeeds = async()=>{
     const res = await getDeedsByOwner(account || "");
     console.log(res);
+    setDeeds(res);
   }
 
   useEffect(()=>{
