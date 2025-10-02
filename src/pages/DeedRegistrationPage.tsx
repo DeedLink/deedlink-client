@@ -3,14 +3,14 @@ import DeedRegistrationPopup from "../components/deed-registration/DeedRegistrat
 import DeedDetailsPopup from "../components/deed-registration/DeedDetailsPopup";
 import DeedTable from "../components/deed-registration/DeedTable";
 import { useLoader } from "../contexts/LoaderContext";
-import { type Deed, type RequestRegisteringDeed } from "../types/types";
+import { type Deed } from "../types/types";
 import { getDeedsByOwner } from "../api/api";
 import { useWallet } from "../contexts/WalletContext";
 
 const DeedRegistrationPage = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"Pending" | "Approved" | "Minted" | "Rejected">("Pending");
-  const [selectedDeed, setSelectedDeed] = useState<RequestRegisteringDeed | null>(null);
+  const [activeTab, setActiveTab] = useState<"Pending" | "Approved" | "Rejected">("Pending");
+  const [selectedDeed, setSelectedDeed] = useState<Deed | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const { showLoader, hideLoader } = useLoader();
   const { account } = useWallet();
@@ -26,7 +26,7 @@ const DeedRegistrationPage = () => {
     getDeeds();
   },[account]);
 
-  const handleViewDeed = (deed: RequestRegisteringDeed) => {
+  const handleViewDeed = (deed: Deed) => {
     setSelectedDeed(deed);
     setIsDetailsOpen(true);
   };
@@ -62,7 +62,7 @@ const DeedRegistrationPage = () => {
       </button>
 
       <div className="mt-8 flex flex-wrap gap-3 justify-center">
-        {["Pending", "Approved", "Minted", "Rejected"].map((tab) => (
+        {["Pending", "Approved", "Rejected"].map((tab) => (
           <button
             key={tab}
             className={`px-4 sm:px-6 py-2 rounded-full font-semibold transition ${
@@ -71,7 +71,7 @@ const DeedRegistrationPage = () => {
                 : "bg-green-800 hover:bg-green-600"
             }`}
             onClick={() =>
-              setActiveTab(tab as "Pending" | "Approved" | "Minted" | "Rejected")
+              setActiveTab(tab as "Pending" | "Approved" | "Rejected")
             }
           >
             {tab}
@@ -80,7 +80,7 @@ const DeedRegistrationPage = () => {
       </div>
 
       <div className="mt-6 w-full max-w-5xl overflow-x-auto">
-        <DeedTable deeds={mockDeeds} activeTab={activeTab} onView={handleViewDeed} />
+        <DeedTable deeds={deeds} activeTab={activeTab} onView={handleViewDeed} />
       </div>
 
       <DeedRegistrationPopup isOpen={isOpen} onClose={() => setIsOpen(false)} />

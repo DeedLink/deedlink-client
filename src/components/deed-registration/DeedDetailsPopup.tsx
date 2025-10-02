@@ -1,4 +1,4 @@
-import type { RequestRegisteringDeed } from "../../types/types";
+import type { Deed } from "../../types/types";
 
 const DeedDetailsPopup = ({
   isOpen,
@@ -7,7 +7,7 @@ const DeedDetailsPopup = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  deed: RequestRegisteringDeed | null;
+  deed: Deed | null;
 }) => {
   if (!isOpen || !deed) return null;
 
@@ -21,29 +21,64 @@ const DeedDetailsPopup = ({
           ✕
         </button>
 
-        <h2 className="text-2xl font-bold text-green-900 mb-4">
-          Deed Details
-        </h2>
+        <h2 className="text-2xl font-bold text-green-900 mb-4">Deed Details</h2>
 
         <div className="space-y-3 text-gray-700">
-          <p><span className="font-semibold">Deed ID:</span> {deed.id}</p>
-          <p><span className="font-semibold">Owner:</span> {deed.owner}</p>
-          <p><span className="font-semibold">Address:</span> {deed.address}</p>
           <p>
-            <span className="font-semibold">Status:</span>{" "}
-            <span
-              className={`font-bold ${
-                deed.status === "Pending"
-                  ? "text-yellow-600"
-                  : deed.status === "Approved"
-                  ? "text-blue-600"
-                  : deed.status === "Minted"
-                  ? "text-green-600"
-                  : "text-red-600"
-              }`}
-            >
-              {deed.status}
-            </span>
+            <span className="font-semibold">Deed ID:</span> {deed._id}
+          </p>
+          <p>
+            <span className="font-semibold">Deed Number:</span> {deed.deedNumber}
+          </p>
+          <p>
+            <span className="font-semibold">Land Type:</span> {deed.landType}
+          </p>
+          <p>
+            <span className="font-semibold">Area:</span> {deed.area} m²
+          </p>
+          <p>
+            <span className="font-semibold">Value:</span> ${deed.value}
+          </p>
+
+          <div>
+            <span className="font-semibold">Owners:</span>
+            <ul className="ml-4 list-disc">
+              {(deed.owners || []).map((o, idx) => (
+                <li key={idx}>
+                  {o.address} ({o.share}%)
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <span className="font-semibold">Sides:</span>
+            <ul className="ml-4 list-disc">
+              {(deed.sides || []).map((s, idx) => (
+                <li key={idx}>
+                  {s.direction}: Deed {s.deedNumber}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <span className="font-semibold">Location Points:</span>
+            <ul className="ml-4 list-disc">
+              {(deed.location || []).map((loc, idx) => (
+                <li key={idx}>
+                  ({loc.latitude}, {loc.longitude})
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <p>
+            <span className="font-semibold">Signed By:</span> {deed.signedby}
+          </p>
+          <p>
+            <span className="font-semibold">Created:</span>{" "}
+            {new Date(deed.timestamp).toLocaleString()}
           </p>
         </div>
 

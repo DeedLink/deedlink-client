@@ -135,7 +135,7 @@ export interface RequestRegisteringDeed {
   status: DeedRegisterStatus;
 }
 
-export type DeedRegisterStatus = "Pending" | "Approved" | "Minted" | "Rejected";
+export type DeedRegisterStatus = "Pending" | "Approved" | "Rejected";
 
 export type UserStatus = "pending" | "verified" | "rejected";
 
