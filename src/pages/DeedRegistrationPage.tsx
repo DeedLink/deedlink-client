@@ -18,6 +18,7 @@ const DeedRegistrationPage = () => {
   const { account } = useWallet();
   const [deeds, setDeeds] = useState<IDeed[]>();
   const [statusCounts, setStatusCounts] = useState({ Pending: 0, Approved: 0, Rejected: 0 });
+  const [signatures, setSignatures] = useState<{ surveyor: boolean; ivsl: boolean; notary: boolean }>({ surveyor: false, ivsl: false, notary: false });
 
   const getDeeds = async () => {
     const res = await getDeedsByOwner(account || "");
@@ -59,6 +60,11 @@ const DeedRegistrationPage = () => {
       let approved = 0;
       for (const d of deeds) {
         const sigs = await getSignatures(d.tokenId!);
+        setSignatures({
+          surveyor: sigs.surveyor || false,
+          ivsl: sigs.ivsl || false,
+          notary: sigs.notary || false,
+        });
         if (sigs.fully) {
           approved++;
         } else {
@@ -98,6 +104,11 @@ const DeedRegistrationPage = () => {
                 <div>
                   <p className="text-xs sm:text-sm text-gray-500 font-medium uppercase tracking-wide">Pending</p>
                   <p className="text-2xl sm:text-3xl font-bold text-yellow-600 mt-1">{statusCounts.Pending}</p>
+                  <div className="flex gap-2 mt-3">
+                    <div className={`w-4 h-4 rounded-full ${signatures.surveyor ? "bg-green-500" : "bg-gray-300"}`} />
+                    <div className={`w-4 h-4 rounded-full ${signatures.ivsl ? "bg-green-500" : "bg-gray-300"}`} />
+                    <div className={`w-4 h-4 rounded-full ${signatures.notary ? "bg-green-500" : "bg-gray-300"}`} />
+                  </div>
                 </div>
                 <div className="bg-yellow-100 p-3 rounded-full">
                   <FaFileAlt className="text-yellow-600" size={20} />
