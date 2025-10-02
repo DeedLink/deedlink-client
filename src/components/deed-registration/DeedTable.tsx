@@ -96,8 +96,8 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
       : "bg-red-100 text-red-700";
 
   return (
-    <div className="w-full bg-white rounded-2xl shadow border border-black/5 hover:shadow-xl transition overflow-hidden">
-      <div className="mt-6 w-full max-w-5xl p-6 text-black rounded-2xl">
+    <div className="w-full bg-white rounded-2xl overflow-hidden">
+      <div className="mt-6 w-full max-w-7xl p-6 text-black rounded-2xl">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
           <h2 className="text-xl font-bold text-green-800">{activeTab} Deeds</h2>
           <input
@@ -158,16 +158,16 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
             paginatedDeeds.map((deed) => (
               <div key={deed._id} className="border rounded-xl p-4 shadow-sm bg-gray-50 hover:shadow-md transition">
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-bold text-green-800">{deed.owners.map((o) => o.address).join(", ")}</h3>
+                  <h3 className="font-bold text-green-800">{deed.ownerFullName}</h3>
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadgeClasses(deed.registerStatus)}`}>
                     {deed.registerStatus || "Pending"}
                   </span>
                 </div>
                 <p className="text-sm text-gray-600">
-                  <span className="font-semibold">Deed ID:</span> {deed._id}
+                  <span className="font-semibold">Deed Number:</span> {deed.deedNumber}
                 </p>
                 <p className="text-sm text-gray-600">
-                  <span className="font-semibold">Deed Number:</span> {deed.deedNumber}
+                  <span className="font-semibold">Location:</span> {deed.district}
                 </p>
                 <div className="mt-3">
                   <button onClick={() => onView(deed)} className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg shadow-md transition">
