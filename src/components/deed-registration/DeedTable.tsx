@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { Deed, Owner, DeedRegisterStatus } from "../../types/types";
+import { getSignatures } from "../../web3.0/contractService";
 
 interface DeedTableProps {
   deeds: Deed[] | undefined;
@@ -12,6 +13,15 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [status, setStatus] = useState("Pending");
   const pageSize = 5;
+
+  const deedSignedStatus=async(deed: Deed)=>{
+    const res = await getSignatures(2)
+    console.log(res);
+  };
+
+  useEffect(()=>{
+    deedSignedStatus(deeds[0]);
+  },[]);
 
   const filteredDeeds = useMemo(() => {
     return deeds

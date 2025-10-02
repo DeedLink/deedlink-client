@@ -39,6 +39,7 @@ export interface Deed {
   deedNumber: string;
   landType: LandType;
   timestamp: number;
+  tokenId?: string;
 }
 
 export interface Token {
