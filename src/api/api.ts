@@ -1,7 +1,8 @@
 import axios, { type AxiosResponse } from "axios";
 import { getItem, setItem } from "../storage/storage";
-import type { AuthResponse, Deed, KYCUploadResponse, LoginRequest, RegisterRequest, SetPasswordRequest, User, userPasswordStatusResponse, userStatusNotRegisteredResponse, userStatusResponse, VerifyKYCRequest } from "../types/types";
+import type { AuthResponse, KYCUploadResponse, LoginRequest, RegisterRequest, SetPasswordRequest, User, userPasswordStatusResponse, userStatusNotRegisteredResponse, userStatusResponse, VerifyKYCRequest } from "../types/types";
 import type { RegisterDeedRequest } from "../types/regitseringdeedtype";
+import type { IDeed } from "../types/responseDeed";
 
 const USER_API_URL = import.meta.env.VITE_USER_API_URL || "http://localhost:5000/api/users";
 const DEED_API_URL = import.meta.env.VITE_DEED_API_URL || "http://localhost:5000/api/deeds";
@@ -151,7 +152,7 @@ export const updateTokenId = async (deedNumber: string, tokenId: string) => {
 };
 
 // Get deeds by owner ID (protected)
-export const getDeedsByOwner = async (ownerId: string): Promise<Deed[]> => {
+export const getDeedsByOwner = async (ownerId: string): Promise<IDeed[]> => {
   const res: AxiosResponse<any[]> = await deedApi.get(`/owner/${ownerId}`);
   return res.data;
 };

@@ -3,22 +3,22 @@ import DeedRegistrationPopup from "../components/deed-registration/DeedRegistrat
 import DeedDetailsPopup from "../components/deed-registration/DeedDetailsPopup";
 import DeedTable from "../components/deed-registration/DeedTable";
 import { useLoader } from "../contexts/LoaderContext";
-import { type Deed } from "../types/types";
 import { getDeedsByOwner } from "../api/api";
 import { useWallet } from "../contexts/WalletContext";
+import type { IDeed } from "../types/responseDeed";
 
 const DeedRegistrationPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"Pending" | "Approved" | "Rejected">("Pending");
-  const [selectedDeed, setSelectedDeed] = useState<Deed | null>(null);
+  const [selectedDeed, setSelectedDeed] = useState<IDeed | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const { showLoader, hideLoader } = useLoader();
   const { account } = useWallet();
-  const [deeds, setDeeds] = useState<Deed[]>();
+  const [deeds, setDeeds] = useState<IDeed[]>();
 
   const getDeeds = async()=>{
     const res = await getDeedsByOwner(account || "");
-    console.log(res);
+    console.log("deeds:",res);
     setDeeds(res);
   }
 
@@ -26,7 +26,7 @@ const DeedRegistrationPage = () => {
     getDeeds();
   },[account]);
 
-  const handleViewDeed = (deed: Deed) => {
+  const handleViewDeed = (deed: IDeed) => {
     setSelectedDeed(deed);
     setIsDetailsOpen(true);
   };

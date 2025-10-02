@@ -1,4 +1,11 @@
-import type { Deed } from "../../types/types";
+import type { IDeed } from "../../types/responseDeed";
+
+interface ISignatures {
+  surveyor: boolean;
+  notary: boolean;
+  ivsl: boolean;
+  fully: boolean;
+}
 
 const DeedDetailsPopup = ({
   isOpen,
@@ -7,7 +14,7 @@ const DeedDetailsPopup = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  deed: Deed | null;
+  deed: (IDeed & { signatures?: ISignatures }) | null;
 }) => {
   if (!isOpen || !deed) return null;
 
@@ -34,7 +41,7 @@ const DeedDetailsPopup = ({
             <span className="font-semibold">Land Type:</span> {deed.landType}
           </p>
           <p>
-            <span className="font-semibold">Area:</span> {deed.area} m²
+            <span className="font-semibold">Area:</span> {deed.landArea} m²
           </p>
           <p>
             <span className="font-semibold">Value:</span> ${deed.value}
@@ -54,9 +61,9 @@ const DeedDetailsPopup = ({
           <div>
             <span className="font-semibold">Sides:</span>
             <ul className="ml-4 list-disc">
-              {(deed.sides || []).map((s, idx) => (
+              {Object.entries(deed.sides || {}).map(([direction, value], idx) => (
                 <li key={idx}>
-                  {s.direction}: Deed {s.deedNumber}
+                  {direction}: {value}
                 </li>
               ))}
             </ul>
@@ -73,9 +80,16 @@ const DeedDetailsPopup = ({
             </ul>
           </div>
 
-          <p>
-            <span className="font-semibold">Signed By:</span> {deed.signedby}
-          </p>
+          <div>
+            <span className="font-semibold">Signatures:</span>
+            <ul className="ml-4 list-disc">
+              <li>Surveyor: {deed.signatures?.surveyor ? "✅" : "❌"}</li>
+              <li>Notary: {deed.signatures?.notary ? "✅" : "❌"}</li>
+              <li>IVSL: {deed.signatures?.ivsl ? "✅" : "❌"}</li>
+              <li>Fully Signed: {deed.signatures?.fully ? "✅" : "❌"}</li>
+            </ul>
+          </div>
+
           <p>
             <span className="font-semibold">Created:</span>{" "}
             {new Date(deed.timestamp).toLocaleString()}
