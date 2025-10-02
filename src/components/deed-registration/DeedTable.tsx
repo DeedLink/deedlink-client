@@ -116,9 +116,9 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
           <table className="w-full border-collapse text-sm lg:text-base">
             <thead className="sticky top-0 bg-green-100 text-green-900">
               <tr>
-                <th className="px-4 py-3 text-left">Deed ID</th>
                 <th className="px-4 py-3 text-left">Deed Number</th>
-                <th className="px-4 py-3 text-left">Owners</th>
+                <th className="px-4 py-3 text-left">Location</th>
+                <th className="px-4 py-3 text-left">Owner</th>
                 <th className="px-4 py-3 text-left">Status</th>
                 <th className="px-4 py-3 text-left">Action</th>
               </tr>
@@ -127,9 +127,9 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
               {paginatedDeeds.length > 0 ? (
                 paginatedDeeds.map((deed) => (
                   <tr key={deed._id} className="border-b hover:bg-gray-50 transition">
-                    <td className="px-4 py-3 font-medium">{deed._id}</td>
-                    <td className="px-4 py-3">{deed.deedNumber}</td>
-                    <td className="px-4 py-3">{deed.owners.map((o) => o.address).join(", ")}</td>
+                    <td className="px-4 py-3 font-medium">{deed.deedNumber}</td>
+                    <td className="px-4 py-3">{deed.district}</td>
+                    <td className="px-4 py-3">{deed.ownerFullName}</td>
                     <td className="px-4 py-3">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadgeClasses(deed.registerStatus)}`}>
                         {deed.registerStatus || "Pending"}
