@@ -80,7 +80,7 @@ export interface RegisterDeedRequest {
 
   surveyAssigned: string;
   notaryAssigned: string;
-  IVSLAssigned: string;
+  ivslAssigned: string;
 
   registrationDate: string;
 }
