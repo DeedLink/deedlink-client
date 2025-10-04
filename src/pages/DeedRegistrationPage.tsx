@@ -18,8 +18,6 @@ const DeedRegistrationPage = () => {
   const { account } = useWallet();
   const [deeds, setDeeds] = useState<IDeed[]>();
   const [statusCounts, setStatusCounts] = useState({ Pending: 0, Approved: 0, Rejected: 0 });
-  const [signatures, setSignatures] = useState<{ surveyor: boolean; ivsl: boolean; notary: boolean }>({ surveyor: false, ivsl: false, notary: false });
-
   const getDeeds = async () => {
     const res = await getDeedsByOwner(account || "");
     setDeeds(res);
@@ -60,11 +58,6 @@ const DeedRegistrationPage = () => {
       let approved = 0;
       for (const d of deeds) {
         const sigs = await getSignatures(d.tokenId!);
-        setSignatures({
-          surveyor: sigs.surveyor || false,
-          ivsl: sigs.ivsl || false,
-          notary: sigs.notary || false,
-        });
         if (sigs.fully) {
           approved++;
         } else {

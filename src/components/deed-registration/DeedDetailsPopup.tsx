@@ -246,7 +246,7 @@ const DeedDetailsPopup = ({
                     {[
                       { label: "Surveyor", value: deed.signatures.surveyor, assigned: deed.surveyAssigned },
                       { label: "Notary", value: deed.signatures.notary, assigned: deed.notaryAssigned },
-                      { label: "IVSL", value: deed.signatures.ivsl },
+                      { label: "IVSL", value: deed.signatures.ivsl, assigned: deed.ivslAssigned },
                       { label: "Fully Signed", value: deed.signatures.fully },
                     ].map((sig) => (
                       <div key={sig.label}>

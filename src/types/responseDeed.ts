@@ -98,6 +98,8 @@ export interface IDeed {
   surveyAssigned?: string;
   notarySignature?: string;
   notaryAssigned?: string;
+  ivslAssigned?: string;
+  ivslSignature?: string;
 
   createdAt?: Date;
   updatedAt?: Date;
