@@ -104,11 +104,6 @@ const DeedRegistrationPage = () => {
                 <div>
                   <p className="text-xs sm:text-sm text-gray-500 font-medium uppercase tracking-wide">Pending</p>
                   <p className="text-2xl sm:text-3xl font-bold text-yellow-600 mt-1">{statusCounts.Pending}</p>
-                  <div className="flex gap-2 mt-3">
-                    <div className={`w-14 h-4 rounded-full text-[8px] text-white font-bold flex items-center justify-center ${signatures.surveyor ? "bg-green-500" : "bg-gray-300"}`} >SURVEYOR</div>
-                    <div className={`w-14 h-4 rounded-full text-[8px] text-white font-bold flex items-center justify-center ${signatures.ivsl ? "bg-green-500" : "bg-gray-300"}`} >IVSL</div>
-                    <div className={`w-14 h-4 rounded-full text-[8px] text-white font-bold flex items-center justify-center ${signatures.notary ? "bg-green-500" : "bg-gray-300"}`} >NOTARY</div>
-                  </div>
                 </div>
                 <div className="bg-yellow-100 p-3 rounded-full">
                   <FaFileAlt className="text-yellow-600" size={20} />
