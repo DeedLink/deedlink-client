@@ -49,7 +49,6 @@ export const deedRequestDataFormatter = (
       deedType: "Other",
       deedNumber: data.deedNumber,
     },
-    value: 0,
     deedNumber: data.deedNumber,
     landType: data.landType === "" ? "Paddy land" : data.landType,
     timestamp: Date.now(),

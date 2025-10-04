@@ -199,7 +199,7 @@ export const sampleTokens: Token[] = [
 export const mockDeeds: RequestRegisteringDeed[] = [
   { id: "D001", owner: "Alice Smith", address: "123 Green St", status: "Pending" },
   { id: "D002", owner: "Bob Johnson", address: "45 Maple Ave", status: "Approved" },
-  { id: "D003", owner: "Catherine Lee", address: "78 Pine Rd", status: "Minted" },
+  { id: "D003", owner: "Catherine Lee", address: "78 Pine Rd", status: "Approved" },
   { id: "D004", owner: "David Kim", address: "90 Oak Blvd", status: "Rejected" },
   { id: "D005", owner: "Eve Williams", address: "12 Elm St", status: "Pending" },
   { id: "D006", owner: "Frank Brown", address: "99 Cedar Ln", status: "Pending" },

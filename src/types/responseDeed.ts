@@ -1,3 +1,11 @@
+export interface IValuation {
+  _id?: string;
+  requestedValue?: number;
+  estimatedValue?: number;
+  isAccepted?: boolean;
+  timestamp: number;
+}
+
 export interface ITnx {
   _id?: string;
   from: string;
@@ -70,7 +78,6 @@ export interface IDeed {
   title: ITnx[];
   owners: IOwner[];
   deedType: IDeedType;
-  value: number;
   location: ILocationPoint[];
   sides: ISides;
   deedNumber: string;
@@ -88,6 +95,8 @@ export interface IDeed {
   landSizeUnit?: LandSizeUnitEnum;
   surveyPlanNumber?: string;
   boundaries?: string;
+
+  valuation?: IValuation[];
 
   district: string;
   division: string;

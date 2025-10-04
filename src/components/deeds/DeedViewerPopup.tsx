@@ -94,7 +94,7 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²" }: 
             <aside className="space-y-5">
               <div className="rounded-xl border border-black/5 p-4">
                 <div className="text-xs text-gray-500">Estimated Value</div>
-                <div className="text-lg font-semibold">{formatCurrency(deed.value, currency)}</div>
+                <div className="text-lg font-semibold">{formatCurrency(0, currency)}</div>
                 <div className="mt-4 text-xs text-gray-500">Area</div>
                 <div className="text-lg font-semibold">{formatNumber(deed.area)} {areaUnit}</div>
                 <div className="mt-4 text-xs text-gray-500">Land Type</div>

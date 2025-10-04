@@ -189,3 +189,15 @@ export const uploadFile = async (file: File): Promise<{ uri: string }> => {
   });
   return res.data;
 }
+
+// Request Valuation (Owner)
+export const requestValuation = async (
+  id: string,
+  requestedValue: number
+): Promise<any> => {
+  const res = await deedApi.post(`/ivsl/${id}`, {
+    requestedValue,
+    mode: "request",
+  });
+  return res.data;
+};

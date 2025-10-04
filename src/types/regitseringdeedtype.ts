@@ -56,7 +56,6 @@ export interface RegisterDeedRequest {
   title?: Transaction[];
   owners: Owner[];
   deedType: DeedType;
-  value: number;
   location: LocationPoint[];
   sides?: Sides;
   deedNumber: string;

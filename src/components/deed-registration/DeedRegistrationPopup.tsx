@@ -29,6 +29,7 @@ const LandRegistrationPopup = ({
     landSizeUnit: "Perches",
     landType: "",
     surveyPlanNumber: "",
+    propertyValue: 0,
     boundaries: "",
     district: "",
     division: "",
@@ -259,6 +260,13 @@ const LandRegistrationPopup = ({
                     name="surveyPlanNumber"
                     placeholder="Survey Plan Number"
                     value={formData.surveyPlanNumber}
+                    onChange={handleChange}
+                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+                  />
+                  <input
+                    name="propertyValue"
+                    placeholder="Property Value"
+                    value={formData.propertyValue}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                   />

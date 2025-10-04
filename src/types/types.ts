@@ -32,8 +32,8 @@ export interface Deed {
   title: Tnx[]; 
   owners: Owner[];
   signedby: Address;
-  area: number;
   value: number;
+  area: number;
   location: LocationPoint[];
   sides: Side[];
   deedNumber: string;

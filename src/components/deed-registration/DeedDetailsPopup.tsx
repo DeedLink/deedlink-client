@@ -215,7 +215,15 @@ const DeedDetailsPopup = ({
             <aside className="space-y-4">
               <div className="rounded-lg border border-black/5 p-3 sm:p-4">
                 <div className="text-xs text-gray-500 uppercase tracking-wide">Value</div>
-                <div className="text-xl sm:text-2xl font-bold text-green-900 mt-0.5">{formatCurrency(deed.value)}</div>
+                <div className="text-xl sm:text-2xl font-bold text-green-900 mt-0.5">
+                {deed.valuation && deed.valuation.length > 0
+                  ? formatCurrency(
+                      deed.valuation
+                        .slice()
+                        .sort((a, b) => b.timestamp - a.timestamp)[0]?.estimatedValue || 0
+                    )
+                  : formatCurrency(0)}
+                </div>
                 
                 <div className="mt-4 text-xs text-gray-500 uppercase tracking-wide">Area</div>
                 <div className="text-xl sm:text-2xl font-bold text-green-900 mt-0.5">
@@ -247,7 +255,6 @@ const DeedDetailsPopup = ({
                       { label: "Surveyor", value: deed.signatures.surveyor, assigned: deed.surveyAssigned },
                       { label: "Notary", value: deed.signatures.notary, assigned: deed.notaryAssigned },
                       { label: "IVSL", value: deed.signatures.ivsl, assigned: deed.ivslAssigned },
-                      { label: "Fully Signed", value: deed.signatures.fully },
                     ].map((sig) => (
                       <div key={sig.label}>
                         <div className="flex items-center justify-between">
