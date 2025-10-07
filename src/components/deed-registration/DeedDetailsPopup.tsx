@@ -180,14 +180,14 @@ const DeedDetailsPopup = ({
                 </div>
               </section>
 
-              {deed.sides && Object.keys(deed.sides).length > 0 && (
+              {plan?.sides && Object.keys(plan?.sides).length > 0 && (
                 <section className="rounded-lg border border-black/5 p-3 sm:p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <FaRoute className="text-green-700" size={16} />
                     <h4 className="font-semibold text-sm sm:text-base">Boundary Deeds</h4>
                   </div>
                   <ul className="text-xs sm:text-sm text-gray-700 space-y-1.5">
-                    {Object.entries(deed.sides).map(([direction, deedNum]) => (
+                    {Object.entries(plan?.sides).map(([direction, deedNum]) => (
                       <li key={direction} className="flex items-center justify-between">
                         <span className="font-medium">{direction}</span>
                         <span className="text-gray-500 truncate ml-2">{deedNum || 'N/A'}</span>
