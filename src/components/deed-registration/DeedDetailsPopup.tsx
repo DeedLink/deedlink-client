@@ -59,6 +59,8 @@ const DeedDetailsPopup = ({
     });
   };
 
+  console.log("deed: ", deed);
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-3 sm:p-4 text-black" onClick={onClose}>
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl w-full max-w-4xl max-h-[95vh] sm:max-h-[calc(100%-80px)] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>

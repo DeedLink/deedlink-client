@@ -201,3 +201,38 @@ export const requestValuation = async (
   });
   return res.data;
 };
+
+// Plan related api calls
+
+const SURVEY_PLAN_API_URL = import.meta.env.VITE_SURVEY_PLAN_API_URL || "http://localhost:5003/api/plans";
+
+const planApi = axios.create({
+  baseURL: SURVEY_PLAN_API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+planApi.interceptors.request.use((config) => {
+  const token = getItem("local", "token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Get plan by deed ID (protected)
+export const getPlanByDeedNumber = async (deedNumber: string): Promise<any> => {
+  const res = await planApi.get(`/deed/${deedNumber}`, {
+    validateStatus: () => true,
+  });
+  return res.data;
+};
+
+// Get plan by plan number (protected)
+export const getPlanByPlanNumber = async (planId: string): Promise<any> => {
+  const res = await planApi.get(`/plan/${planId}`, {
+    validateStatus: () => true,
+  });
+  return res.data;
+};
