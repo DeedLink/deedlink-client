@@ -1,6 +1,10 @@
 import { IoClose } from "react-icons/io5";
 import { FaFileSignature, FaUserShield, FaMapMarkedAlt, FaLayerGroup, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaIdCard, FaPhone, FaHome, FaRoute } from "react-icons/fa";
 import type { IDeed } from "../../types/responseDeed";
+import { getPlanByPlanNumber } from "../../api/api";
+import { useToast } from "../../contexts/ToastContext";
+import { useEffect, useState } from "react";
+import { defaultPlan, type Plan } from "../../types/plan";
 
 interface ISignatures {
   surveyor: boolean;
@@ -19,6 +23,8 @@ const DeedDetailsPopup = ({
   deed: (IDeed & { signatures?: ISignatures }) | null;
 }) => {
   if (!isOpen || !deed) return null;
+  const { showToast } = useToast();
+  const [plan, setPlan] = useState<Plan>(defaultPlan);
 
   const shortAddress = (addr: string) => {
     if (!addr || addr.length < 12) return addr;
@@ -59,7 +65,27 @@ const DeedDetailsPopup = ({
     });
   };
 
-  console.log("deed: ", deed);
+  const getSurveyPlan=async()=>{
+    if(deed.surveyPlanNumber){
+      const plan_res = await getPlanByPlanNumber(deed.surveyPlanNumber);
+      if(plan_res.data){
+        setPlan(plan_res.data);
+      }
+    }
+    else{
+      showToast("Plan number not found", "error");
+    }
+  }
+
+  useEffect(()=>{
+    getSurveyPlan();
+  },[deed]);
+
+  useEffect(() => {
+    if (plan) {
+      console.log("plan_res:", plan);
+    }
+  }, [plan]);
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-3 sm:p-4 text-black" onClick={onClose}>
@@ -202,14 +228,19 @@ const DeedDetailsPopup = ({
                   <h4 className="font-semibold text-sm sm:text-base">Coordinates</h4>
                 </div>
                 <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-                  {deed.location.map((loc, idx) => (
-                    <div key={idx} className="bg-gray-50 rounded-lg p-2 text-xs">
-                      <div className="text-gray-500">Point {idx + 1}</div>
-                      <div className="font-mono text-gray-700 mt-0.5 text-xs">
-                        {loc.latitude.toFixed(6)}, {loc.longitude.toFixed(6)}
+                  {plan?.coordinates?.length ? (
+                    plan.coordinates.map((loc, idx) => (
+                      <div key={idx} className="bg-gray-50 rounded-lg p-2 text-xs">
+                        <div className="text-gray-500">Point {idx + 1}</div>
+                        <div className="font-mono text-gray-700 mt-0.5 text-xs">
+                          {loc.latitude.toFixed(6)}, {loc.longitude.toFixed(6)}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <div className="text-gray-400 text-xs italic">No coordinates found</div>
+                  )}
+
                 </div>
               </section>
             </div>
