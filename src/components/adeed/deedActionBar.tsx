@@ -9,6 +9,7 @@ interface DeedActionBarProps {
   onShare?: () => void;
   onViewBlockchain?: () => void;
   onFractioning: () => void;
+  numberOfFT: number;
 }
 
 const DeedActionBar = ({
@@ -20,9 +21,10 @@ const DeedActionBar = ({
   onShare,
   onViewBlockchain,
   onFractioning,
+  numberOfFT,
 }: DeedActionBarProps) => {
   return (
-    <div className="rounded-xl border border-black/5 p-5 bg-white shadow-sm flex flex-col h-full lg:w-fit min-w-[320px]">
+    <div className="rounded-xl border border-black/5 p-5 bg-white shadow-sm flex flex-col h-full lg:w-fit min-w-[320px] xl:min-w-[480px]">
       <h3 className="font-bold text-gray-900 mb-4 text-lg">Quick Actions</h3>
       <div className="space-y-3">
         {onEdit && (
@@ -37,8 +39,9 @@ const DeedActionBar = ({
 
         {onFractioning && (
           <button
+            disabled={numberOfFT != 0}
             onClick={onFractioning}
-            className="w-full flex items-center gap-3 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition shadow-sm hover:shadow-md"
+            className={`w-full flex items-center gap-3 px-4 py-3 text-white rounded-lg font-medium transition shadow-sm hover:shadow-md ${numberOfFT != 0 ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}`}
           >
             <FaEdit size={18} />
             <span>Create Fractions</span>

@@ -14,6 +14,7 @@ import { createFractionalToken, getFractionalTokenAddress, getFTBalance, getSign
 import DeedActionBar from "../components/adeed/deedActionBar";
 import { useWallet } from "../contexts/WalletContext";
 import { ethers } from "ethers";
+import TransactPopup from "../components/adeed/transactPopup";
 
 interface ISignatures {
   surveyor: boolean;
@@ -33,6 +34,7 @@ const ADeedPage = () => {
   const { showLoader, hideLoader } = useLoader();
   const { account } = useWallet();
   const [numberOfFT, setNumberOfFT] = useState(0);
+  const [openTransact, setOpenTransact] = useState(false);
 
   const centerLocation = deed ? getCenterOfLocations(deed.location) : null;
 
@@ -102,7 +104,7 @@ const ADeedPage = () => {
   };
 
   const handleTransfer = () => {
-    showToast("Transfer functionality coming soon", "info");
+    setOpenTransact(true);
   };
 
   const handleDownload = () => {
@@ -209,6 +211,7 @@ const ADeedPage = () => {
               onDownload={handleDownload}
               onShare={handleShare}
               onViewBlockchain={handleViewBlockchain}
+              numberOfFT={numberOfFT}
             />
           </div>
 
@@ -453,6 +456,7 @@ const ADeedPage = () => {
             onDownload={handleDownload}
             onShare={handleShare}
             onViewBlockchain={handleViewBlockchain}
+            numberOfFT={numberOfFT}
           />
         </div>
       </div>
@@ -462,6 +466,14 @@ const ADeedPage = () => {
         isOpen={isMapOpen}
         onClose={() => setIsMapOpen(false)}
       />
+
+      {
+        openTransact && (
+          <TransactPopup isOpen={openTransact} onClose={() => setOpenTransact(false)}>
+            <p>Send tokens to another account</p>
+          </TransactPopup>
+        )
+      }
     </div>
   );
 };
