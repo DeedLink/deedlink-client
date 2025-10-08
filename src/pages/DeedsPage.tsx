@@ -40,21 +40,30 @@ const DeedsPage = () => {
     showLoader();
     try {
       const res = await getDeedsByOwner(account);
-      setDeeds(res || []);
       
       if (res && res.length > 0) {
         const signaturesMap = new Map<string, ISignatures>();
+        const fullySignedDeeds: IDeed[] = [];
+        
         for (const deed of res) {
           if (deed.tokenId !== undefined) {
             try {
               const sigs = await getSignatures(deed.tokenId);
               signaturesMap.set(deed._id, sigs);
+              
+              if (sigs.fully) {
+                fullySignedDeeds.push(deed);
+              }
             } catch (error) {
               console.error(`Failed to fetch signatures for deed ${deed._id}:`, error);
             }
           }
         }
+        
+        setDeeds(fullySignedDeeds);
         setDeedSignatures(signaturesMap);
+      } else {
+        setDeeds([]);
       }
     } catch (error) {
       console.error("Failed to fetch deeds:", error);
