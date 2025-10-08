@@ -208,25 +208,6 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", si
                   ))}
                 </div>
               </section>
-
-              {(deed.location && deed.location.length > 0) || (plan?.coordinates && plan.coordinates.length > 0) && (
-                <section className="rounded-xl border border-black/5 p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <FaMapMarkedAlt className="text-green-700" />
-                    <h4 className="font-semibold">Map View</h4>
-                  </div>
-                  <div className="relative group h-fit w-full rounded-lg border border-black/5 overflow-hidden">
-                    <MapPreview points={plan?.coordinates && plan.coordinates.length > 0 ? plan.coordinates : deed.location} />
-                    <button
-                      onClick={() => setIsMapOpen(true)}
-                      className="absolute top-2 right-2 bg-white px-3 py-2 rounded-lg shadow hover:shadow-lg transition flex items-center gap-2 z-50"
-                    >
-                      <FaExpand size={14} className="text-green-700" />
-                      <span className="text-sm font-medium text-green-700">View Full Map</span>
-                    </button>
-                  </div>
-                </section>
-              )}
             </div>
 
             <aside className="space-y-5">
@@ -292,6 +273,25 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", si
                 </div>
               )}
 
+              {(deed.location && deed.location.length > 0) || (plan?.coordinates && plan.coordinates.length > 0) && (
+                <section className="rounded-xl border border-black/5 p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <FaMapMarkedAlt className="text-green-700" />
+                    <h4 className="font-semibold">Map View</h4>
+                  </div>
+                  <div className="relative group h-fit w-full rounded-lg border border-black/5 overflow-hidden">
+                    <MapPreview points={plan?.coordinates && plan.coordinates.length > 0 ? plan.coordinates : deed.location} />
+                    <button
+                      onClick={() => setIsMapOpen(true)}
+                      className="absolute top-2 right-2 bg-white px-3 py-2 rounded-lg shadow hover:shadow-lg transition flex items-center gap-2 z-50"
+                    >
+                      <FaExpand size={14} className="text-green-700" />
+                      <span className="text-sm font-medium text-green-700">View Full Map</span>
+                    </button>
+                  </div>
+                </section>
+              )}
+              
               {centerLocation && (
                 <div className="rounded-xl border border-black/5 p-4">
                   <div className="flex items-center gap-2 mb-2">
