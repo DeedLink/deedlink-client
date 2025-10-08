@@ -65,6 +65,10 @@ const ADeedPage = () => {
     showToast("Edit functionality coming soon", "info");
   };
 
+  const handleFractioning = () =>{
+    showToast("Fractioning will be available!");
+  }
+
   const handleTransfer = () => {
     showToast("Transfer functionality coming soon", "info");
   };
@@ -147,8 +151,8 @@ const ADeedPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white pt-20">
-      <div className="flex max-w-boundary mx-auto w-fit h-full">
-        <div className="max-w-7xl mx-auto px-4 py-8 h-full">
+      <div className="flex max-w-boundary mx-auto w-full h-full">
+        <div className="max-w-7xl mx-auto px-4 py-8 h-full w-full">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-green-700 hover:text-green-800 font-medium mb-6 transition"
@@ -159,6 +163,7 @@ const ADeedPage = () => {
 
           <div className="lg:hidden mb-6">
             <DeedActionBar
+              onFractioning={handleFractioning}
               deedNumber={deed.deedNumber}
               tokenId={deed.tokenId}
               onEdit={handleEdit}
@@ -397,8 +402,9 @@ const ADeedPage = () => {
             </div>
           </div>
         </div>
-        <div className="hidden lg:block py-14 min-h-full mt-6">
+        <div className="hidden lg:block py-14 min-h-full pt-20 max-w-full mx-auto">
           <DeedActionBar
+            onFractioning={handleFractioning}
             deedNumber={deed.deedNumber}
             tokenId={deed.tokenId}
             onEdit={handleEdit}
