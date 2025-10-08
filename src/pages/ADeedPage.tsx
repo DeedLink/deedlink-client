@@ -10,8 +10,10 @@ import { getPlanByPlanNumber, getDeedByDeedNumber } from "../api/api";
 import { useToast } from "../contexts/ToastContext";
 import { defaultPlan, type Plan } from "../types/plan";
 import { useLoader } from "../contexts/LoaderContext";
-import { getSignatures } from "../web3.0/contractService";
+import { createFractionalToken, getFractionalTokenAddress, getFTBalance, getSignatures } from "../web3.0/contractService";
 import DeedActionBar from "../components/adeed/deedActionBar";
+import { useWallet } from "../contexts/WalletContext";
+import { ethers } from "ethers";
 
 interface ISignatures {
   surveyor: boolean;
@@ -29,6 +31,8 @@ const ADeedPage = () => {
   const [signatures, setSignatures] = useState<ISignatures | null>(null);
   const { showToast } = useToast();
   const { showLoader, hideLoader } = useLoader();
+  const { account } = useWallet();
+  const [numberOfFT, setNumberOfFT] = useState(0);
 
   const centerLocation = deed ? getCenterOfLocations(deed.location) : null;
 
@@ -61,8 +65,40 @@ const ADeedPage = () => {
     });
   };
 
-  const handleEdit = () => {
+  const getNumberOfFT = async () => {
+    try {
+      if (!deed?.tokenId || !account) return;
+
+      const tokenAddress = await getFractionalTokenAddress(deed.tokenId);
+      if (!ethers.isAddress(tokenAddress)) {
+        console.error("Invalid token address:", tokenAddress);
+        return;
+      }
+
+      const balance = await getFTBalance(tokenAddress, account);
+
+      const formattedBalance = ethers.formatUnits(balance, 0);
+
+      console.log("Fractional Tokens:", formattedBalance);
+      setNumberOfFT(parseInt(formattedBalance));
+    } catch (err) {
+      console.error("Failed to get fractional token balance:", err);
+    }
+  };
+
+  const handleEdit = async() => {
     showToast("Edit functionality coming soon", "info");
+  };
+
+  const handleFractioning = async() =>{
+    if(deed?.tokenId){
+      const res = await createFractionalToken(deed?.tokenId, deed?.deedNumber, deed?.deedNumber, 1000000);
+      console.log(res);
+      showToast("Fractioning success", "success");
+    }
+    else{
+      showToast("Fractioning failed!", "error");
+    }
   };
 
   const handleTransfer = () => {
@@ -135,6 +171,12 @@ const ADeedPage = () => {
     fetchDeed();
   }, [deedNumber]);
 
+  useEffect(()=>{
+    getNumberOfFT();
+  },[deedNumber]);
+
+  getNumberOfFT();
+
   if (!deed) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex items-center justify-center">
@@ -147,8 +189,8 @@ const ADeedPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white pt-20">
-      <div className="flex max-w-boundary mx-auto w-fit h-full">
-        <div className="max-w-7xl mx-auto px-4 py-8 h-full">
+      <div className="flex max-w-boundary mx-auto w-full h-full">
+        <div className="max-w-7xl mx-auto px-4 py-8 h-full w-full">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-green-700 hover:text-green-800 font-medium mb-6 transition"
@@ -159,6 +201,7 @@ const ADeedPage = () => {
 
           <div className="lg:hidden mb-6">
             <DeedActionBar
+              onFractioning={handleFractioning}
               deedNumber={deed.deedNumber}
               tokenId={deed.tokenId}
               onEdit={handleEdit}
@@ -170,7 +213,7 @@ const ADeedPage = () => {
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg border border-black/5 overflow-hidden mb-6">
-            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 flex items-center justify-between">
               <div className="flex items-center gap-3 text-white">
                 <FaFileSignature size={32} />
                 <div>
@@ -179,6 +222,9 @@ const ADeedPage = () => {
                     {deed.deedType.deedType} • {deed.district}, {deed.division}
                   </p>
                 </div>
+              </div>
+              <div className="text-white">
+                Number of fractional tokens: {numberOfFT}
               </div>
             </div>
 
@@ -397,8 +443,9 @@ const ADeedPage = () => {
             </div>
           </div>
         </div>
-        <div className="hidden lg:block py-14 min-h-full mt-6">
+        <div className="hidden lg:block py-14 min-h-full pt-20 max-w-full mx-auto">
           <DeedActionBar
+            onFractioning={handleFractioning}
             deedNumber={deed.deedNumber}
             tokenId={deed.tokenId}
             onEdit={handleEdit}

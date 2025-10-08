@@ -8,6 +8,7 @@ interface DeedActionBarProps {
   onDownload?: () => void;
   onShare?: () => void;
   onViewBlockchain?: () => void;
+  onFractioning: () => void;
 }
 
 const DeedActionBar = ({
@@ -18,9 +19,10 @@ const DeedActionBar = ({
   onDownload,
   onShare,
   onViewBlockchain,
+  onFractioning,
 }: DeedActionBarProps) => {
   return (
-    <div className="rounded-xl border border-black/5 p-5 bg-white shadow-sm flex flex-col h-full">
+    <div className="rounded-xl border border-black/5 p-5 bg-white shadow-sm flex flex-col h-full lg:w-fit min-w-[320px]">
       <h3 className="font-bold text-gray-900 mb-4 text-lg">Quick Actions</h3>
       <div className="space-y-3">
         {onEdit && (
@@ -30,6 +32,16 @@ const DeedActionBar = ({
           >
             <FaEdit size={18} />
             <span>Edit Deed</span>
+          </button>
+        )}
+
+        {onFractioning && (
+          <button
+            onClick={onFractioning}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition shadow-sm hover:shadow-md"
+          >
+            <FaEdit size={18} />
+            <span>Create Fractions</span>
           </button>
         )}
 

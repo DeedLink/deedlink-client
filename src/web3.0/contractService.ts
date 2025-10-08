@@ -79,7 +79,8 @@ export async function getNFTOwner(tokenId: number) {
 // -------------------- FractionalTokenFactory Functions --------------------
 export async function createFractionalToken(nftId: number, name: string, symbol: string, supply: number) {
   const factory = await getFactoryContract();
-  const tx = await factory.createFractionToken(nftId, name, symbol, supply);
+  const propertyNFT = await getPropertyNFTContract();
+  const tx = await factory.createFractionToken(nftId, name, symbol, supply, propertyNFT.getAddress());
   const receipt = await tx.wait();
 
   // get token address from event
