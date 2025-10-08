@@ -22,7 +22,7 @@ const FitBounds: React.FC<{ coords: [number, number][] }> = ({ coords }) => {
   useEffect(() => {
     if (coords.length > 0) {
       const bounds = L.latLngBounds(coords);
-      map.fitBounds(bounds, { padding: [500, 500] });
+      map.fitBounds(bounds, { padding: [50, 50] });
     }
   }, [coords, map]);
   return null;
@@ -32,7 +32,15 @@ const MapPopup: React.FC<MapPopupProps> = ({ points, isOpen, onClose }) => {
   if (!isOpen || !points || points.length === 0) return null;
 
   const coords = points.map(p => [p.latitude, p.longitude] as [number, number]);
-  const center = coords[0];
+  
+  const getCenter = (): [number, number] => {
+    if (coords.length === 1) return coords[0];
+    const latSum = coords.reduce((sum, c) => sum + c[0], 0);
+    const lngSum = coords.reduce((sum, c) => sum + c[1], 0);
+    return [latSum / coords.length, lngSum / coords.length];
+  };
+
+  const center = getCenter();
 
   return (
     <div
@@ -40,18 +48,20 @@ const MapPopup: React.FC<MapPopupProps> = ({ points, isOpen, onClose }) => {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl overflow-hidden w-full max-w-4xl h-96 relative"
+        className="bg-white rounded-2xl overflow-hidden w-full max-w-4xl h-[500px] relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 z-10"
+          className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-lg text-gray-600 hover:text-gray-900 z-[1000] hover:bg-gray-100 transition"
         >
-          ✕
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
         <MapContainer
           center={center}
-          zoom={15}
+          zoom={13}
           scrollWheelZoom={true}
           className="w-full h-full"
         >
@@ -63,12 +73,14 @@ const MapPopup: React.FC<MapPopupProps> = ({ points, isOpen, onClose }) => {
           {coords.map((c, i) => (
             <Marker key={i} position={c}>
               <Popup>
-                Location: {c[0].toFixed(6)}, {c[1].toFixed(6)}
+                Point {i + 1}<br />
+                Lat: {c[0].toFixed(6)}<br />
+                Lng: {c[1].toFixed(6)}
               </Popup>
             </Marker>
           ))}
           {coords.length > 1 && (
-            <Polygon positions={coords} pathOptions={{ color: "green", fillOpacity: 0.3 }} />
+            <Polygon positions={coords} pathOptions={{ color: "green", fillColor: "green", fillOpacity: 0.3, weight: 3 }} />
           )}
         </MapContainer>
       </div>
