@@ -1,5 +1,5 @@
 import { IoClose } from "react-icons/io5";
-import { FaFileSignature, FaUserShield, FaMapMarkedAlt, FaRoute, FaLayerGroup, FaExpand, FaCheckCircle, FaTimesCircle, FaCalendarAlt } from "react-icons/fa";
+import { FaFileSignature, FaUserShield, FaMapMarkedAlt, FaRoute, FaLayerGroup, FaExpand, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaExternalLinkAlt } from "react-icons/fa";
 import { formatCurrency, formatNumber, shortAddress, timeAgo } from "../../utils/format";
 import type { IDeed } from "../../types/responseDeed";
 import MapPreview from "./MapPreview";
@@ -9,6 +9,7 @@ import { getCenterOfLocations } from "../../utils/functions";
 import { getPlanByPlanNumber } from "../../api/api";
 import { useToast } from "../../contexts/ToastContext";
 import { defaultPlan, type Plan } from "../../types/plan";
+import { useNavigate } from "react-router-dom";
 
 interface ISignatures {
   surveyor: boolean;
@@ -31,6 +32,7 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", si
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [plan, setPlan] = useState<Plan>(defaultPlan);
   const { showToast } = useToast();
+  const navigate = useNavigate();
   
   const centerLocation = getCenterOfLocations(deed.location);
 
@@ -77,6 +79,11 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", si
     }
   };
 
+  const handleOpenPage = () => {
+    navigate(`/deed/${deed.deedNumber}`);
+    onClose();
+  };
+
   useEffect(() => {
     getSurveyPlan();
   }, [deed]);
@@ -95,9 +102,18 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", si
                 {deed.deedType.deedType} • {deed.district}, {deed.division} • {timeAgo(deed.timestamp)}
               </p>
             </div>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-800 p-2 cursor-pointer flex-shrink-0">
-              <IoClose size={20} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={handleOpenPage}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition text-sm font-medium cursor-pointer"
+              >
+                <FaExternalLinkAlt size={14} />
+                <span>Open Page</span>
+              </button>
+              <button onClick={onClose} className="text-gray-500 hover:text-gray-800 p-2 cursor-pointer flex-shrink-0">
+                <IoClose size={20} />
+              </button>
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
@@ -273,7 +289,7 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", si
                 </div>
               )}
 
-              {(deed.location && deed.location.length > 0) || (plan?.coordinates && plan.coordinates.length > 0) && (
+              {((deed.location && deed.location.length > 0) || (plan?.coordinates && plan.coordinates.length > 0)) && (
                 <section className="rounded-xl border border-black/5 p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <FaMapMarkedAlt className="text-green-700" />
@@ -291,7 +307,7 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", si
                   </div>
                 </section>
               )}
-              
+
               {centerLocation && (
                 <div className="rounded-xl border border-black/5 p-4">
                   <div className="flex items-center gap-2 mb-2">
