@@ -1,13 +1,21 @@
-import type { Deed } from "../../types/types";
+import type { IDeed } from "../../types/responseDeed";
 import DeedCard from "./DeedCard";
 
-interface Props {
-  deeds: Deed[];
-  currentUser: string;
-  onOpen: (d: Deed) => void;
+interface ISignatures {
+  surveyor: boolean;
+  notary: boolean;
+  ivsl: boolean;
+  fully: boolean;
 }
 
-const DeedGrid = ({ deeds, currentUser, onOpen }: Props) => {
+interface Props {
+  deeds: IDeed[];
+  currentUser: string;
+  onOpen: (d: IDeed) => void;
+  deedSignatures: Map<string, ISignatures>;
+}
+
+const DeedGrid = ({ deeds, currentUser, onOpen, deedSignatures }: Props) => {
   if (deeds.length === 0) {
     return (
       <div className="text-center py-20 bg-white rounded-2xl border border-black/5">
@@ -20,7 +28,14 @@ const DeedGrid = ({ deeds, currentUser, onOpen }: Props) => {
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {deeds.map((d) => (
-        <DeedCard key={d._id} deed={d} currentUser={currentUser} currency="LKR" onOpen={onOpen} />
+        <DeedCard 
+          key={d._id} 
+          deed={d} 
+          currentUser={currentUser} 
+          currency="LKR" 
+          onOpen={onOpen}
+          signatures={deedSignatures.get(d._id)}
+        />
       ))}
     </div>
   );

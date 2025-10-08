@@ -2,60 +2,102 @@ import { useEffect, useMemo, useState } from "react";
 import DeedsToolbar from "../components/deeds/DeedsToolbar";
 import DeedGrid from "../components/deeds/DeedGrid";
 import DeedViewerPopup from "../components/deeds/DeedViewerPopup";
-import type { Deed } from "../types/types";
-import { CURRENT_USER, SAMPLE_DEEDS } from "../constants/const";
+import type { IDeed } from "../types/responseDeed";
 import { useLoader } from "../contexts/LoaderContext";
+import { useWallet } from "../contexts/WalletContext";
+import { getDeedsByOwner } from "../api/api";
+import { getSignatures } from "../web3.0/contractService";
 
 type SortKey = "newest" | "value" | "area" | "share";
+
+interface ISignatures {
+  surveyor: boolean;
+  notary: boolean;
+  ivsl: boolean;
+  fully: boolean;
+}
 
 const DeedsPage = () => {
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("newest");
-  const [viewer, setViewer] = useState<Deed | null>(null);
+  const [viewer, setViewer] = useState<IDeed | null>(null);
+  const [deeds, setDeeds] = useState<IDeed[]>([]);
+  const [deedSignatures, setDeedSignatures] = useState<Map<string, ISignatures>>(new Map());
   const { showLoader, hideLoader } = useLoader();
-
-  useEffect(()=>{
-    if(viewer) { 
-      document.body.classList.add('no-scroll');
-    }
-    else { 
-      document.body.classList.remove('no-scroll');
-    }
-  },[viewer])
+  const { account } = useWallet();
 
   useEffect(() => {
-    showLoader();
-    const timer = setTimeout(() => {
-      hideLoader();
-    }, 2000);
+    if (viewer) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+  }, [viewer]);
 
-    return () => clearTimeout(timer);
-  },[]);
+  const fetchDeeds = async () => {
+    if (!account) return;
+    
+    showLoader();
+    try {
+      const res = await getDeedsByOwner(account);
+      setDeeds(res || []);
+      
+      if (res && res.length > 0) {
+        const signaturesMap = new Map<string, ISignatures>();
+        for (const deed of res) {
+          if (deed.tokenId !== undefined) {
+            try {
+              const sigs = await getSignatures(deed.tokenId);
+              signaturesMap.set(deed._id, sigs);
+            } catch (error) {
+              console.error(`Failed to fetch signatures for deed ${deed._id}:`, error);
+            }
+          }
+        }
+        setDeedSignatures(signaturesMap);
+      }
+    } catch (error) {
+      console.error("Failed to fetch deeds:", error);
+      setDeeds([]);
+    } finally {
+      hideLoader();
+    }
+  };
+
+  useEffect(() => {
+    fetchDeeds();
+  }, [account]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = SAMPLE_DEEDS.filter((d) => {
+    const filtered = deeds.filter((d) => {
       const inOwners = d.owners.some((o) => o.address.toLowerCase().includes(q));
       return (
         !q ||
         d.deedNumber.toLowerCase().includes(q) ||
-        d.signedby.toLowerCase().includes(q) ||
+        d.ownerFullName.toLowerCase().includes(q) ||
+        d.landTitleNumber.toLowerCase().includes(q) ||
         inOwners
       );
     });
 
     const withMyShare = filtered.map((d) => ({
       deed: d,
-      myShare:
-        d.owners.find((o) => o.address.toLowerCase() === CURRENT_USER.toLowerCase())?.share ?? 0,
+      myShare: d.owners.find((o) => o.address.toLowerCase() === account?.toLowerCase())?.share ?? 0,
     }));
 
     withMyShare.sort((a, b) => {
       switch (sortBy) {
         case "value":
-          return b.deed.value - a.deed.value;
+          const valueA = a.deed.valuation && a.deed.valuation.length > 0
+            ? a.deed.valuation.slice().sort((x, y) => y.timestamp - x.timestamp)[0]?.estimatedValue || 0
+            : 0;
+          const valueB = b.deed.valuation && b.deed.valuation.length > 0
+            ? b.deed.valuation.slice().sort((x, y) => y.timestamp - x.timestamp)[0]?.estimatedValue || 0
+            : 0;
+          return valueB - valueA;
         case "area":
-          return b.deed.area - a.deed.area;
+          return b.deed.landArea - a.deed.landArea;
         case "share":
           return b.myShare - a.myShare;
         default:
@@ -64,7 +106,7 @@ const DeedsPage = () => {
     });
 
     return withMyShare.map((r) => r.deed);
-  }, [query, sortBy]);
+  }, [query, sortBy, deeds, account]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white">
@@ -88,10 +130,27 @@ const DeedsPage = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
-        <DeedGrid deeds={results} currentUser={CURRENT_USER} onOpen={setViewer} />
+        {!account ? (
+          <div className="text-center py-20 bg-white rounded-2xl border border-black/5">
+            <p className="text-2xl font-semibold text-gray-700">Connect Your Wallet</p>
+            <p className="text-gray-500 mt-2">Please connect your wallet to view your deeds.</p>
+          </div>
+        ) : (
+          <DeedGrid 
+            deeds={results} 
+            currentUser={account} 
+            onOpen={setViewer} 
+            deedSignatures={deedSignatures}
+          />
+        )}
       </main>
 
-      <DeedViewerPopup currency="LKR" deed={viewer} onClose={() => setViewer(null)} />
+      <DeedViewerPopup 
+        currency="LKR" 
+        deed={viewer} 
+        onClose={() => setViewer(null)}
+        signatures={viewer ? deedSignatures.get(viewer._id) : undefined}
+      />
     </div>
   );
 };
