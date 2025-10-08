@@ -11,6 +11,7 @@ import { useToast } from "../contexts/ToastContext";
 import { defaultPlan, type Plan } from "../types/plan";
 import { useLoader } from "../contexts/LoaderContext";
 import { getSignatures } from "../web3.0/contractService";
+import DeedActionBar from "../components/adeed/deedActionBar";
 
 interface ISignatures {
   surveyor: boolean;
@@ -58,6 +59,37 @@ const ADeedPage = () => {
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const handleEdit = () => {
+    showToast("Edit functionality coming soon", "info");
+  };
+
+  const handleTransfer = () => {
+    showToast("Transfer functionality coming soon", "info");
+  };
+
+  const handleDownload = () => {
+    showToast("Download functionality coming soon", "info");
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: `Deed #${deed?.deedNumber}`,
+        text: `Check out this property deed`,
+        url: window.location.href,
+      }).catch(() => {
+        showToast("Sharing cancelled", "info");
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      showToast("Link copied to clipboard", "success");
+    }
+  };
+
+  const handleViewBlockchain = () => {
+    showToast("Blockchain explorer coming soon", "info");
   };
 
   const fetchDeed = async () => {
@@ -115,241 +147,266 @@ const ADeedPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white pt-20">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-green-700 hover:text-green-800 font-medium mb-6 transition"
-        >
-          <FaArrowLeft />
-          <span>Back</span>
-        </button>
+      <div className="flex max-w-boundary mx-auto w-fit h-full">
+        <div className="max-w-7xl mx-auto px-4 py-8 h-full">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-green-700 hover:text-green-800 font-medium mb-6 transition"
+          >
+            <FaArrowLeft />
+            <span>Back</span>
+          </button>
 
-        <div className="bg-white rounded-2xl shadow-lg border border-black/5 overflow-hidden mb-6">
-          <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6">
-            <div className="flex items-center gap-3 text-white">
-              <FaFileSignature size={32} />
-              <div>
-                <h1 className="text-3xl font-bold">Deed #{deed.deedNumber}</h1>
-                <p className="text-green-100 mt-1">
-                  {deed.deedType.deedType} • {deed.district}, {deed.division}
-                </p>
-              </div>
-            </div>
+          <div className="lg:hidden mb-6">
+            <DeedActionBar
+              deedNumber={deed.deedNumber}
+              tokenId={deed.tokenId}
+              onEdit={handleEdit}
+              onTransfer={handleTransfer}
+              onDownload={handleDownload}
+              onShare={handleShare}
+              onViewBlockchain={handleViewBlockchain}
+            />
           </div>
 
-          <div className="p-6">
-            <div className="grid lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
-                  <div className="flex items-center gap-2 mb-4">
-                    <FaUserShield className="text-green-700" size={20} />
-                    <h2 className="text-lg font-bold text-gray-900">Owner Information</h2>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white rounded-lg p-4">
-                    <div>
-                      <div className="text-xs text-gray-500 uppercase font-semibold">Full Name</div>
-                      <div className="font-medium text-gray-800 mt-1">{deed.ownerFullName}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 uppercase font-semibold">NIC</div>
-                      <div className="font-medium text-gray-800 mt-1">{deed.ownerNIC}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 uppercase font-semibold">Phone</div>
-                      <div className="font-medium text-gray-800 mt-1">{deed.ownerPhone}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 uppercase font-semibold">Address</div>
-                      <div className="font-medium text-gray-800 mt-1">{deed.ownerAddress}</div>
-                    </div>
-                  </div>
-                </section>
+          <div className="bg-white rounded-2xl shadow-lg border border-black/5 overflow-hidden mb-6">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6">
+              <div className="flex items-center gap-3 text-white">
+                <FaFileSignature size={32} />
+                <div>
+                  <h1 className="text-3xl font-bold">Deed #{deed.deedNumber}</h1>
+                  <p className="text-green-100 mt-1">
+                    {deed.deedType.deedType} • {deed.district}, {deed.division}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-                <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
-                  <div className="flex items-center gap-2 mb-4">
-                    <FaUserShield className="text-green-700" size={20} />
-                    <h2 className="text-lg font-bold text-gray-900">Blockchain Owners</h2>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {deed.owners.map((o, idx) => (
-                      <div key={idx} className="px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 border-2 border-emerald-200 font-semibold">
-                        {shortAddress(o.address)} • {o.share}%
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
-                  <div className="flex items-center gap-2 mb-4">
-                    <FaMapMarkedAlt className="text-green-700" size={20} />
-                    <h2 className="text-lg font-bold text-gray-900">Land Details</h2>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white rounded-lg p-4">
-                    <div>
-                      <div className="text-xs text-gray-500 uppercase font-semibold">Title Number</div>
-                      <div className="font-medium text-gray-800 mt-1">{deed.landTitleNumber}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 uppercase font-semibold">Land Address</div>
-                      <div className="font-medium text-gray-800 mt-1">{deed.landAddress}</div>
-                    </div>
-                    {deed.surveyPlanNumber && (
-                      <div className="sm:col-span-2">
-                        <div className="text-xs text-gray-500 uppercase font-semibold">Survey Plan Number</div>
-                        <div className="font-medium text-gray-800 mt-1">{deed.surveyPlanNumber}</div>
-                      </div>
-                    )}
-                    {deed.boundaries && (
-                      <div className="sm:col-span-2">
-                        <div className="text-xs text-gray-500 uppercase font-semibold">Boundaries</div>
-                        <div className="font-medium text-gray-800 mt-1">{deed.boundaries}</div>
-                      </div>
-                    )}
-                  </div>
-                </section>
-
-                {plan?.sides && Object.keys(plan.sides).length > 0 && (
+            <div className="p-6">
+              <div className="grid lg:grid-cols-4 gap-6">
+                <div className="lg:col-span-3 space-y-6">
                   <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
                     <div className="flex items-center gap-2 mb-4">
-                      <FaRoute className="text-green-700" size={20} />
-                      <h2 className="text-lg font-bold text-gray-900">Boundary Deeds</h2>
+                      <FaUserShield className="text-green-700" size={20} />
+                      <h2 className="text-lg font-bold text-gray-900">Owner Information</h2>
                     </div>
-                    <div className="bg-white rounded-lg p-4">
-                      <ul className="space-y-3">
-                        {Object.entries(plan.sides).map(([direction, deedNum]) => (
-                          <li key={direction} className="flex items-center justify-between border-b border-gray-100 pb-2 last:border-0">
-                            <span className="font-semibold text-gray-800">{direction}</span>
-                            <span className="text-gray-600">{deedNum || 'N/A'}</span>
-                          </li>
-                        ))}
-                      </ul>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white rounded-lg p-4">
+                      <div>
+                        <div className="text-xs text-gray-500 uppercase font-semibold">Full Name</div>
+                        <div className="font-medium text-gray-800 mt-1">{deed.ownerFullName}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500 uppercase font-semibold">NIC</div>
+                        <div className="font-medium text-gray-800 mt-1">{deed.ownerNIC}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500 uppercase font-semibold">Phone</div>
+                        <div className="font-medium text-gray-800 mt-1">{deed.ownerPhone}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500 uppercase font-semibold">Address</div>
+                        <div className="font-medium text-gray-800 mt-1">{deed.ownerAddress}</div>
+                      </div>
                     </div>
                   </section>
-                )}
 
-                <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
-                  <div className="flex items-center gap-2 mb-4">
-                    <FaLayerGroup className="text-green-700" size={20} />
-                    <h2 className="text-lg font-bold text-gray-900">Title History</h2>
-                  </div>
-                  <div className="bg-white rounded-lg p-4 space-y-4 max-h-96 overflow-y-auto">
-                    {(!deed.title || deed.title.length === 0) && <p className="text-gray-500">No transfers recorded.</p>}
-                    {deed.title?.map((t, idx) => (
-                      <div key={t._id || idx} className="flex items-center justify-between border-b border-gray-100 pb-3 last:border-0">
-                        <div className="flex-1">
-                          <div className="font-semibold text-gray-800">{shortAddress(t.from)} → {shortAddress(t.to)}</div>
-                          <div className="text-gray-500 text-sm mt-1">{formatDate(t.timestamp)}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-gray-800 font-semibold">{t.share}%</div>
-                          {t.amount > 0 && <div className="text-gray-500 text-sm">{formatCurrency(t.amount, "LKR")}</div>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              </div>
-
-              <aside className="space-y-6">
-                <div className="rounded-xl border border-black/5 p-5 bg-gradient-to-br from-green-50 to-emerald-50">
-                  <div className="text-xs text-gray-600 uppercase font-semibold">Estimated Value</div>
-                  <div className="text-3xl font-bold text-green-900 mt-2">
-                    {formatCurrency(latestValue, "LKR")}
-                  </div>
-                  
-                  <div className="mt-5 text-xs text-gray-600 uppercase font-semibold">Area</div>
-                  <div className="text-3xl font-bold text-green-900 mt-2">
-                    {formatNumber(deed.landArea)} {deed.landSizeUnit || "m²"}
-                  </div>
-                  
-                  <div className="mt-5 text-xs text-gray-600 uppercase font-semibold">Land Type</div>
-                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-base mt-2 ${getLandTypeColor(deed.landType)}`}>
-                    <span className="text-xl">{getLandTypeIcon(deed.landType)}</span>
-                    <span className="capitalize">{deed.landType}</span>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-black/5 p-5 bg-gray-50">
-                  <div className="flex items-center gap-2 mb-3">
-                    <FaCalendarAlt className="text-green-700" />
-                    <h3 className="font-bold text-gray-900">Registered</h3>
-                  </div>
-                  <div className="text-gray-700 font-medium">
-                    {formatDate(deed.registrationDate)}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {timeAgo(deed.timestamp)}
-                  </div>
-                </div>
-
-                {signatures && (
-                  <div className="rounded-xl border border-black/5 p-5 bg-gray-50">
-                    <h3 className="font-bold text-gray-900 mb-4">Signatures</h3>
-                    <div className="space-y-3">
-                      {[
-                        { label: "Surveyor", value: signatures.surveyor, assigned: deed.surveyAssigned },
-                        { label: "Notary", value: signatures.notary, assigned: deed.notaryAssigned },
-                        { label: "IVSL", value: signatures.ivsl, assigned: deed.ivslAssigned },
-                      ].map((sig) => (
-                        <div key={sig.label} className="bg-white rounded-lg p-3">
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold text-gray-800">{sig.label}</span>
-                            {sig.value ? (
-                              <FaCheckCircle className="text-green-600" size={20} />
-                            ) : (
-                              <FaTimesCircle className="text-gray-400" size={20} />
-                            )}
-                          </div>
-                          {sig.assigned && (
-                            <div className="text-xs text-gray-500 mt-2">{shortAddress(sig.assigned)}</div>
-                          )}
+                  <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                    <div className="flex items-center gap-2 mb-4">
+                      <FaUserShield className="text-green-700" size={20} />
+                      <h2 className="text-lg font-bold text-gray-900">Blockchain Owners</h2>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {deed.owners.map((o, idx) => (
+                        <div key={idx} className="px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 border-2 border-emerald-200 font-semibold">
+                          {shortAddress(o.address)} • {o.share}%
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  </section>
 
-                {deed.tokenId !== undefined && (
-                  <div className="rounded-xl border border-black/5 p-5 bg-gradient-to-br from-emerald-50 to-green-50">
-                    <div className="text-xs text-gray-600 uppercase font-semibold">Token ID</div>
-                    <div className="text-2xl font-bold text-green-900 mt-2">#{deed.tokenId}</div>
-                  </div>
-                )}
-
-                {((deed.location && deed.location.length > 0) || (plan?.coordinates && plan.coordinates.length > 0)) && (
                   <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
                     <div className="flex items-center gap-2 mb-4">
                       <FaMapMarkedAlt className="text-green-700" size={20} />
-                      <h3 className="font-bold text-gray-900">Map View</h3>
+                      <h2 className="text-lg font-bold text-gray-900">Land Details</h2>
                     </div>
-                    <div className="relative group h-fit w-full rounded-lg border border-black/5 overflow-hidden">
-                      <MapPreview points={plan?.coordinates && plan.coordinates.length > 0 ? plan.coordinates : deed.location} />
-                      <button
-                        onClick={() => setIsMapOpen(true)}
-                        className="absolute top-3 right-3 bg-white px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition flex items-center gap-2"
-                      >
-                        <FaExpand size={14} className="text-green-700" />
-                        <span className="text-sm font-semibold text-green-700">Expand</span>
-                      </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white rounded-lg p-4">
+                      <div>
+                        <div className="text-xs text-gray-500 uppercase font-semibold">Title Number</div>
+                        <div className="font-medium text-gray-800 mt-1">{deed.landTitleNumber}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500 uppercase font-semibold">Land Address</div>
+                        <div className="font-medium text-gray-800 mt-1">{deed.landAddress}</div>
+                      </div>
+                      {deed.surveyPlanNumber && (
+                        <div className="sm:col-span-2">
+                          <div className="text-xs text-gray-500 uppercase font-semibold">Survey Plan Number</div>
+                          <div className="font-medium text-gray-800 mt-1">{deed.surveyPlanNumber}</div>
+                        </div>
+                      )}
+                      {deed.boundaries && (
+                        <div className="sm:col-span-2">
+                          <div className="text-xs text-gray-500 uppercase font-semibold">Boundaries</div>
+                          <div className="font-medium text-gray-800 mt-1">{deed.boundaries}</div>
+                        </div>
+                      )}
                     </div>
                   </section>
-                )}
 
-                {centerLocation && (
-                  <div className="rounded-xl border border-black/5 p-5 bg-gray-50">
-                    <div className="flex items-center gap-2 mb-3">
-                      <FaMapMarkedAlt className="text-green-700" />
-                      <h3 className="font-bold text-gray-900">Center Location</h3>
+                  {plan?.sides && Object.keys(plan.sides).length > 0 && (
+                    <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                      <div className="flex items-center gap-2 mb-4">
+                        <FaRoute className="text-green-700" size={20} />
+                        <h2 className="text-lg font-bold text-gray-900">Boundary Deeds</h2>
+                      </div>
+                      <div className="bg-white rounded-lg p-4">
+                        <ul className="space-y-3">
+                          {Object.entries(plan.sides).map(([direction, deedNum]) => (
+                            <li key={direction} className="flex items-center justify-between border-b border-gray-100 pb-2 last:border-0">
+                              <span className="font-semibold text-gray-800">{direction}</span>
+                              <span className="text-gray-600">{deedNum || 'N/A'}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </section>
+                  )}
+
+                  <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                    <div className="flex items-center gap-2 mb-4">
+                      <FaLayerGroup className="text-green-700" size={20} />
+                      <h2 className="text-lg font-bold text-gray-900">Title History</h2>
                     </div>
-                    <div className="text-gray-700 font-mono text-sm bg-white rounded-lg p-3">
-                      <div>Lat: {centerLocation.latitude.toFixed(6)}</div>
-                      <div className="mt-1">Lng: {centerLocation.longitude.toFixed(6)}</div>
+                    <div className="bg-white rounded-lg p-4 space-y-4 max-h-96 overflow-y-auto">
+                      {(!deed.title || deed.title.length === 0) && <p className="text-gray-500">No transfers recorded.</p>}
+                      {deed.title?.map((t, idx) => (
+                        <div key={t._id || idx} className="flex items-center justify-between border-b border-gray-100 pb-3 last:border-0">
+                          <div className="flex-1">
+                            <div className="font-semibold text-gray-800">{shortAddress(t.from)} → {shortAddress(t.to)}</div>
+                            <div className="text-gray-500 text-sm mt-1">{formatDate(t.timestamp)}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-gray-800 font-semibold">{t.share}%</div>
+                            {t.amount > 0 && <div className="text-gray-500 text-sm">{formatCurrency(t.amount, "LKR")}</div>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+
+                <aside className="space-y-6">
+                  <div className="rounded-xl border border-black/5 p-5 bg-gradient-to-br from-green-50 to-emerald-50">
+                    <div className="text-xs text-gray-600 uppercase font-semibold">Estimated Value</div>
+                    <div className="text-3xl font-bold text-green-900 mt-2">
+                      {formatCurrency(latestValue, "LKR")}
+                    </div>
+                    
+                    <div className="mt-5 text-xs text-gray-600 uppercase font-semibold">Area</div>
+                    <div className="text-3xl font-bold text-green-900 mt-2">
+                      {formatNumber(deed.landArea)} {deed.landSizeUnit || "m²"}
+                    </div>
+                    
+                    <div className="mt-5 text-xs text-gray-600 uppercase font-semibold">Land Type</div>
+                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-base mt-2 ${getLandTypeColor(deed.landType)}`}>
+                      <span className="text-xl">{getLandTypeIcon(deed.landType)}</span>
+                      <span className="capitalize">{deed.landType}</span>
                     </div>
                   </div>
-                )}
-              </aside>
+
+                  <div className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FaCalendarAlt className="text-green-700" />
+                      <h3 className="font-bold text-gray-900">Registered</h3>
+                    </div>
+                    <div className="text-gray-700 font-medium">
+                      {formatDate(deed.registrationDate)}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {timeAgo(deed.timestamp)}
+                    </div>
+                  </div>
+
+                  {signatures && (
+                    <div className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                      <h3 className="font-bold text-gray-900 mb-4">Signatures</h3>
+                      <div className="space-y-3">
+                        {[
+                          { label: "Surveyor", value: signatures.surveyor, assigned: deed.surveyAssigned },
+                          { label: "Notary", value: signatures.notary, assigned: deed.notaryAssigned },
+                          { label: "IVSL", value: signatures.ivsl, assigned: deed.ivslAssigned },
+                        ].map((sig) => (
+                          <div key={sig.label} className="bg-white rounded-lg p-3">
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold text-gray-800">{sig.label}</span>
+                              {sig.value ? (
+                                <FaCheckCircle className="text-green-600" size={20} />
+                              ) : (
+                                <FaTimesCircle className="text-gray-400" size={20} />
+                              )}
+                            </div>
+                            {sig.assigned && (
+                              <div className="text-xs text-gray-500 mt-2">{shortAddress(sig.assigned)}</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {deed.tokenId !== undefined && (
+                    <div className="rounded-xl border border-black/5 p-5 bg-gradient-to-br from-emerald-50 to-green-50">
+                      <div className="text-xs text-gray-600 uppercase font-semibold">Token ID</div>
+                      <div className="text-2xl font-bold text-green-900 mt-2">#{deed.tokenId}</div>
+                    </div>
+                  )}
+
+                  {((deed.location && deed.location.length > 0) || (plan?.coordinates && plan.coordinates.length > 0)) && (
+                    <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                      <div className="flex items-center gap-2 mb-4">
+                        <FaMapMarkedAlt className="text-green-700" size={20} />
+                        <h3 className="font-bold text-gray-900">Map View</h3>
+                      </div>
+                      <div className="relative group h-fit w-full rounded-lg border border-black/5 overflow-hidden">
+                        <MapPreview points={plan?.coordinates && plan.coordinates.length > 0 ? plan.coordinates : deed.location} />
+                        <button
+                          onClick={() => setIsMapOpen(true)}
+                          className="absolute top-3 right-3 bg-white px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition flex items-center gap-2"
+                        >
+                          <FaExpand size={14} className="text-green-700" />
+                          <span className="text-sm font-semibold text-green-700">Expand</span>
+                        </button>
+                      </div>
+                    </section>
+                  )}
+
+                  {centerLocation && (
+                    <div className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                      <div className="flex items-center gap-2 mb-3">
+                        <FaMapMarkedAlt className="text-green-700" />
+                        <h3 className="font-bold text-gray-900">Center Location</h3>
+                      </div>
+                      <div className="text-gray-700 font-mono text-sm bg-white rounded-lg p-3">
+                        <div>Lat: {centerLocation.latitude.toFixed(6)}</div>
+                        <div className="mt-1">Lng: {centerLocation.longitude.toFixed(6)}</div>
+                      </div>
+                    </div>
+                  )}
+                </aside>
+              </div>
             </div>
           </div>
+        </div>
+        <div className="hidden lg:block py-14 min-h-full mt-6">
+          <DeedActionBar
+            deedNumber={deed.deedNumber}
+            tokenId={deed.tokenId}
+            onEdit={handleEdit}
+            onTransfer={handleTransfer}
+            onDownload={handleDownload}
+            onShare={handleShare}
+            onViewBlockchain={handleViewBlockchain}
+          />
         </div>
       </div>
 
