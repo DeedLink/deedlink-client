@@ -14,6 +14,7 @@ import LoginPopup from './components/signin/LoginPopup';
 import DeedRegistrationPage from './pages/DeedRegistrationPage';
 import ProtectedRoute from './contexts/ProtectedRoute';
 import { ToastProvider } from './contexts/ToastContext';
+import ADeedPage from './pages/ADeedPage';
 
 function App() {
   return (
@@ -46,6 +47,11 @@ function App() {
                       <Route path="/deeds-registration" element={
                         <ProtectedRoute>
                           <DeedRegistrationPage/>
+                        </ProtectedRoute>
+                        } />
+                      <Route path="/deed/:deedNumber" element={
+                        <ProtectedRoute>
+                          <ADeedPage/>
                         </ProtectedRoute>
                         } />
                     </Routes>

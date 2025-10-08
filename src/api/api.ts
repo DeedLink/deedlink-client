@@ -163,6 +163,12 @@ export const getDeedById = async (deedId: string): Promise<any> => {
   return res.data;
 };
 
+// Get deed by ID (protected)
+export const getDeedByDeedNumber = async (deedNumber: string): Promise<any> => {
+  const res: AxiosResponse<any> = await deedApi.get(`/deed/${deedNumber}`);
+  return res.data;
+};
+
 // -------------------- Pinata API Calls --------------------
 const PINATA_API_URL = import.meta.env.VITE_PINATA_API_URL || "http://localhost:6000/ipfs";
 
