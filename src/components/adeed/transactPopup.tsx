@@ -45,7 +45,7 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, onClose }) => {
     );
   }, [search, users]);
 
-  const handleTransfer = async () => {
+  const handleFullOwnerTransfer = async () => {
     if (!selectedWallet) return alert("Please enter or select a wallet address!");
     setLoading(true);
     try {
@@ -169,7 +169,7 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, onClose }) => {
           </div>
 
           <button
-            onClick={handleTransfer}
+            onClick={handleFullOwnerTransfer}
             disabled={loading || !selectedWallet}
             className={`w-full py-3 rounded-xl font-semibold transition-all ${
               loading || !selectedWallet
