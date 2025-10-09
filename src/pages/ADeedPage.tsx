@@ -67,6 +67,14 @@ const ADeedPage = () => {
     });
   };
 
+  useEffect(() => {
+    if (openTransact) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+  }, [openTransact]);
+
   const getNumberOfFT = async () => {
     try {
       if (!deed?.tokenId || !account) return;
@@ -470,7 +478,6 @@ const ADeedPage = () => {
       {
         openTransact && (
           <TransactPopup isOpen={openTransact} onClose={() => setOpenTransact(false)}>
-            <p>Send tokens to another account</p>
           </TransactPopup>
         )
       }
