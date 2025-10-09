@@ -476,8 +476,8 @@ const ADeedPage = () => {
       />
 
       {
-        openTransact && (
-          <TransactPopup isOpen={openTransact} onClose={() => setOpenTransact(false)}>
+        openTransact && deed.tokenId && (
+          <TransactPopup tokenId={deed.tokenId} isOpen={openTransact} onClose={() => setOpenTransact(false)}>
           </TransactPopup>
         )
       }

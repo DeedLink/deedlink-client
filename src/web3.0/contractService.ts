@@ -60,11 +60,76 @@ export async function mintNFT(to: string, ipfsuri: string, dburi: string) {
   return { tokenId, txHash: (receipt as any).hash ?? (receipt as any).transactionHash };
 }
 
+// -------------------- NFT Transfer Functions --------------------
+
+/**
+ * Transfer full NFT ownership
+ */
+export async function transferNFT(from: string, to: string, tokenId: number) {
+  const nft = await getPropertyNFTContract();
+  const tx = await nft.transferFrom(from, to, tokenId);
+  const receipt = await tx.wait();
+  
+  return { 
+    txHash: receipt.hash ?? receipt.transactionHash 
+  };
+}
+
+/**
+ * Safe transfer NFT (checks if receiver can handle ERC721)
+ */
+export async function safeTransferNFT(from: string, to: string, tokenId: number) {
+  const nft = await getPropertyNFTContract();
+  const tx = await nft["safeTransferFrom(address,address,uint256)"](from, to, tokenId);
+  const receipt = await tx.wait();
+  
+  return { 
+    txHash: receipt.hash ?? receipt.transactionHash 
+  };
+}
+
+/**
+ * Approve address to transfer NFT
+ */
 export async function approveNFT(to: string, tokenId: number) {
   const nft = await getPropertyNFTContract();
   const tx = await nft.approve(to, tokenId);
-  return await tx.wait();
+  const receipt = await tx.wait();
+  
+  return { 
+    txHash: receipt.hash ?? receipt.transactionHash 
+  };
 }
+
+/**
+ * Set approval for all NFTs to operator
+ */
+export async function setApprovalForAll(operator: string, approved: boolean) {
+  const nft = await getPropertyNFTContract();
+  const tx = await nft.setApprovalForAll(operator, approved);
+  const receipt = await tx.wait();
+  
+  return { 
+    txHash: receipt.hash ?? receipt.transactionHash 
+  };
+}
+
+/**
+ * Get approved address for NFT
+ */
+export async function getApproved(tokenId: number) {
+  const nft = await getPropertyNFTContract();
+  return await nft.getApproved(tokenId);
+}
+
+/**
+ * Check if operator is approved for all tokens of owner
+ */
+export async function isApprovedForAll(owner: string, operator: string) {
+  const nft = await getPropertyNFTContract();
+  return await nft.isApprovedForAll(owner, operator);
+}
+
 
 export async function getNFTURI(tokenId: number) {
   const nft = await getPropertyNFTContract();

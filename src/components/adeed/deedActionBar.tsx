@@ -54,7 +54,7 @@ const DeedActionBar = ({
             className="w-full flex items-center gap-3 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow-sm hover:shadow-md"
           >
             <FaExchangeAlt size={18} />
-            <span>Transfer Ownership</span>
+            <span>Transfer The Deed</span>
           </button>
         )}
 
