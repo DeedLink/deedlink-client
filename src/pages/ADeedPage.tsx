@@ -470,7 +470,6 @@ const ADeedPage = () => {
       {
         openTransact && (
           <TransactPopup isOpen={openTransact} onClose={() => setOpenTransact(false)}>
-            <p>Send tokens to another account</p>
           </TransactPopup>
         )
       }
