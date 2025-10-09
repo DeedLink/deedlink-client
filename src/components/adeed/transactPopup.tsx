@@ -1,21 +1,24 @@
 import { type FC, useState, useEffect } from "react";
-import axios from "axios";
 import { getUsers } from "../../api/api";
 import type { User } from "../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle } from "react-icons/io5";
 import { FaExchangeAlt } from "react-icons/fa";
+import { transferNFT } from "../../web3.0/contractService";
+import { useWallet } from "../../contexts/WalletContext";
 
 interface TransactPopupProps {
   isOpen: boolean;
+  tokenId: number;
   onClose: () => void;
 }
 
-const TransactPopup: FC<TransactPopupProps> = ({ isOpen, onClose }) => {
+const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, onClose }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedWallet, setSelectedWallet] = useState("");
   const [loading, setLoading] = useState(false);
+  const { account } =useWallet();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -49,8 +52,8 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, onClose }) => {
     if (!selectedWallet) return alert("Please enter or select a wallet address!");
     setLoading(true);
     try {
-      await axios.post("/api/transfer-ownership", { to: selectedWallet });
-      alert("Ownership transferred successfully!");
+      const res = await transferNFT(account as string, selectedWallet, tokenId);
+      console.log(res);
       onClose();
     } catch {
       alert("Transfer failed. Try again.");
