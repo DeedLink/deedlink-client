@@ -1,5 +1,5 @@
 import { type FC, useState, useEffect } from "react";
-import { getUsers } from "../../api/api";
+import { createTransaction, getUsers, updateOwnerAddress } from "../../api/api";
 import type { User } from "../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle } from "react-icons/io5";
 import { FaExchangeAlt } from "react-icons/fa";
@@ -52,8 +52,39 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, onClose }) => 
     if (!selectedWallet) return alert("Please enter or select a wallet address!");
     setLoading(true);
     try {
+      // 🔹 Step 1: Transfer NFT on blockchain
       const res = await transferNFT(account as string, selectedWallet, tokenId);
       console.log(res);
+
+      if (res.txHash) {
+        try {
+          // 🔹 Step 2: Record transaction in DB
+          const update_db = await createTransaction(
+            tokenId.toString(),
+            account as string,
+            selectedWallet,
+            0,
+            100,
+            res.txHash,
+            "Full Ownership Transfer"
+          );
+          console.log("Transaction recorded in DB:", update_db);
+
+          // 🔹 Step 3: Update owner address in deed DB
+          try {
+            const updateOwner = await updateOwnerAddress(
+              tokenId.toString(),
+              selectedWallet
+            );
+            console.log("Owner address updated in DB:", updateOwner);
+          } catch (err) {
+            console.error("Failed to update owner address in DB:", err);
+          }
+        } catch (err) {
+          console.error("Failed to record transaction in DB:", err);
+        }
+      }
+
       onClose();
     } catch {
       alert("Transfer failed. Try again.");
@@ -61,6 +92,7 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, onClose }) => 
       setLoading(false);
     }
   };
+
 
   const shortAddress = (addr: string) =>
     addr && addr.length > 12 ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : addr;

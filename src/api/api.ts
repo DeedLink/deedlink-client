@@ -293,3 +293,36 @@ export const getTransactionById = async (tnxId: string): Promise<any> => {
   });
   return res.data;
 };
+
+// Create a new transaction (protected)
+export const createTransaction = async (
+  deedId: string,
+  from: string,
+  to: string,
+  amount: number,
+  share: number,
+  hash: string,
+  description?: string
+): Promise<any> => {
+  const res = await tnxApi.post(`/`, {
+    deedId,
+    from,
+    to,
+    amount,
+    share,
+    hash,
+    description
+  });
+  return res.data;
+}
+
+// Update deed owner address (protected)
+export const updateOwnerAddress = async (
+  deedId: string,
+  newOwnerAddress: string
+): Promise<any> => {
+  const res: AxiosResponse<any> = await deedApi.put(`/update-owner/${deedId}`, {
+    newOwnerAddress,
+  });
+  return res.data;
+};
