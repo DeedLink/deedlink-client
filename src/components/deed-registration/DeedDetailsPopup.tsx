@@ -1,7 +1,7 @@
 import { IoClose } from "react-icons/io5";
 import { FaFileSignature, FaUserShield, FaMapMarkedAlt, FaLayerGroup, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaIdCard, FaPhone, FaHome, FaRoute } from "react-icons/fa";
 import type { IDeed } from "../../types/responseDeed";
-import { getPlanByPlanNumber } from "../../api/api";
+import { getPlanByPlanNumber, getTransactionsByDeedId } from "../../api/api";
 import { useToast } from "../../contexts/ToastContext";
 import { useEffect, useState } from "react";
 import { defaultPlan, type Plan } from "../../types/plan";
@@ -25,6 +25,7 @@ const DeedDetailsPopup = ({
   if (!isOpen || !deed) return null;
   const { showToast } = useToast();
   const [plan, setPlan] = useState<Plan>(defaultPlan);
+  const [tnx, setTnx] = useState<any[]>([]);
 
   const shortAddress = (addr: string) => {
     if (!addr || addr.length < 12) return addr;
@@ -75,10 +76,29 @@ const DeedDetailsPopup = ({
     else{
       showToast("Plan number not found", "error");
     }
-  }
+  };
+
+  const getTransactions = async () => {
+    if (deed._id) {
+      const tnx = await getTransactionsByDeedId(deed._id);
+      if (tnx && tnx.length) {
+        const sortedTnx = tnx.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+        setTnx(sortedTnx);
+      }
+    } else {
+      showToast("Deed ID not found", "error");
+    }
+  };
 
   useEffect(()=>{
     getSurveyPlan();
+  },[deed]);
+
+  useEffect(()=>{
+    getTransactions();
   },[deed]);
 
   useEffect(() => {
@@ -202,9 +222,9 @@ const DeedDetailsPopup = ({
                   <FaLayerGroup className="text-green-700" size={16} />
                   <h4 className="font-semibold text-sm sm:text-base">Title History</h4>
                 </div>
-                {deed.title && deed.title.length > 0 ? (
+                {tnx && tnx.length > 0 ? (
                   <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {deed.title.map((t, idx) => (
+                    {tnx.map((t, idx) => (
                       <div key={t._id || idx} className="flex items-start justify-between text-xs sm:text-sm gap-2">
                         <div className="flex-1 min-w-0">
                           <div className="font-medium truncate">{shortAddress(t.from)} → {shortAddress(t.to)}</div>
