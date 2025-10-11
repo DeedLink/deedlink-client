@@ -6,7 +6,7 @@ import MapPreview from "./MapPreview";
 import MapPopup from "./MapPopup";
 import { useEffect, useState } from "react";
 import { getCenterOfLocations } from "../../utils/functions";
-import { getPlanByPlanNumber } from "../../api/api";
+import { getPlanByPlanNumber, getTransactionsByDeedId } from "../../api/api";
 import { useToast } from "../../contexts/ToastContext";
 import { defaultPlan, type Plan } from "../../types/plan";
 import { useNavigate } from "react-router-dom";
@@ -33,7 +33,8 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", si
   const [plan, setPlan] = useState<Plan>(defaultPlan);
   const { showToast } = useToast();
   const navigate = useNavigate();
-  
+  const [tnx, setTnx] = useState<any[]>([]);
+
   const centerLocation = getCenterOfLocations(deed.location);
 
   const latestValue = deed.valuation && deed.valuation.length > 0
@@ -78,6 +79,25 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", si
       }
     }
   };
+
+  const getTransactions = async () => {
+      if (deed._id) {
+        const tnx = await getTransactionsByDeedId(deed._id);
+        if (tnx && tnx.length) {
+          const sortedTnx = tnx.sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+  
+          setTnx(sortedTnx);
+        }
+      } else {
+        showToast("Deed ID not found", "error");
+      }
+    };
+  
+  useEffect(()=>{
+    getTransactions();
+  },[deed]);
 
   const handleOpenPage = () => {
     navigate(`/deed/${deed.deedNumber}`);
@@ -209,8 +229,8 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", si
                   <h4 className="font-semibold">Title History</h4>
                 </div>
                 <div className="space-y-3 overflow-auto max-h-64 pr-1 py-1">
-                  {(!deed.title || deed.title.length === 0) && <p className="text-gray-500 text-sm">No transfers recorded.</p>}
-                  {deed.title?.map((t, idx) => (
+                  {(!tnx || tnx.length === 0) && <p className="text-gray-500 text-sm">No transfers recorded.</p>}
+                  {tnx?.map((t, idx) => (
                     <div key={t._id || idx} className="flex items-center justify-between text-sm">
                       <div className="flex-1">
                         <div className="font-medium">{shortAddress(t.from)} → {shortAddress(t.to)}</div>
