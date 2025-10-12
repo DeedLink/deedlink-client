@@ -302,6 +302,7 @@ export const createTransaction = async (
   amount: number,
   share: number,
   hash: string,
+  type: string,
   description?: string
 ): Promise<any> => {
   const res = await tnxApi.post(`/`, {
@@ -311,17 +312,18 @@ export const createTransaction = async (
     amount,
     share,
     hash,
-    description
+    description,
+    type
   });
   return res.data;
 }
 
 // Update deed owner address (protected)
 export const updateOwnerAddress = async (
-  deedId: string,
+  tokenId: number,
   newOwnerAddress: string
 ): Promise<any> => {
-  const res: AxiosResponse<any> = await deedApi.put(`/update-owner/${deedId}`, {
+  const res: AxiosResponse<any> = await deedApi.put(`/update-owner/${tokenId}`, {
     newOwnerAddress,
   });
   return res.data;

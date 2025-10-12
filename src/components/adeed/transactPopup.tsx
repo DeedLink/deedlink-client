@@ -25,8 +25,8 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, onClose }) => 
       try {
         const res = await getUsers();
         const data = Array.isArray(res) ? res : [];
-        setUsers(data);
-        setFilteredUsers(data);
+        setUsers(data.filter((u) => u.walletAddress && u.walletAddress !== account && u.kycStatus === "verified" && u.role === "user"));
+        setFilteredUsers(data.filter((u) => u.walletAddress && u.walletAddress !== account && u.kycStatus === "verified" && u.role === "user"));
       } catch {
         setUsers([]);
         setFilteredUsers([]);
@@ -66,6 +66,7 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, onClose }) => 
             0,
             100,
             res.txHash,
+            "direct_transfer",
             "Full Ownership Transfer"
           );
           console.log("Transaction recorded in DB:", update_db);
@@ -73,8 +74,8 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, onClose }) => 
           // 🔹 Step 3: Update owner address in deed DB
           try {
             const updateOwner = await updateOwnerAddress(
-              tokenId.toString(),
-              selectedWallet
+              tokenId,
+              selectedWallet.toLowerCase()
             );
             console.log("Owner address updated in DB:", updateOwner);
           } catch (err) {
