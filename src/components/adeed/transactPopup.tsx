@@ -1,5 +1,5 @@
 import { type FC, useState, useEffect } from "react";
-import { getUsers } from "../../api/api";
+import { createTransaction, getUsers, updateFullOwnerAddress } from "../../api/api";
 import type { User } from "../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle } from "react-icons/io5";
 import { FaExchangeAlt } from "react-icons/fa";
@@ -9,10 +9,11 @@ import { useWallet } from "../../contexts/WalletContext";
 interface TransactPopupProps {
   isOpen: boolean;
   tokenId: number;
+  deedId: string;
   onClose: () => void;
 }
 
-const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, onClose }) => {
+const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, deedId, onClose }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -25,8 +26,8 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, onClose }) => 
       try {
         const res = await getUsers();
         const data = Array.isArray(res) ? res : [];
-        setUsers(data);
-        setFilteredUsers(data);
+        setUsers(data.filter((u) => u.walletAddress && u.walletAddress !== account && u.kycStatus === "verified" && u.role === "user"));
+        setFilteredUsers(data.filter((u) => u.walletAddress && u.walletAddress !== account && u.kycStatus === "verified" && u.role === "user"));
       } catch {
         setUsers([]);
         setFilteredUsers([]);
@@ -52,8 +53,40 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, onClose }) => 
     if (!selectedWallet) return alert("Please enter or select a wallet address!");
     setLoading(true);
     try {
+      // 🔹 Step 1: Transfer NFT on blockchain
       const res = await transferNFT(account as string, selectedWallet, tokenId);
       console.log(res);
+
+      if (res.txHash) {
+        try {
+          // 🔹 Step 2: Record transaction in DB
+          const update_db = await createTransaction(
+            deedId,
+            account as string,
+            selectedWallet,
+            0,
+            100,
+            res.txHash,
+            "direct_transfer",
+            "Full Ownership Transfer"
+          );
+          console.log("Transaction recorded in DB:", update_db);
+
+          // 🔹 Step 3: Update owner address in deed DB
+          try {
+            const updateOwner = await updateFullOwnerAddress(
+              tokenId,
+              selectedWallet.toLowerCase()
+            );
+            console.log("Owner address updated in DB:", updateOwner);
+          } catch (err) {
+            console.error("Failed to update owner address in DB:", err);
+          }
+        } catch (err) {
+          console.error("Failed to record transaction in DB:", err);
+        }
+      }
+
       onClose();
     } catch {
       alert("Transfer failed. Try again.");

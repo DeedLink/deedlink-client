@@ -6,7 +6,7 @@ import type { IDeed } from "../types/responseDeed";
 import MapPreview from "../components/deeds/MapPreview";
 import MapPopup from "../components/deeds/MapPopup";
 import { getCenterOfLocations } from "../utils/functions";
-import { getPlanByPlanNumber, getDeedByDeedNumber } from "../api/api";
+import { getPlanByPlanNumber, getDeedByDeedNumber, getTransactionsByDeedId } from "../api/api";
 import { useToast } from "../contexts/ToastContext";
 import { defaultPlan, type Plan } from "../types/plan";
 import { useLoader } from "../contexts/LoaderContext";
@@ -35,6 +35,7 @@ const ADeedPage = () => {
   const { account } = useWallet();
   const [numberOfFT, setNumberOfFT] = useState(0);
   const [openTransact, setOpenTransact] = useState(false);
+  const [tnx, setTnx] = useState<any[]>([]);
 
   const centerLocation = deed ? getCenterOfLocations(deed.location) : null;
 
@@ -64,6 +65,19 @@ const ADeedPage = () => {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
+    });
+  };
+
+  const formatDateWithTime = (date: Date | number) => {
+    const dateObj = typeof date === 'number' ? new Date(date) : new Date(date);
+    return dateObj.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
     });
   };
 
@@ -176,6 +190,26 @@ const ADeedPage = () => {
       hideLoader();
     }
   };
+
+
+  const getTransactions = async () => {
+    if (deed && deed._id) {
+      const tnx = await getTransactionsByDeedId(deed._id);
+      if (tnx && tnx.length) {
+        const sortedTnx = tnx.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+        setTnx(sortedTnx);
+      }
+    } else {
+      showToast("Deed ID not found", "error");
+    }
+  };
+  
+  useEffect(()=>{
+    getTransactions();
+  },[deed]);
 
   useEffect(() => {
     fetchDeed();
@@ -335,12 +369,12 @@ const ADeedPage = () => {
                       <h2 className="text-lg font-bold text-gray-900">Title History</h2>
                     </div>
                     <div className="bg-white rounded-lg p-4 space-y-4 max-h-96 overflow-y-auto">
-                      {(!deed.title || deed.title.length === 0) && <p className="text-gray-500">No transfers recorded.</p>}
-                      {deed.title?.map((t, idx) => (
+                      {(!tnx || tnx.length === 0) && <p className="text-gray-500">No transfers recorded.</p>}
+                      {tnx?.map((t, idx) => (
                         <div key={t._id || idx} className="flex items-center justify-between border-b border-gray-100 pb-3 last:border-0">
                           <div className="flex-1">
                             <div className="font-semibold text-gray-800">{shortAddress(t.from)} → {shortAddress(t.to)}</div>
-                            <div className="text-gray-500 text-sm mt-1">{formatDate(t.timestamp)}</div>
+                            <div className="text-gray-500 text-sm mt-1">{formatDateWithTime(new Date(t.date).getTime())}</div>
                           </div>
                           <div className="text-right">
                             <div className="text-gray-800 font-semibold">{t.share}%</div>
@@ -477,7 +511,7 @@ const ADeedPage = () => {
 
       {
         openTransact && deed.tokenId && (
-          <TransactPopup tokenId={deed.tokenId} isOpen={openTransact} onClose={() => setOpenTransact(false)}>
+          <TransactPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openTransact} onClose={() => setOpenTransact(false)}>
           </TransactPopup>
         )
       }
