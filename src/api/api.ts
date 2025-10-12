@@ -328,3 +328,14 @@ export const updateOwnerAddress = async (
   });
   return res.data;
 };
+
+// Update deed full owner address (protected)
+export const updateFullOwnerAddress = async (
+  tokenId: number,
+  newOwnerAddress: string
+): Promise<any> => {
+  const res: AxiosResponse<any> = await deedApi.put(`/update-full-owner/${tokenId}`, {
+    newOwnerAddress,
+  });
+  return res.data;
+};

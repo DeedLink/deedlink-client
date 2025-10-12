@@ -1,5 +1,5 @@
 import { type FC, useState, useEffect } from "react";
-import { createTransaction, getUsers, updateOwnerAddress } from "../../api/api";
+import { createTransaction, getUsers, updateFullOwnerAddress } from "../../api/api";
 import type { User } from "../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle } from "react-icons/io5";
 import { FaExchangeAlt } from "react-icons/fa";
@@ -73,7 +73,7 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, onClose }) => 
 
           // 🔹 Step 3: Update owner address in deed DB
           try {
-            const updateOwner = await updateOwnerAddress(
+            const updateOwner = await updateFullOwnerAddress(
               tokenId,
               selectedWallet.toLowerCase()
             );
