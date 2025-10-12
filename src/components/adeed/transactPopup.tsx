@@ -9,10 +9,11 @@ import { useWallet } from "../../contexts/WalletContext";
 interface TransactPopupProps {
   isOpen: boolean;
   tokenId: number;
+  deedId: string;
   onClose: () => void;
 }
 
-const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, onClose }) => {
+const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, deedId, onClose }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -60,7 +61,7 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, onClose }) => 
         try {
           // 🔹 Step 2: Record transaction in DB
           const update_db = await createTransaction(
-            tokenId.toString(),
+            deedId,
             account as string,
             selectedWallet,
             0,
@@ -93,7 +94,6 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, onClose }) => 
       setLoading(false);
     }
   };
-
 
   const shortAddress = (addr: string) =>
     addr && addr.length > 12 ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : addr;

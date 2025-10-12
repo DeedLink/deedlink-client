@@ -87,6 +87,7 @@ const DeedDetailsPopup = ({
         );
 
         setTnx(sortedTnx);
+        console.log("Transactions:", sortedTnx);
       }
     } else {
       showToast("Deed ID not found", "error");
