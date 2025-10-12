@@ -66,6 +66,19 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", si
     });
   };
 
+  const formatDateWithTime = (date: Date | number) => {
+    const dateObj = typeof date === 'number' ? new Date(date) : new Date(date);
+    return dateObj.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+  };
+
   const getSurveyPlan = async () => {
     if (deed.surveyPlanNumber) {
       try {
@@ -234,7 +247,7 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", si
                     <div key={t._id || idx} className="flex items-center justify-between text-sm">
                       <div className="flex-1">
                         <div className="font-medium">{shortAddress(t.from)} → {shortAddress(t.to)}</div>
-                        <div className="text-gray-500 text-xs">{formatDate(t.timestamp)}</div>
+                        <div className="text-gray-500 text-xs">{formatDateWithTime(new Date(t.date).getTime())}</div>
                       </div>
                       <div className="text-right">
                         <div className="text-gray-700">{t.share}%</div>

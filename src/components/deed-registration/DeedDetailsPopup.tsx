@@ -66,6 +66,20 @@ const DeedDetailsPopup = ({
     });
   };
 
+  const formatDateWithTime = (date: Date | number) => {
+    const dateObj = typeof date === 'number' ? new Date(date) : new Date(date);
+    return dateObj.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+  };
+
+
   const getSurveyPlan=async()=>{
     if(deed.surveyPlanNumber){
       const plan_res = await getPlanByPlanNumber(deed.surveyPlanNumber);
@@ -229,7 +243,7 @@ const DeedDetailsPopup = ({
                       <div key={t._id || idx} className="flex items-start justify-between text-xs sm:text-sm gap-2">
                         <div className="flex-1 min-w-0">
                           <div className="font-medium truncate">{shortAddress(t.from)} → {shortAddress(t.to)}</div>
-                          <div className="text-gray-500 text-xs">{formatDate(t.timestamp)}</div>
+                          <div className="text-gray-500 text-xs">{formatDateWithTime(new Date(t.date).getTime())}</div>
                         </div>
                         <div className="text-right flex-shrink-0">
                           <div className="text-gray-700 text-xs sm:text-sm">{t.share}%</div>

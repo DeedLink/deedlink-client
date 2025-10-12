@@ -68,6 +68,19 @@ const ADeedPage = () => {
     });
   };
 
+  const formatDateWithTime = (date: Date | number) => {
+    const dateObj = typeof date === 'number' ? new Date(date) : new Date(date);
+    return dateObj.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+  };
+
   useEffect(() => {
     if (openTransact) {
       document.body.classList.add('no-scroll');
@@ -361,7 +374,7 @@ const ADeedPage = () => {
                         <div key={t._id || idx} className="flex items-center justify-between border-b border-gray-100 pb-3 last:border-0">
                           <div className="flex-1">
                             <div className="font-semibold text-gray-800">{shortAddress(t.from)} → {shortAddress(t.to)}</div>
-                            <div className="text-gray-500 text-sm mt-1">{formatDate(t.timestamp)}</div>
+                            <div className="text-gray-500 text-sm mt-1">{formatDateWithTime(new Date(t.date).getTime())}</div>
                           </div>
                           <div className="text-right">
                             <div className="text-gray-800 font-semibold">{t.share}%</div>
