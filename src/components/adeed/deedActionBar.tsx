@@ -9,6 +9,8 @@ interface DeedActionBarProps {
   onShare?: () => void;
   onViewBlockchain?: () => void;
   onFractioning: () => void;
+  onDirectTransfer: () => void;
+  onSaleEscrow: () => void;
   numberOfFT: number;
 }
 
@@ -17,6 +19,8 @@ const DeedActionBar = ({
   tokenId,
   onEdit,
   onTransfer,
+  onDirectTransfer,
+  onSaleEscrow,
   onDownload,
   onShare,
   onViewBlockchain,
@@ -55,6 +59,26 @@ const DeedActionBar = ({
           >
             <FaExchangeAlt size={18} />
             <span>Transfer The Deed</span>
+          </button>
+        )}
+
+        {onDirectTransfer && (
+          <button
+            onClick={onDirectTransfer}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow-sm hover:shadow-md"
+          >
+            <FaExchangeAlt size={18} />
+            <span>Direct Transfer The Deed</span>
+          </button>
+        )}
+
+        {onSaleEscrow && (
+          <button
+            onClick={onSaleEscrow}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow-sm hover:shadow-md"
+          >
+            <FaExchangeAlt size={18} />
+            <span>Sale The Deed</span>
           </button>
         )}
 

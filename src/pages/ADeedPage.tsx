@@ -15,6 +15,8 @@ import DeedActionBar from "../components/adeed/deedActionBar";
 import { useWallet } from "../contexts/WalletContext";
 import { ethers } from "ethers";
 import TransactPopup from "../components/adeed/transactPopup";
+import { DirectTransferPopup } from "../components/adeed/tnxPopups/DirectTransferPopup";
+import { SaleEscrowPopup } from "../components/adeed/tnxPopups/SaleEscrowPopup";
 
 interface ISignatures {
   surveyor: boolean;
@@ -36,6 +38,8 @@ const ADeedPage = () => {
   const [numberOfFT, setNumberOfFT] = useState(0);
   const [openTransact, setOpenTransact] = useState(false);
   const [tnx, setTnx] = useState<any[]>([]);
+  const [openDirectTransfer, setOpenDirectTransfer] = useState(false);
+  const [openSaleEscrow, setOpenSaleEscrow] = useState(false);
 
   const centerLocation = deed ? getCenterOfLocations(deed.location) : null;
 
@@ -127,6 +131,14 @@ const ADeedPage = () => {
 
   const handleTransfer = () => {
     setOpenTransact(true);
+  };
+
+  const handleSaleEscrow = () => {
+    setOpenSaleEscrow(true);
+  };
+
+  const handleDirectTransfer = () => {
+    setOpenDirectTransfer(true);
   };
 
   const handleDownload = () => {
@@ -250,6 +262,8 @@ const ADeedPage = () => {
               tokenId={deed.tokenId}
               onEdit={handleEdit}
               onTransfer={handleTransfer}
+              onDirectTransfer={handleDirectTransfer}
+              onSaleEscrow={handleSaleEscrow}
               onDownload={handleDownload}
               onShare={handleShare}
               onViewBlockchain={handleViewBlockchain}
@@ -495,6 +509,8 @@ const ADeedPage = () => {
             tokenId={deed.tokenId}
             onEdit={handleEdit}
             onTransfer={handleTransfer}
+            onDirectTransfer={handleDirectTransfer}
+            onSaleEscrow={handleSaleEscrow}
             onDownload={handleDownload}
             onShare={handleShare}
             onViewBlockchain={handleViewBlockchain}
@@ -514,6 +530,18 @@ const ADeedPage = () => {
           <TransactPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openTransact} onClose={() => setOpenTransact(false)}>
           </TransactPopup>
         )
+      }
+      { 
+        openDirectTransfer && deed.tokenId && (
+        <DirectTransferPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openDirectTransfer} onClose={() => setOpenDirectTransfer(false)}>
+        </DirectTransferPopup>
+      )
+      }
+      { 
+        openSaleEscrow && deed.tokenId && (    
+        <SaleEscrowPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openSaleEscrow} onClose={() => setOpenSaleEscrow(false)}>
+        </SaleEscrowPopup>
+      )
       }
     </div>
   );
