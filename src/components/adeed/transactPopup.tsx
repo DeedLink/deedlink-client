@@ -76,7 +76,9 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, deedId, onClos
           try {
             const updateOwner = await updateFullOwnerAddress(
               tokenId,
-              selectedWallet.toLowerCase()
+              selectedWallet.toLowerCase(),
+              users.find(u => u.walletAddress === selectedWallet)?.name || "",
+              users.find(u => u.walletAddress === selectedWallet)?.nic || ""
             );
             console.log("Owner address updated in DB:", updateOwner);
           } catch (err) {
