@@ -47,10 +47,8 @@ function calculatePaymentBreakdown(priceInEth: string) {
 // Main Escrow Functions
 // ============================================
 
-/**
- * Complete workflow: Create escrow and pay stamp fee
- * Called by: BUYER (initiates the purchase)
- */
+// Complete workflow: Create escrow and pay stamp fee
+// Called by: SELLER (initiates the sale)
 export async function completeFullOwnershipTransfer(
   tokenId: number,
   sellerAddress: string,
@@ -65,9 +63,9 @@ export async function completeFullOwnershipTransfer(
   error?: string;
 }> {
   try {
-    // Verify buyer is making the call
-    if (buyerAddress.toLowerCase() !== currentAccount.toLowerCase()) {
-      throw new Error("Buyer must be the connected wallet");
+    // Verify seller is making the call
+    if (sellerAddress.toLowerCase() !== currentAccount.toLowerCase()) {
+      throw new Error("Seller must be the connected wallet");
     }
 
     const breakdown = calculatePaymentBreakdown(totalPriceInEth);
@@ -91,7 +89,7 @@ export async function completeFullOwnershipTransfer(
       throw new Error("Failed to get stamp fee transaction receipt");
     }
     
-    const stampFeeTxHash = stampFeeReceipt.hash;
+    const stampFeeTxHash = stampFeeReceipt.hash ?? stampFeeReceipt.hash;
     console.log(`✅ Stamp fee sent: ${stampFeeTxHash}`);
 
     // Step 2: Create escrow contract
@@ -144,10 +142,8 @@ export async function completeFullOwnershipTransfer(
   }
 }
 
-/**
- * Seller deposits NFT into escrow
- * Called by: SELLER
- */
+// Seller deposits NFT into escrow
+// Called by: SELLER
 export async function sellerDepositNFT(
   escrowAddress: string,
   tokenId: number
@@ -191,10 +187,8 @@ export async function sellerDepositNFT(
   }
 }
 
-/**
- * Buyer deposits payment into escrow
- * Called by: BUYER
- */
+// Buyer deposits payment into escrow
+// Called by: BUYER
 export async function buyerDepositPayment(
   escrowAddress: string,
   amountInEth: string
@@ -233,10 +227,8 @@ export async function buyerDepositPayment(
   }
 }
 
-/**
- * Finalize escrow - releases payment and transfers NFT
- * Called by: BUYER
- */
+// Finalize escrow - releases payment and transfers NFT
+// Called by: BUYER
 export async function finalizeEscrow(
   escrowAddress: string
 ): Promise<{ 
@@ -279,10 +271,8 @@ export async function finalizeEscrow(
   }
 }
 
-/**
- * Cancel escrow and refund both parties
- * Called by: BUYER or SELLER
- */
+// Cancel escrow and refund both parties
+// Called by: BUYER or SELLER
 export async function cancelEscrow(
   escrowAddress: string
 ): Promise<{ 
@@ -323,9 +313,7 @@ export async function cancelEscrow(
 // Query Functions
 // ============================================
 
-/**
- * Get escrow status
- */
+// Get escrow status
 export async function getEscrowStatus(escrowAddress: string): Promise<{
   isBuyerDeposited: boolean;
   isSellerDeposited: boolean;
@@ -341,9 +329,7 @@ export async function getEscrowStatus(escrowAddress: string): Promise<{
   };
 }
 
-/**
- * Get complete escrow details
- */
+// Get complete escrow details
 export async function getEscrowDetails(escrowAddress: string): Promise<{
   buyer: string;
   seller: string;
@@ -379,17 +365,13 @@ export async function getEscrowDetails(escrowAddress: string): Promise<{
   };
 }
 
-/**
- * Get all escrows for a user
- */
+// Get all escrows for a user
 export async function getUserEscrows(userAddress: string): Promise<string[]> {
   const factory = await getEscrowFactoryContract();
   return await factory.getUserEscrows(userAddress);
 }
 
-/**
- * Calculate payment breakdown (for display purposes)
- */
+//  Calculate payment breakdown (for display purposes)
 export function getPaymentBreakdown(priceInEth: string): {
   totalPrice: string;
   stampFee: string;
@@ -407,9 +389,7 @@ export function getPaymentBreakdown(priceInEth: string): {
 // Event Listeners
 // ============================================
 
-/**
- * Listen to escrow events
- */
+// Listen to escrow events
 export async function onEscrowCreated(
   callback: (escrow: string, buyer: string, seller: string, type: number) => void
 ) {
@@ -417,9 +397,7 @@ export async function onEscrowCreated(
   factory.on("EscrowCreated", callback);
 }
 
-/**
- * Listen to payment deposited
- */
+// Listen to payment deposited
 export async function onPaymentDeposited(
   escrowAddress: string,
   callback: (buyer: string, amount: bigint) => void
@@ -428,9 +406,7 @@ export async function onPaymentDeposited(
   escrow.on("PaymentDeposited", callback);
 }
 
-/**
- * Listen to asset deposited
- */
+// Listen to asset deposited
 export async function onAssetDeposited(
   escrowAddress: string,
   callback: (seller: string, type: number) => void
@@ -439,9 +415,7 @@ export async function onAssetDeposited(
   escrow.on("AssetDeposited", callback);
 }
 
-/**
- * Listen to escrow finalized
- */
+// Listen to escrow finalized
 export async function onEscrowFinalized(
   escrowAddress: string,
   callback: (buyer: string, seller: string) => void
@@ -450,9 +424,7 @@ export async function onEscrowFinalized(
   escrow.on("EscrowFinalized", callback);
 }
 
-/**
- * Remove all event listeners
- */
+// Remove all event listeners
 export async function removeEscrowListeners(escrowAddress?: string) {
   if (escrowAddress) {
     const escrow = await getEscrowContract(escrowAddress);
