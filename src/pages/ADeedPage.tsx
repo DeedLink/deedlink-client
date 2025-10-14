@@ -16,7 +16,7 @@ import { useWallet } from "../contexts/WalletContext";
 import { ethers } from "ethers";
 import TransactPopup from "../components/adeed/transactPopup";
 import { DirectTransferPopup } from "../components/adeed/tnxPopups/DirectTransferPopup";
-import { SaleEscrowPopup } from "../components/adeed/tnxPopups/SaleEscrowPopup";
+import SaleEscrowPopup from "../components/adeed/tnxPopups/SaleEscrowPopup";
 
 interface ISignatures {
   surveyor: boolean;

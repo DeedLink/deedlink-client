@@ -69,6 +69,7 @@ export async function transferNFT(from: string, to: string, tokenId: number) {
   const nft = await getPropertyNFTContract();
   const tx = await nft.transferFrom(from, to, tokenId);
   const receipt = await tx.wait();
+  console.log(receipt);
   
   return { 
     txHash: receipt.hash ?? receipt.transactionHash 
