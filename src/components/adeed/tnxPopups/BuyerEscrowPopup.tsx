@@ -7,23 +7,32 @@ import {
   getEscrowDetails, 
   getEscrowStatus 
 } from "../../../web3.0/escrowIntegration";
-import { useWallet } from "../../../contexts/WalletContext";
+import { createTransaction, updateFullOwnerAddress } from "../../../api/api";
 
 interface BuyerEscrowPopupProps {
   isOpen: boolean;
   escrowAddress: string;
+  deedId: string;
   onClose: () => void;
 }
 
 const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({ 
   isOpen, 
   escrowAddress, 
+  deedId,
   onClose 
 }) => {
   const [loading, setLoading] = useState(false);
   const [details, setDetails] = useState<any>(null);
   const [status, setStatus] = useState<any>(null);
-  const { account } = useWallet();
+
+  useEffect(()=>{
+    const getDetailsAll = async() => {
+        getEscrowDetails(escrowAddress);
+        console.log(details);
+    };
+    getDetailsAll();
+  },[]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,6 +67,7 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
     setLoading(true);
     try {
       const result = await buyerDepositPayment(escrowAddress, details.price);
+      console.log(result);
       
       if (result.success) {
         alert(
@@ -95,6 +105,20 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
       const result = await finalizeEscrow(escrowAddress);
       
       if (result.success) {
+
+        await createTransaction(
+          deedId,
+          details.seller as string,
+          details.buyer as string,
+          parseFloat(details?.price),
+          100,
+          details.txHash || "",
+          "escrow_sale",
+          `Escrow Sale - ${details.escrowAddress}`
+        );
+
+        await updateFullOwnerAddress(details.tokenId, details.buyer.toLowerCase());
+
         alert(
           `✅ Purchase Complete!\n\n` +
           `Transaction: ${result.txHash}\n\n` +
@@ -119,7 +143,7 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+      className="z-[60] flex items-center justify-center w-full h-full"
       onClick={onClose}
     >
       <div

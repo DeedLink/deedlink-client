@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { connectWallet } from "./wallet";
 import EscrowFactoryABI from "./abis/EscrowFactory.json";
 import HybridEscrowABI from "./abis/HybridEscrow.json";
-import { approveNFT } from "./contractService";
+import { approveNFT, nftOwnershipVerification } from "./contractService";
 
 // Environment variables
 const ESCROW_FACTORY_ADDRESS = import.meta.env.VITE_ESCROW_FACTORY_ADDRESS as string;
@@ -108,6 +108,8 @@ export async function completeFullOwnershipTransfer(
       throw new Error("Failed to get escrow creation receipt");
     }
 
+    console.log(`✅ Escrow creation transaction:`, createReceipt);
+
     // Extract escrow address from event
     let escrowAddress: string | undefined;
     for (const log of createReceipt.logs) {
@@ -154,6 +156,18 @@ export async function sellerDepositNFT(
 }> {
   try {
     console.log("Seller depositing NFT to escrow...");
+
+    // Step 0: nftOwnershipVerification
+    // Verify seller owns the NFT
+    const signer = await getSigner();
+    const sellerAddress = await signer.getAddress();
+    const ownsNFT = await nftOwnershipVerification(tokenId, sellerAddress);
+    if (!ownsNFT) {
+      throw new Error("Seller does not own the specified NFT");
+    }
+    else{
+      console.log("✅ Seller owns the NFT");
+    }
 
     // Step 1: Approve NFT to escrow contract
     console.log("1️⃣ Approving NFT to escrow...");
@@ -202,8 +216,12 @@ export async function buyerDepositPayment(
 
     const escrow = await getEscrowContract(escrowAddress);
     const amountInWei = ethers.parseEther(amountInEth);
+
+    const res = await getEscrowDetails(escrowAddress);
+    console.log(res);
     
     const tx = await escrow.depositPayment({ value: amountInWei });
+    console.log(tx);
     const receipt = await tx.wait();
     
     if (!receipt) {

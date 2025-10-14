@@ -1,6 +1,6 @@
 // SaleEscrowPopup.tsx - Sale with Payment & Escrow
 import { type FC, useState, useEffect } from "react";
-import { createTransaction, getUsers } from "../../../api/api";
+import { getUsers } from "../../../api/api";
 import type { User } from "../../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle, IoCashOutline } from "react-icons/io5";
 import { FaStore } from "react-icons/fa";
@@ -92,18 +92,7 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
 
       if (result.success && result.escrowAddress) {
         setEscrowAddress(result.escrowAddress);
-        
-        await createTransaction(
-          deedId,
-          account as string,
-          selectedWallet,
-          parseFloat(salePrice),
-          100,
-          result.stampFeeTxHash || "",
-          "escrow_sale",
-          `Escrow Sale - ${result.escrowAddress}`
-        );
-
+    
         alert(
           `✅ Escrow Created!\n\n` +
           `Escrow Address: ${result.escrowAddress}\n\n` +
@@ -340,7 +329,7 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
                   Click the button below to deposit your NFT into the escrow. 
                   After this, the buyer will deposit payment and finalize the transfer.
                 </p>
-              </div>buyerAddress
+              </div>
 
               <button
                 onClick={handleDepositNFT}

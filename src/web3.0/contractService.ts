@@ -182,3 +182,10 @@ export async function getSignatures(tokenId: number) {
 
   return { surveyor, notary, ivsl, fully };
 }
+
+// -------------------- Additional Functions --------------------
+export async function nftOwnershipVerification(tokenId: number, userAddress: string) {
+  const nft = await getPropertyNFTContract();
+  const owner = await nft.ownerOf(tokenId);
+  return owner.toLowerCase() === userAddress.toLowerCase();
+}

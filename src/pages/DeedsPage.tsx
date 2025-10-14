@@ -7,6 +7,7 @@ import { useLoader } from "../contexts/LoaderContext";
 import { useWallet } from "../contexts/WalletContext";
 import { getDeedsByOwner } from "../api/api";
 import { getSignatures } from "../web3.0/contractService";
+import PurchancePanel from "../components/notifications/Purchasing";
 
 type SortKey = "newest" | "value" | "area" | "share";
 
@@ -134,6 +135,7 @@ const DeedsPage = () => {
               onReset={() => { setQuery(""); setSortBy("newest"); }}
               total={results.length}
             />
+            <PurchancePanel/>
           </div>
         </div>
       </header>
