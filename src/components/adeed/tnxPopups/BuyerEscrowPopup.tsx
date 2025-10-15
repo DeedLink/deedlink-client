@@ -113,9 +113,9 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
           details.buyer as string,
           parseFloat(details?.price),
           100,
-          result.txHash || details.txHash || "",
+          result.txHash || details.txHash || "no_hash",
           "escrow_sale",
-          `Escrow Sale - ${details.escrowAddress}`
+          `Escrow Sale - ${result.txHash || details.txHash || "no_hash"}`
         );
 
         try {

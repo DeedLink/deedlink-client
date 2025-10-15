@@ -17,7 +17,7 @@ function PurchancePanel() {
     {
       id: 1,
       message: "John wants to sell you property #5",
-      escrowAddress: "0x4B2CA169d7aDE8664ba3fa46B2D2ac2D3A1c768d",
+      escrowAddress: "0x1bFC781353d0e93Fa22B6eA60bC73c2388Aa86fd",
       seller: "John Doe",
       deedId: "68ee3f81d9277e0ee7f77c89"
     }
