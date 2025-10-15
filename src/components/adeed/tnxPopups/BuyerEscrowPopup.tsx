@@ -8,6 +8,7 @@ import {
   getEscrowStatus 
 } from "../../../web3.0/escrowIntegration";
 import { createTransaction, updateFullOwnerAddress } from "../../../api/api";
+import { useLogin } from "../../../contexts/LoginContext";
 
 interface BuyerEscrowPopupProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
   const [loading, setLoading] = useState(false);
   const [details, setDetails] = useState<any>(null);
   const [status, setStatus] = useState<any>(null);
+  const { user } = useLogin();
 
   useEffect(()=>{
     const getDetailsAll = async() => {
@@ -103,21 +105,30 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
     setLoading(true);
     try {
       const result = await finalizeEscrow(escrowAddress);
-      
-      if (result.success) {
 
+      if (result.success) {
         await createTransaction(
           deedId,
           details.seller as string,
           details.buyer as string,
           parseFloat(details?.price),
           100,
-          details.txHash || "",
+          result.txHash || details.txHash || "",
           "escrow_sale",
           `Escrow Sale - ${details.escrowAddress}`
         );
 
-        await updateFullOwnerAddress(details.tokenId, details.buyer.toLowerCase());
+        try {
+          const updateOwner = await updateFullOwnerAddress(
+              details.tokenId,
+              details.buyer.toLowerCase(),
+              user?.name || "",
+              user?.nic || ""
+            );
+          console.log("Owner address updated in DB:", updateOwner);
+        } catch (err) {
+          console.error("Failed to update owner address in DB:", err);
+        }
 
         alert(
           `✅ Purchase Complete!\n\n` +
