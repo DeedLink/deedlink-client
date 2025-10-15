@@ -213,6 +213,7 @@ const ADeedPage = () => {
         );
 
         setTnx(sortedTnx);
+        console.log(sortedTnx);
       }
     } else {
       showToast("Deed ID not found", "error");
