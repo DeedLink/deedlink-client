@@ -1,6 +1,7 @@
-import type { IDeed, ILocationPoint } from "../types/responseDeed";
-import type { Deed } from "../types/types";
+import type { /*IDeed ,*/ ILocationPoint } from "../types/responseDeed";
+//import type { Deed } from "../types/types";
 
+/*
 export const convertIDeedToDeed = (iDeed: IDeed): Deed => {
   const latestValue = iDeed.valuation && iDeed.valuation.length > 0
     ? iDeed.valuation.slice().sort((a, b) => b.timestamp - a.timestamp)[0]?.estimatedValue || 0
@@ -26,9 +27,10 @@ export const convertIDeedToDeed = (iDeed: IDeed): Deed => {
     area: iDeed.landArea,
     landType: iDeed.landType,
     location: location,
-    sides: sides
+    sides: Any
   };
 };
+*/
 
 export const getCenterOfLocations = (locations: ILocationPoint[]) => {
   if (!locations || locations.length === 0) return null;

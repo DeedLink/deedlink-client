@@ -6,6 +6,7 @@ import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle, IoCashOut
 import { FaStore } from "react-icons/fa";
 import { completeFullOwnershipTransfer, sellerDepositNFT, getPaymentBreakdown } from "../../../web3.0/escrowIntegration";
 import { useWallet } from "../../../contexts/WalletContext";
+import { useQR } from "../../../contexts/QRContext";
 
 interface SaleEscrowPopupProps {
   isOpen: boolean;
@@ -28,6 +29,9 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
   const [loading, setLoading] = useState(false);
   const [escrowAddress, setEscrowAddress] = useState<string | null>(null);
   const { account } = useWallet();
+  const [txHash, setTxHash] = useState("");
+  const { showQRPopup } = useQR();
+
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -102,6 +106,10 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
           `3. Buyer finalizes transfer\n\n` +
           `Click "Deposit NFT" button to continue.`
         );
+        if (result.success && result.escrowAddress) {
+        setEscrowAddress(result.escrowAddress);
+        setTxHash(result.stampFeeTxHash || "");
+      }
       } else {
         throw new Error(result.error || "Failed to create escrow");
       }
@@ -345,6 +353,20 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
             </>
           )}
         </div>
+
+        <button
+          onClick={() => showQRPopup({
+            deedId,
+            escrowAddress: escrowAddress || "",
+            seller: account || "",
+            hash: txHash,
+            size: 220
+          })}
+          disabled={!txHash}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-gray-700 to-gray-900 text-white font-semibold hover:from-gray-800 hover:to-black shadow-md hover:shadow-lg transition"
+        >
+          Show QR Details
+        </button>
 
         <div className="h-1 bg-gradient-to-r from-green-600 via-emerald-500 to-green-700" />
       </div>

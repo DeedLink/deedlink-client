@@ -15,6 +15,7 @@ import DeedRegistrationPage from './pages/DeedRegistrationPage';
 import ProtectedRoute from './contexts/ProtectedRoute';
 import { ToastProvider } from './contexts/ToastContext';
 import ADeedPage from './pages/ADeedPage';
+import { QRProvider } from './contexts/QRContext';
 
 function App() {
   return (
@@ -23,44 +24,46 @@ function App() {
         <LoginProvider>
           <WalletProvider>
             <SignupProvider>
-              <div className="flex flex-col min-h-screen font-spectral text-white bg-black">
-                <div className='w-full'>
-                  <NavBar />
-                </div>
-                <LoginPopup />
-                <RegistrationPopup/>
-                <LoaderProvider>
-                  <div className="flex-grow bg-white">
-                    <Routes>
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/deeds" element={
-                        <ProtectedRoute>
-                          <DeedsPage />
-                        </ProtectedRoute>
-                        } />
-                      <Route path="/about" element={<AboutPage/>} />
-                      <Route path="/market" element={
-                        <ProtectedRoute>
-                          <MarketPage />
-                        </ProtectedRoute>
-                        } />
-                      <Route path="/deeds-registration" element={
-                        <ProtectedRoute>
-                          <DeedRegistrationPage/>
-                        </ProtectedRoute>
-                        } />
-                      <Route path="/deed/:deedNumber" element={
-                        <ProtectedRoute>
-                          <ADeedPage/>
-                        </ProtectedRoute>
-                        } />
-                    </Routes>
+              <QRProvider>
+                <div className="flex flex-col min-h-screen font-spectral text-white bg-black">
+                  <div className='w-full'>
+                    <NavBar />
                   </div>
-                </LoaderProvider>
-                <div className='w-full'>
-                  <Footer />
+                  <LoginPopup />
+                  <RegistrationPopup/>
+                  <LoaderProvider>
+                    <div className="flex-grow bg-white">
+                      <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/deeds" element={
+                          <ProtectedRoute>
+                            <DeedsPage />
+                          </ProtectedRoute>
+                          } />
+                        <Route path="/about" element={<AboutPage/>} />
+                        <Route path="/market" element={
+                          <ProtectedRoute>
+                            <MarketPage />
+                          </ProtectedRoute>
+                          } />
+                        <Route path="/deeds-registration" element={
+                          <ProtectedRoute>
+                            <DeedRegistrationPage/>
+                          </ProtectedRoute>
+                          } />
+                        <Route path="/deed/:deedNumber" element={
+                          <ProtectedRoute>
+                            <ADeedPage/>
+                          </ProtectedRoute>
+                          } />
+                      </Routes>
+                    </div>
+                  </LoaderProvider>
+                  <div className='w-full'>
+                    <Footer />
+                  </div>
                 </div>
-              </div>
+              </QRProvider>
             </SignupProvider>
           </WalletProvider>
         </LoginProvider>
