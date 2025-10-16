@@ -352,21 +352,20 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
               </button>
             </>
           )}
+          <button
+            onClick={() => showQRPopup({
+              deedId,
+              escrowAddress: escrowAddress || "",
+              seller: account || "",
+              hash: txHash,
+              size: 220
+            })}
+            disabled={!txHash || loading}
+            className={`w-full py-3 rounded-xl bg-gradient-to-r from-gray-700 to-gray-900 text-white font-semibold hover:from-gray-800 hover:to-black shadow-md hover:shadow-lg transition ${(!txHash || loading) ? "opacity-50 cursor-not-allowed" : ""}`}
+          >
+            Show QR Details
+          </button>
         </div>
-
-        <button
-          onClick={() => showQRPopup({
-            deedId,
-            escrowAddress: escrowAddress || "",
-            seller: account || "",
-            hash: txHash,
-            size: 220
-          })}
-          disabled={!txHash}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-gray-700 to-gray-900 text-white font-semibold hover:from-gray-800 hover:to-black shadow-md hover:shadow-lg transition"
-        >
-          Show QR Details
-        </button>
 
         <div className="h-1 bg-gradient-to-r from-green-600 via-emerald-500 to-green-700" />
       </div>
