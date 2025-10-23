@@ -91,7 +91,7 @@ const RegistrationPopup = () => {
     if(userState==="pending"){
       setStep(3);
     }
-  }, [userState, isOpen]);showToast
+  }, [userState, isOpen]);
 
   const submitForKYC=async()=>{
     // console.log({
