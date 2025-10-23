@@ -269,6 +269,8 @@ const ADeedPage = () => {
               onShare={handleShare}
               onViewBlockchain={handleViewBlockchain}
               numberOfFT={numberOfFT}
+              onRent={() => {}}
+              onPowerOfAttorney={() => {}}
             />
           </div>
 
@@ -516,6 +518,8 @@ const ADeedPage = () => {
             onShare={handleShare}
             onViewBlockchain={handleViewBlockchain}
             numberOfFT={numberOfFT}
+            onRent={() => {}}
+            onPowerOfAttorney={() => {}}
           />
         </div>
       </div>
