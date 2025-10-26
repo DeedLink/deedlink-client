@@ -1,0 +1,8 @@
+version: "3.9"
+services:
+  frontend:
+    image: rasindudulshansiriwardhana/deedlink-client:latest
+    container_name: deedlink-client
+    ports:
+      - "6000:80"
+    restart: unless-stopped
