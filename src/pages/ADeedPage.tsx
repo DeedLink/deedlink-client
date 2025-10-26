@@ -416,7 +416,7 @@ const ADeedPage = () => {
                     </div>
                     
                     <div className="mt-5 text-xs text-gray-600 uppercase font-semibold">Land Type</div>
-                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-base mt-2 ${getLandTypeColor(deed.landType)}`}>
+                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs 3xl:text-base mt-2 ${getLandTypeColor(deed.landType)}`}>
                       <span className="text-xl">{getLandTypeIcon(deed.landType)}</span>
                       <span className="capitalize">{deed.landType}</span>
                     </div>
