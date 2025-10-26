@@ -26,7 +26,7 @@ export const API = {
     : import.meta.env.VITE_SURVEY_PLAN_API_URL,
 };
 
-console.log("API", API);
+console.log("isVercelTest:", isVercelTest);
 
 
 function withVercelHeaders(config: any) {
