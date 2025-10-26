@@ -42,6 +42,8 @@ jobs:
             --build-arg VITE_ESCROW_FACTORY_ADDRESS=${{ secrets.VITE_ESCROW_FACTORY_ADDRESS }} \
             --build-arg VITE_DEPLOYER_ADDRESS=${{ secrets.VITE_DEPLOYER_ADDRESS }} \
             --build-arg VITE_ADMIN_WALLET=${{ secrets.VITE_ADMIN_WALLET }} \
+            --build-arg VITE_VERCEL_TEST=${{ secrets.VITE_VERCEL_TEST }} \
+            --build-arg VITE_SERVICE_MAP_PASSWORD=${{ secrets.VITE_SERVICE_MAP_PASSWORD }} \
             -t ${{ secrets.DOCKER_HUB_USERNAME }}/deedlink-client:latest .
       
       - name: Push Docker Image
