@@ -5,7 +5,7 @@ import type { RegisterDeedRequest } from "../types/regitseringdeedtype";
 import type { IDeed } from "../types/responseDeed";
 
 // Later added when vercel testing
-const isVercelTest = import.meta.env.VITE_VERCEL_TEST === "true";
+const isVercelTest = import.meta.env.VITE_VERCEL_TEST === true || "true";
 const serviceMapPassword = import.meta.env.VITE_SERVICE_MAP_PASSWORD || "";
 
 export const API = {
