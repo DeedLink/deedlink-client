@@ -4,5 +4,5 @@ services:
     image: rasindudulshansiriwardhana/deedlink-client:latest
     container_name: deedlink-client
     ports:
-      - "6000:80"
+      - "6003:80"
     restart: unless-stopped
