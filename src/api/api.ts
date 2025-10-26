@@ -5,25 +5,15 @@ import type { RegisterDeedRequest } from "../types/regitseringdeedtype";
 import type { IDeed } from "../types/responseDeed";
 
 // Later added when vercel testing
-const isVercelTest = import.meta.env.VITE_VERCEL_TEST === true || "true";
+const isVercelTest = import.meta.env.VITE_VERCEL_TEST === true;
 const serviceMapPassword = import.meta.env.VITE_SERVICE_MAP_PASSWORD || "";
 
 export const API = {
-  user: isVercelTest
-    ? import.meta.env.VITE_VERCEL_USER_API_URL
-    : import.meta.env.VITE_USER_API_URL,
-  deed: isVercelTest
-    ? import.meta.env.VITE_VERCEL_DEED_API_URL
-    : import.meta.env.VITE_DEED_API_URL,
-  tnx: isVercelTest
-    ? import.meta.env.VITE_VERCEL_TNX_API_URL
-    : import.meta.env.VITE_TNX_API_URL,
-  pinata: isVercelTest
-    ? import.meta.env.VITE_VERCEL_PINATA_API_URL
-    : import.meta.env.VITE_PINATA_API_URL,
-  survey: isVercelTest
-    ? import.meta.env.VITE_VERCEL_SURVEY_PLAN_API_URL
-    : import.meta.env.VITE_SURVEY_PLAN_API_URL,
+  user: isVercelTest ? import.meta.env.VITE_VERCEL_USER_API_URL : import.meta.env.VITE_USER_API_URL,
+  deed: isVercelTest ? import.meta.env.VITE_VERCEL_DEED_API_URL : import.meta.env.VITE_DEED_API_URL,
+  tnx: isVercelTest ? import.meta.env.VITE_VERCEL_TNX_API_URL : import.meta.env.VITE_TNX_API_URL,
+  pinata: isVercelTest ? import.meta.env.VITE_VERCEL_PINATA_API_URL : import.meta.env.VITE_PINATA_API_URL,
+  survey: isVercelTest ? import.meta.env.VITE_VERCEL_SURVEY_PLAN_API_URL : import.meta.env.VITE_SURVEY_PLAN_API_URL
 };
 
 console.log("isVercelTest:", isVercelTest);
