@@ -8,6 +8,19 @@ const USER_API_URL = import.meta.env.VITE_USER_API_URL || "http://localhost:5000
 const DEED_API_URL = import.meta.env.VITE_DEED_API_URL || "http://localhost:5000/api/deeds";
 const TNX_API_URL = import.meta.env.VITE_TNX_API_URL || "http://localhost:5004/api/transactions";
 
+// Later added when vercel testing
+const isVercelTest = import.meta.env.VITE_VERCEL_TEST === "true";
+const serviceMapPassword = import.meta.env.VITE_SERVICE_MAP_PASSWORD || "";
+
+function withVercelHeaders(config: any) {
+  if (isVercelTest && serviceMapPassword) {
+    config.headers["x-service-map-password"] = serviceMapPassword;
+  }
+  return config;
+}
+
+
+
 const api = axios.create({
   baseURL: USER_API_URL,
   headers: {
@@ -20,7 +33,7 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  return config;
+  return withVercelHeaders(config);
 });
 
 // Register user
@@ -135,7 +148,7 @@ deedApi.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  return config;
+  return withVercelHeaders(config);
 });
 
 // Register a deed (protected)
@@ -197,6 +210,10 @@ const pinataApi = axios.create({
   },
 });
 
+pinataApi.interceptors.request.use((config) => {
+  return withVercelHeaders(config);
+});
+
 export const uploadMetadata = async (data: object, type: 'NFT' | 'FT' | 'USER'): Promise<{ uri: string }> => {
   const res: AxiosResponse<{ uri: string }> = await pinataApi.post(`/upload/metadata?type=${type}`, data);
   return res.data;
@@ -242,7 +259,7 @@ planApi.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  return config;
+  return withVercelHeaders(config);
 });
 
 // Get plan by deed ID (protected)
@@ -275,7 +292,7 @@ tnxApi.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  return config;
+  return withVercelHeaders(config);
 });
 
 // Get transactions by deed ID (protected)
