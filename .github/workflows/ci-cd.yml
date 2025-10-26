@@ -31,6 +31,11 @@ jobs:
             --build-arg VITE_PINATA_API_URL=${{ secrets.VITE_PINATA_API_URL }} \
             --build-arg VITE_SURVEY_PLAN_API_URL=${{ secrets.VITE_SURVEY_PLAN_API_URL }} \
             --build-arg VITE_TNX_API_URL=${{ secrets.VITE_TNX_API_URL }} \
+            --build-arg VITE_VERCEL_USER_API_URL=${{ secrets.VITE_VERCEL_USER_API_URL }} \
+            --build-arg VITE_VERCEL_DEED_API_URL=${{ secrets.VITE_VERCEL_DEED_API_URL }} \
+            --build-arg VITE_VERCEL_PINATA_API_URL=${{ secrets.VITE_VERCEL_PINATA_API_URL }} \
+            --build-arg VITE_VERCEL_SURVEY_PLAN_API_URL=${{ secrets.VITE_VERCEL_SURVEY_PLAN_API_URL }} \
+            --build-arg VITE_VERCEL_TNX_API_URL=${{ secrets.VITE_VERCEL_TNX_API_URL }} \
             --build-arg VITE_PROPERTY_NFT_ADDRESS=${{ secrets.VITE_PROPERTY_NFT_ADDRESS }} \
             --build-arg VITE_FACTORY_ADDRESS=${{ secrets.VITE_FACTORY_ADDRESS }} \
             --build-arg VITE_FRACTIONAL_ADDESS=${{ secrets.VITE_FRACTIONAL_ADDESS }} \
