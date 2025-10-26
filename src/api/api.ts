@@ -26,6 +26,8 @@ export const API = {
     : import.meta.env.VITE_SURVEY_PLAN_API_URL,
 };
 
+console.log("API", API);
+
 
 function withVercelHeaders(config: any) {
   if (isVercelTest && serviceMapPassword) {
