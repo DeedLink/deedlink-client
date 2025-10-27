@@ -4,12 +4,32 @@ import type { AuthResponse, KYCUploadResponse, LoginRequest, RegisterRequest, Se
 import type { RegisterDeedRequest } from "../types/regitseringdeedtype";
 import type { IDeed } from "../types/responseDeed";
 
-const USER_API_URL = import.meta.env.VITE_USER_API_URL || "http://localhost:5000/api/users";
-const DEED_API_URL = import.meta.env.VITE_DEED_API_URL || "http://localhost:5000/api/deeds";
-const TNX_API_URL = import.meta.env.VITE_TNX_API_URL || "http://localhost:5004/api/transactions";
+// Later added when vercel testing
+const isVercelTest = import.meta.env.VITE_VERCEL_TEST === true || import.meta.env.VITE_VERCEL_TEST === "true";
+const serviceMapPassword = import.meta.env.VITE_SERVICE_MAP_PASSWORD || "";
+
+export const API = {
+  user: isVercelTest ? import.meta.env.VITE_VERCEL_USER_API_URL : import.meta.env.VITE_USER_API_URL,
+  deed: isVercelTest ? import.meta.env.VITE_VERCEL_DEED_API_URL : import.meta.env.VITE_DEED_API_URL,
+  tnx: isVercelTest ? import.meta.env.VITE_VERCEL_TNX_API_URL : import.meta.env.VITE_TNX_API_URL,
+  pinata: isVercelTest ? import.meta.env.VITE_VERCEL_PINATA_API_URL : import.meta.env.VITE_PINATA_API_URL,
+  survey: isVercelTest ? import.meta.env.VITE_VERCEL_SURVEY_PLAN_API_URL : import.meta.env.VITE_SURVEY_PLAN_API_URL
+};
+
+console.log("isVercelTest:", isVercelTest);
+
+
+function withVercelHeaders(config: any) {
+  if (isVercelTest && serviceMapPassword) {
+    config.headers["x-service-map-password"] = serviceMapPassword;
+  }
+  return config;
+}
+
+
 
 const api = axios.create({
-  baseURL: USER_API_URL,
+  baseURL: API.user,
   headers: {
     "Content-Type": "application/json",
   },
@@ -20,7 +40,7 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  return config;
+  return withVercelHeaders(config);
 });
 
 // Register user
@@ -124,7 +144,7 @@ export const searchUsers = async (query: string): Promise<User[]> => {
 
 // Deed related api calls
 const deedApi = axios.create({
-  baseURL: DEED_API_URL,
+  baseURL: API.deed,
   headers: {
     "Content-Type": "application/json",
   },
@@ -135,7 +155,7 @@ deedApi.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  return config;
+  return withVercelHeaders(config);
 });
 
 // Register a deed (protected)
@@ -188,13 +208,16 @@ export const addTransactionToDeed = async (
 };
 
 // -------------------- Pinata API Calls --------------------
-const PINATA_API_URL = import.meta.env.VITE_PINATA_API_URL || "http://localhost:6000/ipfs";
 
 const pinataApi = axios.create({
-  baseURL: PINATA_API_URL,
+  baseURL: API.pinata,
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+pinataApi.interceptors.request.use((config) => {
+  return withVercelHeaders(config);
 });
 
 export const uploadMetadata = async (data: object, type: 'NFT' | 'FT' | 'USER'): Promise<{ uri: string }> => {
@@ -227,11 +250,8 @@ export const requestValuation = async (
 };
 
 // Plan related api calls
-
-const SURVEY_PLAN_API_URL = import.meta.env.VITE_SURVEY_PLAN_API_URL || "http://localhost:5003/api/plans";
-
 const planApi = axios.create({
-  baseURL: SURVEY_PLAN_API_URL,
+  baseURL: API.survey,
   headers: {
     "Content-Type": "application/json",
   },
@@ -242,7 +262,7 @@ planApi.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  return config;
+  return withVercelHeaders(config);
 });
 
 // Get plan by deed ID (protected)
@@ -264,7 +284,7 @@ export const getPlanByPlanNumber = async (planId: string): Promise<any> => {
 // Transaction related api calls
 
 const tnxApi = axios.create({
-  baseURL: TNX_API_URL,
+  baseURL: API.tnx,
   headers: {
     "Content-Type": "application/json",
   },
@@ -275,7 +295,7 @@ tnxApi.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  return config;
+  return withVercelHeaders(config);
 });
 
 // Get transactions by deed ID (protected)

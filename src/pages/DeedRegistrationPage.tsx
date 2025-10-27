@@ -18,8 +18,10 @@ const DeedRegistrationPage = () => {
   const { account } = useWallet();
   const [deeds, setDeeds] = useState<IDeed[]>();
   const [statusCounts, setStatusCounts] = useState({ Pending: 0, Approved: 0, Rejected: 0 });
+
   const getDeeds = async () => {
     const res = await getDeedsByOwner(account || "");
+    console.log(res);
     setDeeds(res);
   };
 
