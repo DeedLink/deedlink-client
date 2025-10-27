@@ -18,14 +18,12 @@ export const API = {
 
 console.log("isVercelTest:", isVercelTest);
 
-
 function withVercelHeaders(config: any) {
   if (isVercelTest && serviceMapPassword) {
     config.headers["x-service-map-password"] = serviceMapPassword;
   }
   return config;
 }
-
 
 
 const api = axios.create({
@@ -86,15 +84,20 @@ export const uploadKYC = async (
     if (userFrontImage) formData.append("userFrontImage", userFrontImage);
     console.log("form data: ", formData.get("nicFrontSide"));
 
+    const token = getItem("local", "token") || "";
+    
+    const headers: Record<string, string> = {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    };
+
+    if (isVercelTest && serviceMapPassword) {
+      headers["x-service-map-password"] = serviceMapPassword;
+    }
     const res: AxiosResponse<KYCUploadResponse> = await api.post(
         "/upload-kyc",
         formData,
-        {
-            headers: {
-                "Content-Type": "multipart/form-data",
-                Authorization: `Bearer ${getItem("local", "token") || ""}`,
-            },
-        }
+        { headers }
     );
 
     return res.data;
@@ -229,11 +232,18 @@ export const uploadFile = async (file: File): Promise<{ uri: string }> => {
   const formData = new FormData();
   formData.append('file', file);
 
+  const headers: Record<string, string> = {
+    'Content-Type': 'multipart/form-data',
+  };
+
+  if (isVercelTest && serviceMapPassword) {
+    headers["x-service-map-password"] = serviceMapPassword;
+  }
+
   const res: AxiosResponse<{ uri: string }> = await pinataApi.post('/upload/file', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+    headers,
   });
+
   return res.data;
 }
 
