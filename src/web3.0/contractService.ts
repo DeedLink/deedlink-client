@@ -175,19 +175,27 @@ export async function getFTBalance(tokenAddress: string, account: string) {
 
 // Get signing status
 export async function getSignatures(tokenId: number) {
-  console.log("Came Here 000:", tokenId);
   const nft = await getPropertyNFTContract();
-  
-  console.log("came here: 001:->", tokenId);
-  
-  const surveyor: boolean = await nft.isSignedBySurveyor(tokenId);
-  const notary: boolean = await nft.isSignedByNotary(tokenId);
-  const ivsl: boolean = await nft.isSignedByIVSL(tokenId);
-  const fully: boolean = await nft.isFullySigned(tokenId);
+  const addr = await nft.getAddress();
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const network = await provider.getNetwork();
 
-  console.log("Came Here 002:",{ surveyor, notary, ivsl, fully });
+  console.log("📍 Debug Info:");
+  console.log("NFT Contract Address:", addr);
+  console.log("Network:", network);
+  console.log("Token ID:", tokenId);
 
-  return { surveyor, notary, ivsl, fully };
+  try {
+    const surveyor: boolean = await nft.isSignedBySurveyor(tokenId);
+    const notary: boolean = await nft.isSignedByNotary(tokenId);
+    const ivsl: boolean = await nft.isSignedByIVSL(tokenId);
+    const fully: boolean = await nft.isFullySigned(tokenId);
+
+    return { surveyor, notary, ivsl, fully };
+  } catch (err) {
+    console.error("❌ Contract call failed:", err);
+    throw err;
+  }
 }
 
 // -------------------- Additional Functions --------------------
