@@ -180,6 +180,8 @@ export async function getSignatures(tokenId: number) {
   const ivsl: boolean = await nft.isSignedByIVSL(tokenId);
   const fully: boolean = await nft.isFullySigned(tokenId);
 
+  console.log({ surveyor, notary, ivsl, fully });
+
   return { surveyor, notary, ivsl, fully };
 }
 
