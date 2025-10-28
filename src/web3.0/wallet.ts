@@ -16,7 +16,7 @@ export async function connectWallet() {
     //Fallback: Use WalletConnect
     const wcProvider = await EthereumProvider.init({
       projectId,
-      chains: [13337], // I use my own anvil testnet with the chainId=1337
+      chains: [31337], // I use my own anvil testnet with the chainId=31337
       showQrModal: true,
     });
 
