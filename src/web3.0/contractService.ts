@@ -173,6 +173,7 @@ export async function getFTBalance(tokenAddress: string, account: string) {
 
 // Get signing status
 export async function getSignatures(tokenId: number) {
+  console.log("Came Here 000:", tokenId);
   const nft = await getPropertyNFTContract();
   
   console.log("came here: 001:->", tokenId);
