@@ -2,12 +2,12 @@ import { BrowserProvider } from "ethers";
 import EthereumProvider from "@walletconnect/ethereum-provider";
 
 const projectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
-const RPC_URL = import.meta.env.VITE_RPC_URL as string;
 const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID);
+const WEB_RPC = import.meta.env.VITE_RPC_URL_MOBILE as string;
+const MOBILE_RPC = import.meta.env.VITE_RPC_URL_MOBILE as string;
 
 export async function connectWallet() {
   try {
-    //Try MetaMask first
     if ((window as any).ethereum) {
       const eth = (window as any).ethereum;
 
@@ -37,8 +37,8 @@ export async function connectWallet() {
               params: [
                 {
                   chainId: "0x" + CHAIN_ID.toString(16),
-                  chainName: "Anvil Localhost",
-                  rpcUrls: [RPC_URL],
+                  chainName: "Blockchain Server",
+                  rpcUrls: [WEB_RPC],
                   nativeCurrency: {
                     name: "ETH",
                     symbol: "ETH",
@@ -59,14 +59,15 @@ export async function connectWallet() {
       return { provider, signer, account: accounts[0], type: "metamask" };
     }
 
-    //Fallback: WalletConnect
+    //WalletConnect (mobile MetaMask or others)
+    console.log("Initializing WalletConnect...");
     const wcProvider = await EthereumProvider.init({
       projectId,
       chains: [CHAIN_ID],
       showQrModal: true,
       optionalChains: [CHAIN_ID],
       rpcMap: {
-        [CHAIN_ID]: RPC_URL,
+        [CHAIN_ID]: MOBILE_RPC,
       },
     } as any);
 
