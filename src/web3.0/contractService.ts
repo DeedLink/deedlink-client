@@ -173,13 +173,18 @@ export async function getFTBalance(tokenAddress: string, account: string) {
 
 // Get signing status
 export async function getSignatures(tokenId: number) {
+  console.log("Came Here 000:", tokenId);
   const nft = await getPropertyNFTContract();
+  
+  console.log("came here: 001:->", tokenId);
   
   const surveyor: boolean = await nft.isSignedBySurveyor(tokenId);
   const notary: boolean = await nft.isSignedByNotary(tokenId);
   const ivsl: boolean = await nft.isSignedByIVSL(tokenId);
   const fully: boolean = await nft.isFullySigned(tokenId);
-  
+
+  console.log("Came Here 002:",{ surveyor, notary, ivsl, fully });
+
   return { surveyor, notary, ivsl, fully };
 }
 
