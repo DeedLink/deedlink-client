@@ -12,6 +12,8 @@ const FACTORY_ADDRESS = import.meta.env.VITE_FACTORY_ADDRESS as string;
 //   throw new Error("Contract addresses not set in environment variables");
 // } later I will check here (note)
 
+console.log(PROPERTY_NFT_ADDRESS);
+
 // -------------------- Helpers --------------------
 async function getSigner() {
   const wallet = await connectWallet();
