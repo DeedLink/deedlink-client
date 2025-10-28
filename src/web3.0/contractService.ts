@@ -183,6 +183,7 @@ export async function getSignatures(tokenId: number) {
   console.log("📍 Debug Info:");
   console.log("NFT Contract Address:", addr);
   console.log("Network:", network);
+  console.log("Network Chain Id:", network.chainId);
   console.log("Token ID:", tokenId);
 
   try {
