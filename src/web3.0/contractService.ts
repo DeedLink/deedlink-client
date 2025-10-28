@@ -176,15 +176,6 @@ export async function getFTBalance(tokenAddress: string, account: string) {
 // Get signing status
 export async function getSignatures(tokenId: number) {
   const nft = await getPropertyNFTContract();
-  const addr = await nft.getAddress();
-  const provider = new ethers.BrowserProvider((window as any).ethereum);
-  const network = await provider.getNetwork();
-
-  console.log("📍 Debug Info:");
-  console.log("NFT Contract Address:", addr);
-  console.log("Network:", network);
-  console.log("Network Chain Id:", network.chainId);
-  console.log("Token ID:", tokenId);
 
   try {
     const surveyor: boolean = await nft.isSignedBySurveyor(tokenId);
