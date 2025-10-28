@@ -75,7 +75,7 @@ export async function connectWallet() {
 
     const provider = new BrowserProvider(wcProvider as any);
     const signer = await provider.getSigner();
-    const account = await signer.getAddress();
+    const account = (await signer.getAddress()).toLocaleLowerCase();
 
     return { provider, signer, account, type: "walletconnect" };
   } catch (err) {
