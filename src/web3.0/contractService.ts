@@ -177,7 +177,7 @@ export async function getFTBalance(tokenAddress: string, account: string) {
 export async function getSignatures(tokenId: number) {
   const nft = await getPropertyNFTContract();
   const addr = await nft.getAddress();
-  const provider = new ethers.BrowserProvider(window.ethereum);
+  const provider = new ethers.BrowserProvider((window as any).ethereum);
   const network = await provider.getNetwork();
 
   console.log("📍 Debug Info:");
