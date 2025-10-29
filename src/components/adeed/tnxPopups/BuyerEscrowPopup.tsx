@@ -9,6 +9,7 @@ import {
 } from "../../../web3.0/escrowIntegration";
 import { createTransaction, updateFullOwnerAddress } from "../../../api/api";
 import { useLogin } from "../../../contexts/LoginContext";
+import { useAlert } from "../../../contexts/AlertContext";
 
 interface BuyerEscrowPopupProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
   const [details, setDetails] = useState<any>(null);
   const [status, setStatus] = useState<any>(null);
   const { user } = useLogin();
+  const { showAlert } = useAlert();
 
   useEffect(()=>{
     const getDetailsAll = async() => {
@@ -55,15 +57,33 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
     fetchData();
   }, [isOpen, escrowAddress]);
 
+  function confirmDeposit(details: any): Promise<boolean> {
+  return new Promise((resolve) => {
+    showAlert({
+      type: "warning",
+      title: "Deposit Confirmation",
+      htmlContent: (
+        <div className="text-white space-y-2">
+          <p>Deposit payment for this property?</p>
+          <p>
+            <strong>Amount:</strong> {details.price} ETH<br />
+            <strong>Seller:</strong> {details.seller}
+          </p>
+          <p>This payment will be held in escrow until you finalize the transfer.</p>
+        </div>
+      ),
+      confirmText: "Confirm",
+      cancelText: "Cancel",
+      onConfirm: () => resolve(true),
+      onCancel: () => resolve(false),
+    });
+  });
+}
+
   const handleDepositPayment = async () => {
     if (!details) return alert("Loading escrow details...");
 
-    const confirmed = confirm(
-      `Deposit payment for this property?\n\n` +
-      `Amount: ${details.price} ETH\n` +
-      `Seller: ${details.seller}\n\n` +
-      `This payment will be held in escrow until you finalize the transfer.`
-    );
+    const confirmed = confirmDeposit(details);
     if (!confirmed) return;
 
     setLoading(true);
@@ -72,11 +92,19 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
       console.log(result);
       
       if (result.success) {
-        alert(
-          `✅ Payment Deposited!\n\n` +
-          `Transaction: ${result.txHash}\n\n` +
-          `Now you can finalize the transfer to receive the NFT.`
-        );
+        showAlert({
+          type: "success",
+          title: "Payment Deposited!",
+          htmlContent: (
+            <div className="text-white space-y-2">
+              <p>
+                <strong>Transaction:</strong> {result.txHash}
+              </p>
+              <p>Now you can finalize the transfer to receive the NFT.</p>
+            </div>
+          ),
+          confirmText: "OK",
+        });
         
         // Refresh status
         const newStatus = await getEscrowStatus(escrowAddress);
@@ -86,7 +114,12 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
       }
     } catch (error: any) {
       console.error("Payment deposit failed:", error);
-      alert(`❌ Failed to deposit payment: ${error.message}`);
+      showAlert({
+        type: "error",
+        title: "Failed to Deposit Payment",
+        message: error.message,
+        confirmText: "OK",
+      });
     } finally {
       setLoading(false);
     }
@@ -130,18 +163,31 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
           console.error("Failed to update owner address in DB:", err);
         }
 
-        alert(
-          `✅ Purchase Complete!\n\n` +
-          `Transaction: ${result.txHash}\n\n` +
-          `You now own the property!`
-        );
+        showAlert({
+          type: "success",
+          title: "Purchase Complete!",
+          htmlContent: (
+            <div className="text-white space-y-2">
+              <p>
+                <strong>Transaction:</strong> {result.txHash}
+              </p>
+              <p>You now own the property!</p>
+            </div>
+          ),
+          confirmText: "OK",
+        });
         onClose();
       } else {
         throw new Error(result.error);
       }
     } catch (error: any) {
       console.error("Finalization failed:", error);
-      alert(`❌ Failed to finalize: ${error.message}`);
+      showAlert({
+        type: "error",
+        title: "Failed to Finalize",
+        message: error.message,
+        confirmText: "OK",
+      });
     } finally {
       setLoading(false);
     }
