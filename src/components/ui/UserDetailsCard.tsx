@@ -55,6 +55,14 @@ const UserDetailsCard = ({ user }: any) => {
     }
   };
 
+  const profileImage = file
+  ? URL.createObjectURL(file)
+  : uploadedUrl
+  ? `${ipfs_microservice_url}/file/${uploadedUrl}`
+  : userProfile.profilePicture
+  ? `${ipfs_microservice_url}/file/${userProfile.profilePicture}`
+  : "";
+
   const lastname = userProfile.name.split(" ")[userProfile.name.split(" ").length-1];
 
   return (
@@ -63,11 +71,11 @@ const UserDetailsCard = ({ user }: any) => {
         <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
           <div className="flex items-center gap-5">
             <div className="w-24 h-24 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg relative">
-              {uploadedUrl || userProfile.profilePicture ? (
+              {profileImage ? (
                 <img
-                  src={`${ipfs_microservice_url}/file/${userProfile.profilePicture}` || `${ipfs_microservice_url}/file/${uploadedUrl}`}
+                  src={profileImage}
                   alt="Profile"
-                  className="w-full h-full object-cover rounded-full"
+                  className="object-cover rounded-full w-24 h-24"
                 />
               ) : (
                 <FaUserCircle className="w-16 h-16 text-white" />
