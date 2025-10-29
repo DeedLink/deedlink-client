@@ -3,30 +3,29 @@ import {
   FaEnvelope,
   FaWallet,
   FaIdCard,
-  FaCheckCircle,
-  FaClock,
   FaShieldAlt,
   FaUserCircle,
 } from "react-icons/fa";
+import { compressAddress } from "../../utils/format";
 
 const UserDetailsCard = ({ user }: any) => {
   if (!user) return null;
 
   return (
     <section className="w-full px-6 md:px-16 py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto md:px-20">
         <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
           <div className="flex items-center gap-5">
             <div className="w-24 h-24 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
               <FaUserCircle className="w-16 h-16 text-white" />
             </div>
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-                Welcome, {user.name.split(" ")[0]}!
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                Welcome, {user.name.split(" ")[user.name.split(" ").length-1]}!
               </h2>
               <p className="text-gray-600 flex items-center gap-2 mt-1">
                 <FaShieldAlt className="text-emerald-600" />
-                Account verified & secure
+                KYC verified & secure
               </p>
             </div>
           </div>
@@ -42,7 +41,7 @@ const UserDetailsCard = ({ user }: any) => {
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Full Name
                 </p>
-                <p className="text-lg font-semibold text-gray-900">{user.name}</p>
+                <p className="text-xs md:text-sm font-semibold text-gray-900">{user.name}</p>
               </div>
             </div>
 
@@ -54,7 +53,7 @@ const UserDetailsCard = ({ user }: any) => {
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Email
                 </p>
-                <p className="text-lg font-semibold text-gray-900 break-all text-sm">{user.email}</p>
+                <p className="text-xs md:text-sm font-semibold text-gray-900 break-all text-sm">{user.email}</p>
               </div>
             </div>
 
@@ -66,8 +65,8 @@ const UserDetailsCard = ({ user }: any) => {
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Wallet
                 </p>
-                <p className="text-sm font-mono font-semibold text-gray-800 truncate">
-                  {user.walletAddress}
+                <p className="text-xs md:text-sm font-mono font-semibold text-gray-800 truncate">
+                  {compressAddress(user.walletAddress)}
                 </p>
               </div>
             </div>
@@ -80,7 +79,7 @@ const UserDetailsCard = ({ user }: any) => {
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   National ID
                 </p>
-                <p className="text-lg font-semibold text-gray-900">{user.nic}</p>
+                <p className="text-xs md:text-sm font-semibold text-gray-900">{user.nic}</p>
               </div>
             </div>
           </div>
