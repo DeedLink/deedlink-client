@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type AlertType = "success" | "error" | "warning" | "info";
@@ -30,6 +30,17 @@ export const useAlert = () => useContext(AlertContext);
 export const AlertProvider = ({ children }: { children: ReactNode }) => {
   const [alertOptions, setAlertOptions] = useState<AlertOptions | null>(null);
   const [inputValue, setInputValue] = useState("");
+
+  useEffect(() => {
+    if (alertOptions) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [alertOptions]);
 
   const showAlert = (options: AlertOptions) => {
     setInputValue("");
@@ -70,20 +81,29 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
       <AnimatePresence>
         {alertOptions && (
           <motion.div
-            initial={{ y: -100, opacity: 0 }}
-            animate={{ y: 20, opacity: 1 }}
-            exit={{ y: -100, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="fixed top-0 left-0 right-0 flex justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 backdrop-blur-sm"
           >
-            <div className={`mt-6 w-[90%] max-w-sm rounded-lg shadow-xl p-5 ${getAlertStyles()}`}>
+            <motion.div
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -50, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className={`w-[90%] max-w-sm rounded-lg shadow-xl p-5 ${getAlertStyles()}`}
+              onClick={(e) => e.stopPropagation()}
+            >
               {alertOptions.title && (
                 <h3 className={`text-base font-semibold mb-1.5 ${getIconColor()}`}>
                   {alertOptions.title}
                 </h3>
               )}
               {alertOptions.message && (
-                <p className="text-gray-700 text-sm leading-relaxed mb-3">{alertOptions.message}</p>
+                <p className="text-gray-700 text-sm leading-relaxed mb-3">
+                  {alertOptions.message}
+                </p>
               )}
               {alertOptions.htmlContent}
               {alertOptions.showInput && (
@@ -119,7 +139,7 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
                   </button>
                 )}
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

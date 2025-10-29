@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { getProfile, uploadProfilePicture } from "../../api/api";
 import { FaUpload } from "react-icons/fa6";
 import { type User } from "../../types/types";
+import { useAlert } from "../../contexts/AlertContext";
 
 const UserDetailsCard = ({ user }: any) => {
   if (!user) return null;
@@ -19,6 +20,7 @@ const UserDetailsCard = ({ user }: any) => {
   const [file, setFile] = useState<File | null>(null);
   const [uploadedUrl, setUploadedUrl] = useState(user.dp || "");
   const [isUploading, setIsUploading] = useState(false);
+  const { showAlert } = useAlert();
   const ipfs_microservice_url = import.meta.env.VITE_IPFS_MICROSERVICE_URL;
 
   const getUserProfile =async()=>{
@@ -46,7 +48,12 @@ const UserDetailsCard = ({ user }: any) => {
       console.log(res);
       setUploadedUrl(res.dp);
       setFile(null);
-      alert("Profile picture uploaded!");
+      showAlert({
+        type: "success",
+        title: "Profile Picture Updated",
+        message: "Profile Picture Updated Successfully",
+        confirmText: "OK",
+      });
     } catch (err: any) {
       console.error(err);
       alert(err.response?.data?.message || "Upload failed");
