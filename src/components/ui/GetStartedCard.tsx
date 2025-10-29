@@ -3,41 +3,37 @@ import { FaLock, FaLockOpen } from "react-icons/fa6";
 import { useState } from "react";
 
 const GetStartedCard = () => {
-  const [isLocked, _setIsLocked] = useState(true);
-
-  // const lockUnlock = (status: boolean) => {
-  //   setIsLocked(!status);
-  // };
+  const [isLocked] = useState(true);
 
   return (
-    <div className="bg-white shadow-lg rounded-xl p-6 max-w-xs w-full text-center md:ml-auto border border-gray-200 h-fit min-h-[480px] flex flex-col justify-between">
-      <div className="h-full min-h-80 flex flex-col justify-center items-center">
-        <div className="flex flex-col items-center justify-center gap-2 mb-4">
+    <div className="bg-white border border-green-100 shadow-md hover:shadow-xl transition rounded-2xl p-8 max-w-xs w-full flex flex-col justify-between text-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="p-3 rounded-full bg-green-50">
           {isLocked ? (
-            <FaLock className="text-red-600 text-xl" />
+            <FaLock className="text-red-500 text-2xl" />
           ) : (
-            <FaLockOpen className="text-green-600 text-xl" />
+            <FaLockOpen className="text-green-600 text-2xl" />
           )}
-          <h3 className="text-lg font-bold text-black">Register a Deed</h3>
         </div>
-
-        <p className="text-sm text-gray-600 mb-6">
-          This section is restricted to authorized administrators and
-          government officials.  
+        <h3 className="text-xl font-bold text-green-900 mt-2">
+          Register a Deed
+        </h3>
+        <p className="text-gray-600 text-sm leading-relaxed">
+          Restricted to authorized administrators and officials.
           {!isLocked && " You have access to proceed."}
         </p>
       </div>
 
       <button
         disabled={isLocked}
-        className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg shadow w-full transition ${
+        className={`mt-8 flex items-center justify-center gap-2 px-4 py-2 rounded-lg w-full font-semibold transition ${
           isLocked
-            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-            : "bg-green-600 text-white hover:bg-green-700"
+            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+            : "bg-green-600 text-white hover:bg-green-700 shadow-md"
         }`}
       >
         <FaRegFileAlt />
-        Register a Deed
+        Register Now
       </button>
     </div>
   );
