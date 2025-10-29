@@ -38,6 +38,32 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
 
   const hideAlert = () => setAlertOptions(null);
 
+  const getAlertStyles = () => {
+    switch (alertOptions?.type) {
+      case "success":
+        return "bg-white border border-green-200";
+      case "error":
+        return "bg-white border border-red-200";
+      case "warning":
+        return "bg-white border border-yellow-200";
+      default:
+        return "bg-white border border-gray-200";
+    }
+  };
+
+  const getIconColor = () => {
+    switch (alertOptions?.type) {
+      case "success":
+        return "text-green-600";
+      case "error":
+        return "text-red-600";
+      case "warning":
+        return "text-yellow-600";
+      default:
+        return "text-blue-600";
+    }
+  };
+
   return (
     <AlertContext.Provider value={{ showAlert, hideAlert }}>
       {children}
@@ -47,27 +73,17 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 20, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
             className="fixed top-0 left-0 right-0 flex justify-center z-50"
           >
-            <div
-              className={`mt-4 w-[90%] max-w-md rounded-xl shadow-lg text-center p-4 backdrop-blur-lg ${
-                alertOptions.type === "success"
-                  ? "bg-green-600/80 border border-green-400"
-                  : alertOptions.type === "error"
-                  ? "bg-red-600/80 border border-red-400"
-                  : alertOptions.type === "warning"
-                  ? "bg-yellow-500/80 border border-yellow-400"
-                  : "bg-blue-600/80 border border-blue-400"
-              }`}
-            >
+            <div className={`mt-6 w-[90%] max-w-sm rounded-lg shadow-xl p-5 ${getAlertStyles()}`}>
               {alertOptions.title && (
-                <h2 className="text-lg font-bold mb-1 text-white">
+                <h3 className={`text-base font-semibold mb-1.5 ${getIconColor()}`}>
                   {alertOptions.title}
-                </h2>
+                </h3>
               )}
               {alertOptions.message && (
-                <p className="text-white mb-2">{alertOptions.message}</p>
+                <p className="text-gray-700 text-sm leading-relaxed mb-3">{alertOptions.message}</p>
               )}
               {alertOptions.htmlContent}
               {alertOptions.showInput && (
@@ -75,17 +91,18 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
                   type="text"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  className="w-full p-2 mt-2 rounded bg-black/30 border border-gray-400 text-white"
+                  className="w-full px-3 py-2 mt-2 rounded border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Enter value..."
                 />
               )}
-              <div className="flex justify-center gap-3 mt-3">
+              <div className="flex justify-end gap-2 mt-4">
                 {alertOptions.cancelText && (
                   <button
                     onClick={() => {
                       hideAlert();
                       alertOptions.onCancel?.();
                     }}
-                    className="px-4 py-1.5 rounded bg-gray-700 hover:bg-gray-800 text-white"
+                    className="px-4 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
                   >
                     {alertOptions.cancelText}
                   </button>
@@ -96,7 +113,7 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
                       hideAlert();
                       alertOptions.onConfirm?.(inputValue);
                     }}
-                    className="px-4 py-1.5 rounded bg-blue-700 hover:bg-blue-800 text-white"
+                    className="px-4 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 transition-colors"
                   >
                     {alertOptions.confirmText}
                   </button>
