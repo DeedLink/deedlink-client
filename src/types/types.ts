@@ -55,6 +55,7 @@ export interface Token {
 export interface User {
   _id: string;
   name: string;
+  profilePicture?: string;
   email: string;
   walletAddress?: string | null;
   nic: string;

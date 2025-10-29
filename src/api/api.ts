@@ -145,6 +145,30 @@ export const searchUsers = async (query: string): Promise<User[]> => {
   return res.data;
 };
 
+// Upload profile picture (protected, multipart/form-data)
+export const uploadProfilePicture = async (file: File): Promise<{ dp: string; user: User }> => {
+  const formData = new FormData();
+  formData.append("profilePicture", file);
+
+  const token = getItem("local", "token") || "";
+  const headers: Record<string, string> = {
+    "Content-Type": "multipart/form-data",
+    Authorization: `Bearer ${token}`,
+  };
+
+  if (isVercelTest && serviceMapPassword) {
+    headers["x-service-map-password"] = serviceMapPassword;
+  }
+
+  const res: AxiosResponse<{ dp: string; user: User }> = await api.post(
+    "/profile-picture",
+    formData,
+    { headers }
+  );
+
+  return res.data;
+};
+
 // Deed related api calls
 const deedApi = axios.create({
   baseURL: API.deed,
