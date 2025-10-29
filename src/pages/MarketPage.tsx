@@ -3,11 +3,22 @@ import { sampleTokens } from "../constants/const";
 import type { Token } from "../types/types";
 import TokenGrid from "../components/market/TokenGrid";
 import { useLoader } from "../contexts/LoaderContext";
+import { useAlert } from "../contexts/AlertContext";
 
 const MarketPage: React.FC = () => {
   const [tokens, _setTokens] = useState<Token[]>(sampleTokens);
   const [filter, setFilter] = useState<"ALL" | "NFT" | "FT">("ALL");
   const { showLoader, hideLoader } = useLoader();
+  const { showAlert } = useAlert();
+
+  useEffect(()=>{
+    showAlert({
+      type: "warning",
+      title: "⚠️ Under Development",
+      message: "This marketplace feature is currently under development. Please check back soon!",
+      confirmText: "OK",
+    });
+  },[]);
 
   useEffect(() => {
     showLoader();
