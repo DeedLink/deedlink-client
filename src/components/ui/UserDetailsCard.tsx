@@ -31,7 +31,7 @@ const UserDetailsCard = ({ user }: any) => {
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 shadow-xl rounded-2xl p-8">
+        <div className="bg-white border border-gray-200 rounded-2xl p-8">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-emerald-50 transition-colors">
               <div className="p-3 bg-emerald-500 rounded-lg">
