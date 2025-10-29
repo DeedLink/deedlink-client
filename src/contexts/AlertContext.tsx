@@ -41,13 +41,26 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
   const getAlertStyles = () => {
     switch (alertOptions?.type) {
       case "success":
-        return "bg-gradient-to-br from-green-900/95 to-green-800/95 border-2 border-green-500";
+        return "bg-white border border-green-200";
       case "error":
-        return "bg-gradient-to-br from-red-900/95 to-red-800/95 border-2 border-red-500";
+        return "bg-white border border-red-200";
       case "warning":
-        return "bg-gradient-to-br from-yellow-900/95 to-yellow-800/95 border-2 border-yellow-500";
+        return "bg-white border border-yellow-200";
       default:
-        return "bg-gradient-to-br from-green-900/95 to-green-800/95 border-2 border-green-500";
+        return "bg-white border border-gray-200";
+    }
+  };
+
+  const getIconColor = () => {
+    switch (alertOptions?.type) {
+      case "success":
+        return "text-green-600";
+      case "error":
+        return "text-red-600";
+      case "warning":
+        return "text-yellow-600";
+      default:
+        return "text-blue-600";
     }
   };
 
@@ -60,19 +73,17 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 20, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            className="fixed top-0 left-0 right-0 flex justify-center z-50 font-spectral"
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="fixed top-0 left-0 right-0 flex justify-center z-50"
           >
-            <div
-              className={`mt-4 w-[90%] max-w-md rounded-lg shadow-2xl text-center p-6 backdrop-blur-sm ${getAlertStyles()}`}
-            >
+            <div className={`mt-6 w-[90%] max-w-sm rounded-lg shadow-xl p-5 ${getAlertStyles()}`}>
               {alertOptions.title && (
-                <h2 className="text-xl font-bold mb-2 text-white">
+                <h3 className={`text-base font-semibold mb-1.5 ${getIconColor()}`}>
                   {alertOptions.title}
-                </h2>
+                </h3>
               )}
               {alertOptions.message && (
-                <p className="text-gray-100 mb-3 text-sm">{alertOptions.message}</p>
+                <p className="text-gray-700 text-sm leading-relaxed mb-3">{alertOptions.message}</p>
               )}
               {alertOptions.htmlContent}
               {alertOptions.showInput && (
@@ -80,18 +91,18 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
                   type="text"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  className="w-full p-3 mt-3 rounded-md bg-black/40 border-2 border-green-500/50 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition-colors"
+                  className="w-full px-3 py-2 mt-2 rounded border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="Enter value..."
                 />
               )}
-              <div className="flex justify-center gap-3 mt-4">
+              <div className="flex justify-end gap-2 mt-4">
                 {alertOptions.cancelText && (
                   <button
                     onClick={() => {
                       hideAlert();
                       alertOptions.onCancel?.();
                     }}
-                    className="px-6 py-2 rounded-md bg-gray-700/80 hover:bg-gray-600/80 text-white border border-gray-500 transition-all duration-200 font-medium"
+                    className="px-4 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
                   >
                     {alertOptions.cancelText}
                   </button>
@@ -102,7 +113,7 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
                       hideAlert();
                       alertOptions.onConfirm?.(inputValue);
                     }}
-                    className="px-6 py-2 rounded-md bg-green-600 hover:bg-green-500 text-white border border-green-400 transition-all duration-200 font-medium shadow-lg"
+                    className="px-4 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 transition-colors"
                   >
                     {alertOptions.confirmText}
                   </button>
