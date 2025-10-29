@@ -25,14 +25,23 @@ const HomePage = () => {
       {user &&  <UserDetailsCard user={user}/> }
 
       <section className="w-full px-6 md:px-16 py-20 bg-white max-w-boundary mx-auto">
-        <div className="max-w-boundary mx-auto grid md:grid-cols-3 gap-10 items-start">
-          <div className="md:col-span-2">
-            <WhyChooseSection />
+        { false && (
+          <div className="max-w-boundary mx-auto grid md:grid-cols-3 gap-10 items-start">
+            <div className="md:col-span-2">
+              <WhyChooseSection />
+            </div>
+            <div className="flex md:justify-end">
+              <GetStartedCard />
+            </div>
           </div>
-          <div className="flex md:justify-end">
-            <GetStartedCard />
-          </div>
-        </div>
+        )}
+        { true && (
+            <div className="max-w-boundary mx-auto gap-10 items-start">
+              <div className="w-full">
+                <WhyChooseSection />
+              </div>
+            </div>
+          )}
       </section>
     </main>
   );

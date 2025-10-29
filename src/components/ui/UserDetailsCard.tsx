@@ -5,80 +5,85 @@ import {
   FaIdCard,
   FaCheckCircle,
   FaClock,
+  FaShieldAlt,
+  FaUserCircle,
 } from "react-icons/fa";
 
 const UserDetailsCard = ({ user }: any) => {
   if (!user) return null;
 
   return (
-    <section className="w-full px-6 md:px-16 py-12 bg-green-50 border-t border-green-100">
-      <div className="max-w-boundary mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-          <h2 className="text-3xl font-bold text-green-900 flex items-center gap-2">
-            <FaUser className="text-green-700" />
-            Welcome, {user.name.split(" ")[0]} 👋
-          </h2>
-          <p className="text-sm text-gray-600 mt-2 md:mt-0">
-            Here’s your account overview
-          </p>
+    <section className="w-full px-6 md:px-16 py-16 bg-gray-50">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
+          <div className="flex items-center gap-5">
+            <div className="w-24 h-24 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
+              <FaUserCircle className="w-16 h-16 text-white" />
+            </div>
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                Welcome, {user.name.split(" ")[0]}!
+              </h2>
+              <p className="text-gray-600 flex items-center gap-2 mt-1">
+                <FaShieldAlt className="text-emerald-600" />
+                Account verified & secure
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="bg-white border border-green-100 shadow-lg hover:shadow-xl transition rounded-2xl p-8">
-          <ul className="space-y-4 text-gray-800 text-sm md:text-base">
-            <li className="flex items-center justify-between border-b border-green-50 pb-3">
-              <div className="flex items-center gap-2">
-                <FaUser className="text-green-700" />
-                <span className="font-semibold text-green-800">Full Name:</span>
+        <div className="bg-white border border-gray-200 shadow-xl rounded-2xl p-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-emerald-50 transition-colors">
+              <div className="p-3 bg-emerald-500 rounded-lg">
+                <FaUser className="text-white text-lg" />
               </div>
-              <span>{user.name}</span>
-            </li>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Full Name
+                </p>
+                <p className="text-lg font-semibold text-gray-900">{user.name}</p>
+              </div>
+            </div>
 
-            <li className="flex items-center justify-between border-b border-green-50 pb-3">
-              <div className="flex items-center gap-2">
-                <FaEnvelope className="text-green-700" />
-                <span className="font-semibold text-green-800">Email:</span>
+            <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-emerald-50 transition-colors">
+              <div className="p-3 bg-emerald-500 rounded-lg">
+                <FaEnvelope className="text-white text-lg" />
               </div>
-              <span>{user.email}</span>
-            </li>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Email
+                </p>
+                <p className="text-lg font-semibold text-gray-900 break-all text-sm">{user.email}</p>
+              </div>
+            </div>
 
-            <li className="flex items-center justify-between border-b border-green-50 pb-3">
-              <div className="flex items-center gap-2">
-                <FaWallet className="text-green-700" />
-                <span className="font-semibold text-green-800">Wallet:</span>
+            <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-emerald-50 transition-colors">
+              <div className="p-3 bg-emerald-500 rounded-lg">
+                <FaWallet className="text-white text-lg" />
               </div>
-              <span className="truncate max-w-[200px] text-gray-700 text-right">
-                {user.walletAddress}
-              </span>
-            </li>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Wallet
+                </p>
+                <p className="text-sm font-mono font-semibold text-gray-800 truncate">
+                  {user.walletAddress}
+                </p>
+              </div>
+            </div>
 
-            <li className="flex items-center justify-between border-b border-green-50 pb-3">
-              <div className="flex items-center gap-2">
-                <FaIdCard className="text-green-700" />
-                <span className="font-semibold text-green-800">NIC:</span>
+            <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-emerald-50 transition-colors">
+              <div className="p-3 bg-emerald-500 rounded-lg">
+                <FaIdCard className="text-white text-lg" />
               </div>
-              <span>{user.nic}</span>
-            </li>
-
-            <li className="flex items-center justify-between pt-3">
-              <div className="flex items-center gap-2">
-                {user.kycStatus === "verified" ? (
-                  <FaCheckCircle className="text-green-600" />
-                ) : (
-                  <FaClock className="text-yellow-500" />
-                )}
-                <span className="font-semibold text-green-800">KYC Status:</span>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  National ID
+                </p>
+                <p className="text-lg font-semibold text-gray-900">{user.nic}</p>
               </div>
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                  user.kycStatus === "verified"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-yellow-100 text-yellow-700"
-                }`}
-              >
-                {user.kycStatus}
-              </span>
-            </li>
-          </ul>
+            </div>
+          </div>
         </div>
       </div>
     </section>
