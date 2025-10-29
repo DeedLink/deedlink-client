@@ -3,32 +3,37 @@ import GetStartedCard from "../components/ui/GetStartedCard";
 import { useLoader } from "../contexts/LoaderContext";
 import HeroSection from "../sections/HeroSection";
 import WhyChooseSection from "../sections/WhyChooseSection";
+import { useLogin } from "../contexts/LoginContext";
+import UserDetailsCard from "../components/ui/UserDetailsCard";
 
 const HomePage = () => {
   const { showLoader, hideLoader } = useLoader();
+  const { user } = useLogin();
 
   useEffect(() => {
     showLoader();
     const timer = setTimeout(() => {
       hideLoader();
     }, 2000);
-
     return () => clearTimeout(timer);
-  },[]);
+  }, []);
 
   return (
-    <main className="">
+    <main className="bg-white text-gray-900">
       <HeroSection />
 
-      <div className="w-full px-6 md:px-16 py-16 grid md:grid-cols-3 gap-8 max-w-boundary mx-auto">
-        <div className="md:col-span-2">
-          <WhyChooseSection />
-        </div>
+      {user &&  <UserDetailsCard user={user}/> }
 
-        <div className="flex md:justify-end">
-          <GetStartedCard />
+      <section className="w-full px-6 md:px-16 py-20 bg-white max-w-boundary mx-auto">
+        <div className="max-w-boundary mx-auto grid md:grid-cols-3 gap-10 items-start">
+          <div className="md:col-span-2">
+            <WhyChooseSection />
+          </div>
+          <div className="flex md:justify-end">
+            <GetStartedCard />
+          </div>
         </div>
-      </div>
+      </section>
     </main>
   );
 };
