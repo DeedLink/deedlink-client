@@ -1,34 +1,49 @@
 import React from "react";
-import { FaFileSignature, FaCubes, FaChartPie } from "react-icons/fa";
+import { FaFileSignature, FaCubes, FaChartPie, FaShieldAlt, FaUserCheck, FaExchangeAlt } from "react-icons/fa";
 
 const steps = [
   {
-    icon: <FaFileSignature className="text-green-700 text-4xl mb-4" />,
-    title: "Digital Deed Creation",
-    description: "Physical property deeds are converted into unique blockchain tokens (NFTs), creating tamper-proof digital ownership records."
+    icon: <FaUserCheck className="text-green-600 text-3xl mb-3" />,
+    title: "Secure Authentication & KYC",
+    description: "Connect your digital wallet and complete KYC verification to ensure secure and verified participation in the property registry ecosystem."
   },
   {
-    icon: <FaCubes className="text-green-700 text-4xl mb-4" />,
-    title: "Fractional Ownership",
-    description: "Deeds can be divided into fractional tokens (FTs) allowing multiple stakeholders to own portions of the property, improving liquidity and investment accessibility."
+    icon: <FaFileSignature className="text-green-600 text-3xl mb-3" />,
+    title: "Digital Deed Registration",
+    description: "Register property deeds on the blockchain with multi-signature verification from government departments including surveyors, notaries, and IVSL officials."
   },
   {
-    icon: <FaChartPie className="text-green-700 text-4xl mb-4" />,
-    title: "Trading & Transparency",
-    description: "NFTs and FTs can be securely traded on-chain. All transactions are transparent, immutable, and verifiable, ensuring complete trust."
+    icon: <FaCubes className="text-green-600 text-3xl mb-3" />,
+    title: "Property Tokenization",
+    description: "Convert deeds into NFTs for complete ownership or create fractional tokens (FTs) to enable shared investment and improved liquidity."
+  },
+  {
+    icon: <FaShieldAlt className="text-green-600 text-3xl mb-3" />,
+    title: "Escrow-Based Transactions",
+    description: "All property transfers are secured through smart contract escrows, ensuring safe and transparent transactions with QR code verification."
+  },
+  {
+    icon: <FaExchangeAlt className="text-green-600 text-3xl mb-3" />,
+    title: "Marketplace Trading",
+    description: "Buy, sell, or trade tokenized property deeds in a secure marketplace with real-time transaction monitoring and status updates."
+  },
+  {
+    icon: <FaChartPie className="text-green-600 text-3xl mb-3" />,
+    title: "Portfolio Management",
+    description: "Track your property portfolio, view ownership history, manage fractional investments, and access interactive location mapping."
   }
 ];
 
 const HowItWorks: React.FC = () => {
   return (
-    <section className="py-24 px-6 md:px-16">
-      <h2 className="text-4xl font-bold text-[#00420A] text-center mb-12">How Deed Tokenization Works</h2>
-      <div className="grid md:grid-cols-3 gap-8">
+    <section className="py-16 px-6 md:px-16 bg-white">
+      <h2 className="text-3xl font-bold text-green-900 text-center mb-10">How DeedLink Works</h2>
+      <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
         {steps.map((step, idx) => (
-          <div key={idx} className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
+          <div key={idx} className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-lg border border-green-100 hover:shadow-lg transition">
             <div className="flex justify-center">{step.icon}</div>
-            <h3 className="font-semibold text-xl text-center mb-2">{step.title}</h3>
-            <p className="text-gray-600 text-center">{step.description}</p>
+            <h3 className="font-semibold text-lg text-center mb-2 text-green-900">{step.title}</h3>
+            <p className="text-gray-700 text-sm text-center leading-relaxed">{step.description}</p>
           </div>
         ))}
       </div>

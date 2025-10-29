@@ -15,10 +15,10 @@ const AboutPage: React.FC = () => {
     }, 2000);
 
     return () => clearTimeout(timer);
-  },[]);
-  
+  }, []);
+
   return (
-    <div className="text-gray-800 max-w-boundary mx-auto">
+    <div className="text-gray-800">
       <HeroSection />
       <HowItWorks />
       <NFTSection />
