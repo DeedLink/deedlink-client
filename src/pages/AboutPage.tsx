@@ -1,9 +1,11 @@
 import React, { useEffect } from "react";
-import HeroSection from "../sections/HeroSection";
+import TrustBadges from "../components/about/TrustBadges";
 import HowItWorks from "../components/about/HowItWorks";
-import NFTSection from "../components/about/NFTSection";
-import FTSection from "../components/about/FTSection";
+import OwnershipModels from "../components/about/OwnershipModels";
+import TechnicalArchitecture from "../components/about/TechnicalArchitecture";
+import CTASection from "../components/about/CTASection";
 import { useLoader } from "../contexts/LoaderContext";
+import HeroSection from "../components/about/HeroSection";
 
 const AboutPage: React.FC = () => {
   const { showLoader, hideLoader } = useLoader();
@@ -20,9 +22,11 @@ const AboutPage: React.FC = () => {
   return (
     <div className="text-gray-800">
       <HeroSection />
+      <TrustBadges />
       <HowItWorks />
-      <NFTSection />
-      <FTSection />
+      <OwnershipModels />
+      <TechnicalArchitecture />
+      <CTASection />
     </div>
   );
 };
