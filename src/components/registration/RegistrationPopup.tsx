@@ -12,6 +12,7 @@ import AleadyHaveAnAccount from "./AlreadyHaveAnAccount";
 import { getSignature } from "../../web3.0/wallet";
 import { isValidEmail, isValidNIC, isValidPassword } from "../../utils/functions";
 import { useToast } from "../../contexts/ToastContext";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const RegistrationPopup = () => {
   const { isOpen, closeSignup } = useSignup();
@@ -30,9 +31,11 @@ const RegistrationPopup = () => {
   const [userState, setUserState] = useState<string | null>(null);
   const [userPasswordState, setUserPasswordState] = useState<"set" | "unset" | null>(null); 
   const { showToast } = useToast();
+  const [loadingInPopup, setLoadingInPopup] = useState(false);
 
   const getUserStatus = async () => {
     if (account) {
+      setLoadingInPopup(true);
       const userStatus = await getUserState(account);
       if (!userStatus) return;
 
@@ -42,10 +45,12 @@ const RegistrationPopup = () => {
         setUserState("not_registered");
       }
     }
+    setLoadingInPopup(false);
   };
 
   const getUserPasswordStatus = async () => {
     if (account) {
+      setLoadingInPopup(true);
       const userPasswordStatus = await getUserPasswordState(account);
       console.log("User Password Status: ", userPasswordStatus.passwordStatus);
       if (!userPasswordStatus) return;
@@ -54,6 +59,7 @@ const RegistrationPopup = () => {
         setUserPasswordState(userPasswordStatus.passwordStatus);
       }
     }
+    setLoadingInPopup(false);
   };
 
   useEffect(()=>{
@@ -163,10 +169,20 @@ const RegistrationPopup = () => {
       onClick={closeSignup}
     >
       <div
-        className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative animate-fadeIn"
+        className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative animate-fadeIn overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-
+        {
+          loadingInPopup && (
+          <div className="absolute w-full h-full bg-black/40 backdrop-blur-xs z-50 inset-0 cursor-not-allowed">
+            <div className="z-[9999] flex items-center justify-center w-full h-full">
+              <div className="animate-spin text-4xl text-green-400">
+                <AiOutlineLoading3Quarters />
+              </div>
+            </div>
+          </div>
+          )
+        }
         <button
           onClick={closeSignup}
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 cursor-pointer"
