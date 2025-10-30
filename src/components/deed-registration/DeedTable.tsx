@@ -92,51 +92,64 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
     status === "Pending"
       ? "bg-yellow-100 text-yellow-700"
       : status === "Approved"
-      ? "bg-blue-100 text-blue-700"
+      ? "bg-emerald-100 text-emerald-700"
       : "bg-red-100 text-red-700";
 
   return (
-    <div className="w-full bg-white rounded-2xl overflow-hidden">
-      <div className="mt-6 w-full max-w-7xl p-6 text-black rounded-2xl">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
-          <h2 className="text-xl font-bold text-green-800">{activeTab} Deeds</h2>
+    <div className="w-full">
+      <div className="w-full p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
+          <h2 className="text-xl font-bold text-gray-900">{activeTab} Deeds</h2>
           <input
             type="text"
-            placeholder="🔍 Search deeds..."
+            placeholder="Search deeds..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full sm:w-64 border px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+            className="w-full sm:w-64 border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 transition text-black"
           />
         </div>
 
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full border-collapse text-sm lg:text-base">
-            <thead className="sticky top-0 bg-green-100 text-green-900">
+          <table className="w-full border-collapse text-sm">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left">Deed Number</th>
-                <th className="px-4 py-3 text-left">Location</th>
-                <th className="px-4 py-3 text-left">Owner</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Action</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Deed Number
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Location
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Owner
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody>
               {paginatedDeeds.length > 0 ? (
                 paginatedDeeds.map((deed) => (
-                  <tr key={deed._id} className="border-b hover:bg-gray-50 transition">
-                    <td className="px-4 py-3 font-medium">{deed.deedNumber}</td>
-                    <td className="px-4 py-3">{deed.district}</td>
-                    <td className="px-4 py-3">{deed.ownerFullName}</td>
-                    <td className="px-4 py-3">
+                  <tr key={deed._id} className="border-b border-gray-100 hover:bg-emerald-50 transition">
+                    <td className="px-4 py-4 font-medium text-gray-900">{deed.deedNumber}</td>
+                    <td className="px-4 py-4 text-gray-700">{deed.district}</td>
+                    <td className="px-4 py-4 text-gray-700">{deed.ownerFullName}</td>
+                    <td className="px-4 py-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadgeClasses(deed.registerStatus)}`}>
                         {deed.registerStatus || "Pending"}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <button onClick={() => onView(deed)} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition">
+                    <td className="px-4 py-4">
+                      <button 
+                        onClick={() => onView(deed)} 
+                        className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-md transition"
+                      >
                         View
                       </button>
                     </td>
@@ -144,7 +157,7 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="text-center py-6 text-gray-500 italic">
+                  <td colSpan={5} className="text-center py-8 text-gray-500">
                     No deeds found.
                   </td>
                 </tr>
@@ -156,28 +169,29 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
         <div className="md:hidden space-y-4">
           {paginatedDeeds.length > 0 ? (
             paginatedDeeds.map((deed) => (
-              <div key={deed._id} className="border rounded-xl p-4 shadow-sm bg-gray-50 hover:shadow-md transition">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-bold text-green-800">{deed.ownerFullName}</h3>
+              <div key={deed._id} className="border border-gray-200 rounded-lg p-4 bg-white hover:bg-emerald-50 transition">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="font-bold text-gray-900">{deed.ownerFullName}</h3>
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadgeClasses(deed.registerStatus)}`}>
                     {deed.registerStatus || "Pending"}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-700 mb-1">
                   <span className="font-semibold">Deed Number:</span> {deed.deedNumber}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-700 mb-3">
                   <span className="font-semibold">Location:</span> {deed.district}
                 </p>
-                <div className="mt-3">
-                  <button onClick={() => onView(deed)} className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg shadow-md transition">
-                    View Details
-                  </button>
-                </div>
+                <button 
+                  onClick={() => onView(deed)} 
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-md transition"
+                >
+                  View Details
+                </button>
               </div>
             ))
           ) : (
-            <p className="text-center text-gray-500 italic">No deeds found.</p>
+            <p className="text-center text-gray-500 py-8">No deeds found.</p>
           )}
         </div>
 
@@ -189,21 +203,28 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => p - 1)}
-              className={`px-4 py-2 rounded-lg ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white"}`}
+              className={`px-4 py-2 rounded-md transition ${
+                currentPage === 1 
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed" 
+                  : "bg-emerald-500 hover:bg-emerald-600 text-white"
+              }`}
             >
               Prev
             </button>
             <button
               disabled={currentPage === totalPages || totalPages === 0}
               onClick={() => setCurrentPage((p) => p + 1)}
-              className={`px-4 py-2 rounded-lg ${currentPage === totalPages || totalPages === 0 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white"}`}
+              className={`px-4 py-2 rounded-md transition ${
+                currentPage === totalPages || totalPages === 0
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed" 
+                  : "bg-emerald-500 hover:bg-emerald-600 text-white"
+              }`}
             >
               Next
             </button>
           </div>
         </div>
       </div>
-      <div className="h-1 bg-gradient-to-r from-green-600 via-emerald-500 to-green-700" />
     </div>
   );
 };
