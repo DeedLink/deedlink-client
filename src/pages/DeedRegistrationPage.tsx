@@ -72,75 +72,87 @@ const DeedRegistrationPage = () => {
   }, [deeds]);
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-white pb-10 pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
-        <div className="mb-8 sm:mb-12">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div className="w-full min-h-screen bg-gray-50 pb-10 pt-20">
+      <div className="max-w-7xl mx-auto px-6 md:px-16 py-6 md:py-10 md:px-20">
+        <div className="mb-8 md:mb-10">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
                 Deed Registry
               </h1>
-              <p className="text-sm sm:text-base text-gray-600">
+              <p className="text-sm text-gray-600">
                 Manage and track all your property deeds in one place
               </p>
             </div>
             <button
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 group"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-3 rounded-md transition flex items-center justify-center gap-2"
               onClick={() => setIsOpen(true)}
             >
-              <FaPlus className="group-hover:rotate-90 transition-transform duration-200" />
+              <FaPlus />
               <span>Register New Deed</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white rounded-2xl p-6 border border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs sm:text-sm text-gray-500 font-medium uppercase tracking-wide">Pending</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-yellow-600 mt-1">{statusCounts.Pending}</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Pending
+                  </p>
+                  <p className="text-2xl md:text-3xl font-bold text-yellow-600 mt-2">
+                    {statusCounts.Pending}
+                  </p>
                 </div>
-                <div className="bg-yellow-100 p-3 rounded-full">
-                  <FaFileAlt className="text-yellow-600" size={20} />
+                <div className="p-3 bg-yellow-100 rounded-lg">
+                  <FaFileAlt className="text-yellow-600 text-lg" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 border border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs sm:text-sm text-gray-500 font-medium uppercase tracking-wide">Approved</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-green-600 mt-1">{statusCounts.Approved}</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Approved
+                  </p>
+                  <p className="text-2xl md:text-3xl font-bold text-green-600 mt-2">
+                    {statusCounts.Approved}
+                  </p>
                 </div>
-                <div className="bg-green-100 p-3 rounded-full">
-                  <FaChartLine className="text-green-600" size={20} />
+                <div className="p-3 bg-green-100 rounded-lg">
+                  <FaChartLine className="text-green-600 text-lg" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 border border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs sm:text-sm text-gray-500 font-medium uppercase tracking-wide">Rejected</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-red-600 mt-1">{statusCounts.Rejected}</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Rejected
+                  </p>
+                  <p className="text-2xl md:text-3xl font-bold text-red-600 mt-2">
+                    {statusCounts.Rejected}
+                  </p>
                 </div>
-                <div className="bg-red-100 p-3 rounded-full">
-                  <FaFileAlt className="text-red-600" size={20} />
+                <div className="p-3 bg-red-100 rounded-lg">
+                  <FaFileAlt className="text-red-600 text-lg" />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          <div className="border-b border-gray-200 px-4 sm:px-6 py-4">
-            <div className="flex flex-wrap gap-2 sm:gap-3">
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <div className="border-b border-gray-200 px-6 py-4">
+            <div className="flex flex-wrap gap-3">
               {(["Pending", "Approved", "Rejected"] as const).map((tab) => (
                 <button
                   key={tab}
-                  className={`px-4 sm:px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 text-sm sm:text-base ${
+                  className={`px-5 py-2 rounded-md font-semibold transition text-sm ${
                     activeTab === tab
-                      ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md"
+                      ? "bg-emerald-500 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                   onClick={() => setActiveTab(tab)}
@@ -158,7 +170,7 @@ const DeedRegistrationPage = () => {
         </div>
 
         {deeds && deeds.length === 0 && (
-          <div className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+          <div className="mt-8 bg-white rounded-2xl border border-gray-200 p-12 text-center">
             <div className="max-w-md mx-auto">
               <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FaFileAlt className="text-gray-400" size={32} />
@@ -168,7 +180,7 @@ const DeedRegistrationPage = () => {
                 Get started by registering your first property deed
               </p>
               <button
-                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 inline-flex items-center gap-2"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-3 rounded-md transition inline-flex items-center gap-2"
                 onClick={() => setIsOpen(true)}
               >
                 <FaPlus />
