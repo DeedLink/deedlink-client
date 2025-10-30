@@ -93,7 +93,7 @@ const DeedRegistrationPage = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid-cols-1 md:grid-cols-3 gap-6 mb-8 hidden">
             <div className="bg-white rounded-2xl p-6 border border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
@@ -147,7 +147,7 @@ const DeedRegistrationPage = () => {
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="border-b border-gray-200 px-6 py-4">
             <div className="flex flex-wrap gap-3">
-              {(["Pending", "Approved", "Rejected"] as const).map((tab) => (
+              {(["Pending", "Approved"] as const).map((tab) => (
                 <button
                   key={tab}
                   className={`px-5 py-2 rounded-md font-semibold transition text-sm ${

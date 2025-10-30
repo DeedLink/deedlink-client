@@ -102,13 +102,13 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
           <h2 className="text-xl font-bold text-gray-900">{activeTab} Deeds</h2>
           <input
             type="text"
-            placeholder="🔍 Search deeds..."
+            placeholder="Search deeds..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full sm:w-64 border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+            className="w-full sm:w-64 border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 transition text-black"
           />
         </div>
 
