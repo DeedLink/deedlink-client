@@ -22,9 +22,13 @@ const HomePage = () => {
     <main className="bg-white text-gray-900">
       <HeroSection />
 
-      {user &&  <UserDetailsCard user={user}/> }
+      {user &&  
+      <div className="w-full pt-8 md:pt-12">
+        <UserDetailsCard user={user}/>
+      </div>
+      }
 
-      <section className="w-full bg-white max-w-boundary mx-auto">
+      <section className="w-full bg-white max-w-boundary mx-auto py-8 md:py-12">
         { false && (
           <div className="max-w-boundary mx-auto grid md:grid-cols-3 gap-10 items-start">
             <div className="md:col-span-2">

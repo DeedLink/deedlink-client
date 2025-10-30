@@ -29,7 +29,7 @@ const WhyChooseSection = () => {
   ];
 
   return (
-    <section className="w-full pb-10 text-gray-900 px-4 md:px-10">
+    <section className="w-full text-gray-900 px-4 md:px-10">
       <div className="mb-4">
         <span className="text-emerald-600 font-bold text-sm uppercase tracking-wider">
           Benefits

@@ -73,7 +73,7 @@ const UserDetailsCard = ({ user }: any) => {
   //const lastname = userProfile.name.split(" ")[userProfile.name.split(" ").length - 1];
 
   return (
-    <section className="w-full py-8 md:py-12 bg-white px-4 md:px-10">
+    <section className="w-full bg-white px-4 md:px-10">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1">
