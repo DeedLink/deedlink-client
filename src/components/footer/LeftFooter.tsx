@@ -1,4 +1,4 @@
-import logo from "../../assets/images/logo/main.webp";
+import logo from "../../assets/images/logo/main1.jpg";
 import { about } from "../../constants/const";
 
 const LeftFooter = () => {
