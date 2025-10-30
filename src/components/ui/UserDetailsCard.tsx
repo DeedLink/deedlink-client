@@ -16,23 +16,23 @@ import { useAlert } from "../../contexts/AlertContext";
 const UserDetailsCard = ({ user }: any) => {
   if (!user) return null;
 
-  const [ userProfile, setUserProfile ] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<User | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [uploadedUrl, setUploadedUrl] = useState(user.dp || "");
   const [isUploading, setIsUploading] = useState(false);
   const { showAlert } = useAlert();
   const ipfs_microservice_url = import.meta.env.VITE_IPFS_MICROSERVICE_URL;
 
-  const getUserProfile =async()=>{
+  const getUserProfile = async () => {
     const profile = await getProfile();
     setUserProfile(profile);
-  }
+  };
 
-  useEffect(()=>{
+  useEffect(() => {
     getUserProfile();
-  },[user]);
+  }, [user]);
 
-  if(!userProfile) return null;
+  if (!userProfile) return null;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -63,116 +63,125 @@ const UserDetailsCard = ({ user }: any) => {
   };
 
   const profileImage = file
-  ? URL.createObjectURL(file)
-  : uploadedUrl
-  ? `${ipfs_microservice_url}/file/${uploadedUrl}`
-  : userProfile.profilePicture
-  ? `${ipfs_microservice_url}/file/${userProfile.profilePicture}`
-  : "";
+    ? URL.createObjectURL(file)
+    : uploadedUrl
+    ? `${ipfs_microservice_url}/file/${uploadedUrl}`
+    : userProfile.profilePicture
+    ? `${ipfs_microservice_url}/file/${userProfile.profilePicture}`
+    : "";
 
-  const lastname = userProfile.name.split(" ")[userProfile.name.split(" ").length-1];
+  //const lastname = userProfile.name.split(" ")[userProfile.name.split(" ").length - 1];
 
   return (
-    <section className="w-full px-6 md:px-16 py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto md:px-20">
-        <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
-          <div className="flex items-center gap-5">
-            <div className="w-24 h-24 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg relative">
-              {profileImage ? (
-                <img
-                  src={profileImage}
-                  alt="Profile"
-                  className="object-cover rounded-full w-24 h-24"
-                />
-              ) : (
-                <FaUserCircle className="w-16 h-16 text-white" />
-              )}
-              <label className="absolute bottom-0 right-0 p-2 bg-green-600 rounded-full cursor-pointer shadow-md hover:bg-green-400 transition">
-                <FaUpload className="text-white w-4 h-4" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-              </label>
-            </div>
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-                Welcome, {lastname}!
-              </h2>
-              <p className="text-gray-600 flex items-center gap-2 mt-1">
-                <FaShieldAlt className="text-emerald-600" />
-                KYC verified & secure
-              </p>
+    <section className="w-full py-8 md:py-12 bg-white px-4 md:px-10">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <div className="bg-white border border-gray-300 rounded-lg p-6 md:p-8 h-full">
+              <div className="flex flex-col items-center text-center">
+                <div className="relative mb-4">
+                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gray-200 flex items-center justify-center border-2 border-emerald-500 overflow-hidden">
+                    {profileImage ? (
+                      <img
+                        src={profileImage}
+                        alt="Profile"
+                        className="object-cover w-full h-full"
+                      />
+                    ) : (
+                      <FaUserCircle className="w-16 h-16 md:w-20 md:h-20 text-gray-400" />
+                    )}
+                  </div>
+                  <label className="absolute bottom-0 right-0 p-2 bg-emerald-500 rounded-full cursor-pointer hover:bg-emerald-600 transition border-2 border-white">
+                    <FaUpload className="text-white w-3 h-3 md:w-4 md:h-4" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                </div>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+                  {userProfile.name}
+                </h2>
+                <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                  <FaShieldAlt className="text-emerald-500" />
+                  <span>KYC Verified</span>
+                </div>
+                {file && (
+                  <button
+                    onClick={handleUpload}
+                    disabled={isUploading}
+                    className="w-full px-6 py-2.5 bg-emerald-500 text-white text-sm font-medium rounded hover:bg-emerald-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isUploading ? "Uploading..." : "Upload Picture"}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-          {file && (
-            <button
-              onClick={handleUpload}
-              disabled={isUploading}
-              className="px-6 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isUploading ? "Uploading..." : "Upload"}
-            </button>
-          )}
-        </div>
 
-        <div className="bg-white border border-gray-200 rounded-2xl p-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-emerald-50 transition-colors">
-              <div className="p-3 bg-emerald-500 rounded-lg">
-                <FaUser className="text-white text-lg" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Full Name
-                </p>
-                <p className="text-xs md:text-sm font-semibold text-gray-900">
-                  {userProfile.name}
-                </p>
-              </div>
-            </div>
+          <div className="lg:col-span-2">
+            <div className="bg-white border border-gray-300 rounded-lg p-6 md:p-8 h-full">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6 pb-3 border-b border-gray-200">
+                Account Information
+              </h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="flex items-start gap-4">
+                  <div className="p-2.5 bg-emerald-500 rounded flex-shrink-0">
+                    <FaUser className="text-white text-base" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      Full Name
+                    </p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {userProfile.name}
+                    </p>
+                  </div>
+                </div>
 
-            <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-emerald-50 transition-colors">
-              <div className="p-3 bg-emerald-500 rounded-lg">
-                <FaEnvelope className="text-white text-lg" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Email
-                </p>
-                <p className="text-xs md:text-sm font-semibold text-gray-900 break-all">
-                  {userProfile.email}
-                </p>
-              </div>
-            </div>
+                <div className="flex items-start gap-4">
+                  <div className="p-2.5 bg-emerald-500 rounded flex-shrink-0">
+                    <FaEnvelope className="text-white text-base" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      Email Address
+                    </p>
+                    <p className="text-sm font-medium text-gray-900 break-all">
+                      {userProfile.email}
+                    </p>
+                  </div>
+                </div>
 
-            <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-emerald-50 transition-colors">
-              <div className="p-3 bg-emerald-500 rounded-lg">
-                <FaWallet className="text-white text-lg" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Wallet
-                </p>
-                <p className="text-xs md:text-sm font-mono font-semibold text-gray-800 truncate">
-                  {compressAddress(userProfile.walletAddress ?? "")}
-                </p>
-              </div>
-            </div>
+                <div className="flex items-start gap-4">
+                  <div className="p-2.5 bg-emerald-500 rounded flex-shrink-0">
+                    <FaWallet className="text-white text-base" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      Wallet Address
+                    </p>
+                    <p className="text-sm font-mono font-medium text-gray-900 truncate">
+                      {compressAddress(userProfile.walletAddress ?? "")}
+                    </p>
+                  </div>
+                </div>
 
-            <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-emerald-50 transition-colors">
-              <div className="p-3 bg-emerald-500 rounded-lg">
-                <FaIdCard className="text-white text-lg" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  National ID
-                </p>
-                <p className="text-xs md:text-sm font-semibold text-gray-900">
-                  {userProfile.nic}
-                </p>
+                <div className="flex items-start gap-4">
+                  <div className="p-2.5 bg-emerald-500 rounded flex-shrink-0">
+                    <FaIdCard className="text-white text-base" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      National ID
+                    </p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {userProfile.nic}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

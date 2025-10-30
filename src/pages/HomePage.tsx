@@ -24,7 +24,7 @@ const HomePage = () => {
 
       {user &&  <UserDetailsCard user={user}/> }
 
-      <section className="w-full px-6 md:px-16 bg-white max-w-boundary mx-auto">
+      <section className="w-full bg-white max-w-boundary mx-auto">
         { false && (
           <div className="max-w-boundary mx-auto grid md:grid-cols-3 gap-10 items-start">
             <div className="md:col-span-2">

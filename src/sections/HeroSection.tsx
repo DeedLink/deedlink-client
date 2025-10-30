@@ -8,12 +8,12 @@ const HeroSection = () => {
 
   return (
     <section
-      className="relative w-full bg-cover bg-center flex flex-col items-start justify-center text-white px-6 md:px-16 pb-20 pt-32"
+      className="relative w-full bg-cover bg-center flex flex-col items-start justify-center text-white pb-20 pt-32 px-4 md:px-10"
       style={{
         backgroundImage: `linear-gradient(rgba(0,60,10,0.85), rgba(0,60,10,0.85)), url(${background})`,
       }}
     >
-      <div className="max-w-boundary mx-auto w-full md:px-20">
+      <div className="max-w-boundary mx-auto w-full">
         <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-6">
           Simplify property ownership with our secure digital deed registry
         </h1>
