@@ -62,7 +62,7 @@ function PurchancePanel() {
           <IoQrCodeOutline className="inline-block text-lg" />
         </button>
         <div>
-          <input value={typed} onChange={(e)=>setTyped(e.target.value)} className="border text-black border-green-400 rounded-lg p-1"></input>
+          <input value={typed} onChange={(e)=>setTyped(e.target.value)} className="border text-black border-green-400 rounded-lg p-1 w-48 max-w-[44vw]"></input>
         </div>
       </div>
 
