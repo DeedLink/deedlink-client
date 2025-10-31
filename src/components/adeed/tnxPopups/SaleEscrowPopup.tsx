@@ -7,6 +7,7 @@ import { FaStore } from "react-icons/fa";
 import { completeFullOwnershipTransfer, sellerDepositNFT, getPaymentBreakdown } from "../../../web3.0/escrowIntegration";
 import { useWallet } from "../../../contexts/WalletContext";
 import { useQR } from "../../../contexts/QRContext";
+import { Encryting } from "../../../utils/encryption";
 
 interface SaleEscrowPopupProps {
   isOpen: boolean;
@@ -109,6 +110,21 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
         if (result.success && result.escrowAddress) {
         setEscrowAddress(result.escrowAddress);
         setTxHash(result.stampFeeTxHash || "");
+
+        // sendNotification(
+        //   Encryting({
+        //     deedId: deedId,
+        //     escrowAddress: escrowAddress || "",
+        //     seller: account || "",
+        //     hash: txHash,
+        //   })
+        // );
+        console.log("Escrow: ",Encryting({
+            deedId: deedId,
+            escrowAddress: escrowAddress || "",
+            seller: account || "",
+            hash: txHash,
+          }))
       }
       } else {
         throw new Error(result.error || "Failed to create escrow");
