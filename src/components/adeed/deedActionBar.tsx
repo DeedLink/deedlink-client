@@ -80,7 +80,7 @@ const DeedActionBar = ({
         {onDirectTransfer && (
           <ActionButton
             icon={<FaExchangeAlt size={18} />}
-            label="Direct Transfer"
+            label="Gift Your Deed"
             onClick={onDirectTransfer}
             color="bg-blue-600 hover:bg-blue-700"
           />
