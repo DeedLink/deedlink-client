@@ -35,17 +35,12 @@ function PurchancePanel() {
     });
   };
 
-  /*
-
-  U2FsdGVkX1/IFW212dXQoFsKi5uHADsfFlrsfSxro5IQO7a7Rxi78tSbCZ2AClFH0cqWsso0DY42xj7Qz5s5htAo4VHbUNQ60fC9fcUjR/8M8/lRdz3awRlXxPnnJ9J0LdBcV7eHh5EILfjLU3eClw==
-
-  */
-
   useEffect(() => {
     console.log(typed);
     const [ok, decrypted] = validateEscrowString(typed);
     if (ok && decrypted) {
       const obj = decrypted as QRData;
+      console.log(obj);
       setScannedData(obj);
       setDeedId(obj.deedId);
       setSelectedEscrow(obj.escrowAddress)

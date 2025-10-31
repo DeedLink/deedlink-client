@@ -119,12 +119,15 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
         //     hash: txHash,
         //   })
         // );
-        console.log("Escrow: ",Encryting({
+
+        if(result.escrowAddress){
+          console.log("Escrow: ",Encryting({
             deedId: deedId,
-            escrowAddress: escrowAddress || "",
+            escrowAddress: result.escrowAddress,
             seller: account || "",
             hash: txHash,
           }))
+        }
       }
       } else {
         throw new Error(result.error || "Failed to create escrow");
