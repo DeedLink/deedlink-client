@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+test.js
+.test.js
+./test.js
