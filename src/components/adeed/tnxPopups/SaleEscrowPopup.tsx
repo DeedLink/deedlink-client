@@ -1,6 +1,6 @@
 // SaleEscrowPopup.tsx - Sale with Payment & Escrow
 import { type FC, useState, useEffect } from "react";
-import { getUsers, sendNotification } from "../../../api/api";
+import { getUsers } from "../../../api/api";
 import type { User } from "../../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle, IoCashOutline } from "react-icons/io5";
 import { FaStore } from "react-icons/fa";
@@ -111,14 +111,14 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
         setEscrowAddress(result.escrowAddress);
         setTxHash(result.stampFeeTxHash || "");
 
-        sendNotification(
-          Encryting({
-            deedId: deedId,
-            escrowAddress: escrowAddress || "",
-            seller: account || "",
-            hash: txHash,
-          })
-        );
+        // sendNotification(
+        //   Encryting({
+        //     deedId: deedId,
+        //     escrowAddress: escrowAddress || "",
+        //     seller: account || "",
+        //     hash: txHash,
+        //   })
+        // );
         console.log("Escrow: ",Encryting({
             deedId: deedId,
             escrowAddress: escrowAddress || "",
