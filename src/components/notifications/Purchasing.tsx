@@ -2,14 +2,9 @@ import { useEffect, useState } from "react";
 import BuyerEscrowPopup from "../adeed/tnxPopups/BuyerEscrowPopup";
 import { useQR } from "../../contexts/QRContext";
 import { IoQrCodeOutline } from "react-icons/io5";
-import { validateEscrow } from "../../utils/format";
+import type { QRData } from "../qr/QRscanner";
+import { validateEscrowString } from "../../utils/helpers";
 
-interface QRData {
-  deedId: string;
-  escrowAddress: string;
-  seller: string;
-  hash?: string;
-}
 
 function PurchancePanel() {
   const [selectedEscrow, setSelectedEscrow] = useState<string | null>(null);
@@ -40,9 +35,21 @@ function PurchancePanel() {
     });
   };
 
-  useEffect(()=>{
-    validateEscrow(typed);
-  },[typed]);
+  /*
+
+  U2FsdGVkX1/IFW212dXQoFsKi5uHADsfFlrsfSxro5IQO7a7Rxi78tSbCZ2AClFH0cqWsso0DY42xj7Qz5s5htAo4VHbUNQ60fC9fcUjR/8M8/lRdz3awRlXxPnnJ9J0LdBcV7eHh5EILfjLU3eClw==
+
+  */
+
+  useEffect(() => {
+    const [ok, decrypted] = validateEscrowString(typed);
+    if (ok && decrypted) {
+      const obj = decrypted as QRData;
+      setScannedData(obj);
+      setDeedId(obj.deedId);
+      setSelectedEscrow(obj.escrowAddress)
+    }
+  }, [typed]);
 
   return (
     <div className="space-y-4">
