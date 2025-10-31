@@ -42,6 +42,7 @@ function PurchancePanel() {
   */
 
   useEffect(() => {
+    console.log(typed);
     const [ok, decrypted] = validateEscrowString(typed);
     if (ok && decrypted) {
       const obj = decrypted as QRData;
