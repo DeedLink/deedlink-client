@@ -3,7 +3,7 @@ import EthereumProvider from "@walletconnect/ethereum-provider";
 
 const projectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
 const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID);
-const WEB_RPC = import.meta.env.VITE_RPC_URL_MOBILE as string;
+const WEB_RPC = import.meta.env.VITE_RPC_URL_WEB as string;
 const MOBILE_RPC = import.meta.env.VITE_RPC_URL_MOBILE as string;
 
 export async function connectWallet() {
