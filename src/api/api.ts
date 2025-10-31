@@ -13,7 +13,8 @@ export const API = {
   deed: isVercelTest ? import.meta.env.VITE_VERCEL_DEED_API_URL : import.meta.env.VITE_DEED_API_URL,
   tnx: isVercelTest ? import.meta.env.VITE_VERCEL_TNX_API_URL : import.meta.env.VITE_TNX_API_URL,
   pinata: isVercelTest ? import.meta.env.VITE_VERCEL_PINATA_API_URL : import.meta.env.VITE_PINATA_API_URL,
-  survey: isVercelTest ? import.meta.env.VITE_VERCEL_SURVEY_PLAN_API_URL : import.meta.env.VITE_SURVEY_PLAN_API_URL
+  survey: isVercelTest ? import.meta.env.VITE_VERCEL_SURVEY_PLAN_API_URL : import.meta.env.VITE_SURVEY_PLAN_API_URL,
+  notification: isVercelTest ? import.meta.env.VITE_VERCEL_NOTIFICATION_API_URL : import.meta.env.VITE_VERCEL_NOTIFICATION_API_URL
 };
 
 console.log("isVercelTest:", isVercelTest);
@@ -401,3 +402,16 @@ export const updateFullOwnerAddress = async (
   });
   return res.data;
 };
+
+//Notification API
+
+const notificationApi = axios.create({
+  baseURL: API.notification,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export const sendNotification =(data: any)=>{
+  return "ok";
+}
