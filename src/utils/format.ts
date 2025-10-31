@@ -1,5 +1,8 @@
 import type { RegisterDeedFormData } from "../types/registerdeedformdata";
 import type { RegisterDeedRequest } from "../types/regitseringdeedtype";
+import CryptoJS from "crypto-js";
+
+const SECRET_KEY = import.meta.env.VITE_SECRET_KEY as string;
 
 export const shortAddress = (addr: string, left = 6, right = 4) =>
   addr.length > left + right ? `${addr.slice(0, left)}…${addr.slice(-right)}` : addr;
@@ -69,4 +72,34 @@ export const deedRequestDataFormatter = (
     ivslAssigned: data.IVSL,
     registrationDate: new Date(data.registrationDate).toISOString(),
   };
+};
+
+export const validateEscrow = (typed: string) => {
+  if (!typed) {
+    console.warn("No input provided");
+    return;
+  }
+  try {
+    const parsed = JSON.parse(typed);
+    const encrypted = Encryt(parsed as JSON);
+    console.log("Encrypted:", encrypted);
+    const decrypted = Decrypt(encrypted);
+    console.log("Decrypted:", decrypted);
+  } catch (error) {
+    console.error("Invalid JSON input:", error);
+  }
+};
+
+export const Encryt = (obj: JSON): string => {
+  const jsonString = JSON.stringify(obj);
+  const encrypted = CryptoJS.AES.encrypt(jsonString, SECRET_KEY).toString();
+
+  return encrypted;
+};
+
+export const Decrypt = (encryptedStr: string): JSON => {
+  const bytes = CryptoJS.AES.decrypt(encryptedStr, SECRET_KEY);
+  const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+
+  return JSON.parse(decryptedString);
 };

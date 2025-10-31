@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import BuyerEscrowPopup from "../adeed/tnxPopups/BuyerEscrowPopup";
 import { useQR } from "../../contexts/QRContext";
 import { IoQrCodeOutline } from "react-icons/io5";
+import { validateEscrow } from "../../utils/format";
 
 interface QRData {
   deedId: string;
@@ -14,6 +15,7 @@ function PurchancePanel() {
   const [selectedEscrow, setSelectedEscrow] = useState<string | null>(null);
   const [deedId, setDeedId] = useState<string>("");
   const [scannedData, setScannedData] = useState<QRData | null>(null);
+  const [typed, setTyped] = useState<string>("");
 
   const { showQRScanner } = useQR();
 
@@ -38,6 +40,10 @@ function PurchancePanel() {
     });
   };
 
+  useEffect(()=>{
+    validateEscrow(typed);
+  },[typed]);
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end items-center gap-4 py-2">
@@ -48,6 +54,9 @@ function PurchancePanel() {
         >
           <IoQrCodeOutline className="inline-block text-lg" />
         </button>
+        <div>
+          <input value={typed} onChange={(e)=>setTyped(e.target.value)} className="border text-black border-green-400 rounded-lg p-1"></input>
+        </div>
       </div>
 
       {scannedData && (
