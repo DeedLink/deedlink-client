@@ -1,6 +1,6 @@
 // SaleEscrowPopup.tsx - Sale with Payment & Escrow
 import { type FC, useState, useEffect } from "react";
-import { getUsers } from "../../../api/api";
+import { createTransaction, getUsers } from "../../../api/api";
 import type { User } from "../../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle, IoCashOutline } from "react-icons/io5";
 import { FaStore } from "react-icons/fa";
@@ -120,7 +120,20 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
         //   })
         // );
 
-        if(result.escrowAddress){
+        if(result.escrowAddress && breakdown?.sellerAmount){
+          //const init_tnx = await createTransaction()
+          await createTransaction(
+            deedId,
+            account as string,
+            selectedWallet,
+            parseFloat(salePrice),
+            100,
+            "escrow_sale",
+            result.stampFeeTxHash,
+            result.escrowAddress,
+            `Escrow Sale - ${result.stampFeeTxHash || "no_hash"}`
+          );
+          
           console.log("Escrow: ",Encryting({
             deedId: deedId,
             escrowAddress: result.escrowAddress,

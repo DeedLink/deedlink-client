@@ -8,7 +8,7 @@ import { validateEscrowString } from "../../utils/helpers";
 
 function PurchancePanel() {
   const [selectedEscrow, setSelectedEscrow] = useState<string | null>(null);
-  const [deedId, setDeedId] = useState<string>("");
+  const [_deedId, setDeedId] = useState<string>("");
   const [scannedData, setScannedData] = useState<QRData | null>(null);
   const [typed, setTyped] = useState<string>("");
 
@@ -86,7 +86,6 @@ function PurchancePanel() {
           <BuyerEscrowPopup
             isOpen={!!selectedEscrow}
             escrowAddress={selectedEscrow}
-            deedId={deedId}
             onClose={() => setSelectedEscrow(null)}
           />
         </div>
