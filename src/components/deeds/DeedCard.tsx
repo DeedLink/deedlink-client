@@ -15,6 +15,9 @@ import ShareBadge from "./ShareBadge";
 import OwnerChips from "./OwnerChips";
 import type { IDeed } from "../../types/responseDeed";
 import { getCenterOfLocations } from "../../utils/functions";
+import { useEffect, useState } from "react";
+import { getTransactionsByDeedId } from "../../api/api";
+import type { Title } from "../../types/title";
 
 interface ISignatures {
   surveyor: boolean;
@@ -44,6 +47,36 @@ const DeedCard = ({
     deed.owners.find(
       (o) => o.address.toLowerCase() === currentUser.toLowerCase()
     )?.share ?? 0;
+  
+  const [state, setState] = useState<"pending" | "completed" | "failed">("completed");
+  const [titles, setTitles] = useState<Title[]>([]);
+
+  const getTransactions = async () => {
+      if (deed._id) {
+        const tnx = await getTransactionsByDeedId(deed._id);
+        if (tnx && tnx.length) {
+          const sortedTnx = tnx.sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+  
+          setTitles(sortedTnx);
+          console.log(sortedTnx);
+        }
+      } else {
+        console.log("Deed ID not found", "error");
+      }
+    };
+  
+  useEffect(()=>{
+    getTransactions();
+  },[deed]);
+
+  useEffect(()=>{
+    if(titles[0]){
+      console.log(titles[0].status);
+      setState(titles[0].status);
+    }
+  },[titles])
 
   const centerLocation = getCenterOfLocations(deed.location);
 
@@ -60,7 +93,7 @@ const DeedCard = ({
   };
 
   return (
-    <div className="group bg-white rounded-2xl shadow border border-black/5 hover:shadow-xl transition overflow-hidden flex flex-col justify-between">
+    <div className="group rounded-2xl shadow border border-black/5 hover:shadow-xl transition overflow-hidden flex flex-col justify-between" style={{backgroundColor: `${state==="pending" ? "#FFCFE5": "white"}`}}>
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -69,6 +102,11 @@ const DeedCard = ({
               <h3 className="font-semibold text-[#00420A] truncate">
                 Deed #{deed.deedNumber}
               </h3>
+              {
+                state==="pending" && (
+                  <div className="text-white bg-blue-500 px-2 rounded-md">Sale Pending</div>
+                )
+              }
             </div>
             <p className="text-xs text-gray-500 mt-0.5 truncate">
               {deed.deedType.deedType}
