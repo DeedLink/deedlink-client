@@ -7,21 +7,19 @@ import {
   getEscrowDetails, 
   getEscrowStatus 
 } from "../../../web3.0/escrowIntegration";
-import { createTransaction, updateFullOwnerAddress } from "../../../api/api";
+import { transactionStatus, updateFullOwnerAddress } from "../../../api/api";
 import { useLogin } from "../../../contexts/LoginContext";
 import { useAlert } from "../../../contexts/AlertContext";
 
 interface BuyerEscrowPopupProps {
   isOpen: boolean;
   escrowAddress: string;
-  deedId: string;
   onClose: () => void;
 }
 
 const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({ 
   isOpen, 
   escrowAddress, 
-  deedId,
   onClose 
 }) => {
   const [loading, setLoading] = useState(false);
@@ -140,15 +138,9 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
       const result = await finalizeEscrow(escrowAddress);
 
       if (result.success) {
-        await createTransaction(
-          deedId,
-          details.seller as string,
-          details.buyer as string,
-          parseFloat(details?.price),
-          100,
-          result.txHash || details.txHash || "no_hash",
-          "escrow_sale",
-          `Escrow Sale - ${result.txHash || details.txHash || "no_hash"}`
+        await transactionStatus(
+          escrowAddress,
+          "completed"
         );
 
         try {

@@ -356,8 +356,9 @@ export const createTransaction = async (
   to: string,
   amount: number,
   share: number,
-  hash: string,
   type: string,
+  hash?: string,
+  blockchain_identification?: string,
   description?: string
 ): Promise<any> => {
   const res = await tnxApi.post(`/`, {
@@ -367,11 +368,18 @@ export const createTransaction = async (
     amount,
     share,
     hash,
+    blockchain_identification,
     description,
     type
   });
   return res.data;
 }
+
+// Update tnx status by id
+export const transactionStatus = async (blockchain_identification: string, status: string): Promise<any> => {
+  const res = await tnxApi.post(`/status/${blockchain_identification}`, { status });
+  return res.data;
+};
 
 // Update deed owner address (protected)
 export const updateOwnerAddress = async (
