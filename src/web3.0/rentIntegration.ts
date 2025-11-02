@@ -1,4 +1,3 @@
-// rentIntegration.ts
 import { ethers } from "ethers";
 import { connectWallet } from "./wallet";
 import PropertyNFTABI from "./abis/PropertyNFT.json";
