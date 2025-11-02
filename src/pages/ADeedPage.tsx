@@ -260,6 +260,7 @@ const ADeedPage = () => {
             <DeedActionBar
               onFractioning={handleFractioning}
               deedNumber={deed.deedNumber}
+              deedId={deed._id}
               tokenId={deed.tokenId}
               onEdit={handleEdit}
               onTransfer={handleTransfer}
@@ -509,6 +510,7 @@ const ADeedPage = () => {
           <DeedActionBar
             onFractioning={handleFractioning}
             deedNumber={deed.deedNumber}
+            deedId={deed._id}
             tokenId={deed.tokenId}
             onEdit={handleEdit}
             onTransfer={handleTransfer}
