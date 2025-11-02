@@ -17,6 +17,8 @@ import { ethers } from "ethers";
 import TransactPopup from "../components/adeed/transactPopup";
 import { DirectTransferPopup } from "../components/adeed/tnxPopups/DirectTransferPopup";
 import SaleEscrowPopup from "../components/adeed/tnxPopups/SaleEscrowPopup";
+import GiveRentPopup from "../components/adeed/tnxPopups/GiveRentPopup";
+import GetRentPopup from "../components/adeed/tnxPopups/GetRentPopup";
 
 interface ISignatures {
   surveyor: boolean;
@@ -40,6 +42,9 @@ const ADeedPage = () => {
   const [tnx, setTnx] = useState<any[]>([]);
   const [openDirectTransfer, setOpenDirectTransfer] = useState(false);
   const [openSaleEscrow, setOpenSaleEscrow] = useState(false);
+  const [openGiveRent, setOpenGiveRent] = useState(false);
+  const [openGetRent, setOpenGetRent] = useState(false);
+
 
   const centerLocation = deed ? getCenterOfLocations(deed.location) : null;
 
@@ -271,7 +276,7 @@ const ADeedPage = () => {
               onShare={handleShare}
               onViewBlockchain={handleViewBlockchain}
               numberOfFT={numberOfFT}
-              onRent={() => {}}
+              onRent={() => setOpenGiveRent(true)}
               onPowerOfAttorney={() => {}}
             />
           </div>
@@ -522,7 +527,7 @@ const ADeedPage = () => {
             onShare={handleShare}
             onViewBlockchain={handleViewBlockchain}
             numberOfFT={numberOfFT}
-            onRent={() => {}}
+            onRent={() => setOpenGiveRent(true)}
             onPowerOfAttorney={() => {}}
           />
         </div>
@@ -552,6 +557,21 @@ const ADeedPage = () => {
         </SaleEscrowPopup>
       )
       }
+      {openGiveRent && deed.tokenId && (
+        <GiveRentPopup
+          isOpen={openGiveRent}
+          tokenId={deed.tokenId}
+          onClose={() => setOpenGiveRent(false)}
+        />
+      )}
+
+      {openGetRent && deed.tokenId && (
+        <GetRentPopup
+          isOpen={openGetRent}
+          tokenId={deed.tokenId}
+          onClose={() => setOpenGetRent(false)}
+        />
+      )}
     </div>
   );
 };

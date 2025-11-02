@@ -1,111 +1,107 @@
 import { useState } from "react";
-import { IoClose } from "react-icons/io5";
+import { FaTimes } from "react-icons/fa";
+//import { useWallet } from "../../../contexts/WalletContext";
 import { useToast } from "../../../contexts/ToastContext";
-import { useWallet } from "../../../contexts/WalletContext";
 import { setRent } from "../../../web3.0/rentIntegration";
 
 interface GiveRentPopupProps {
   isOpen: boolean;
-  tokenId: number;
   onClose: () => void;
+  tokenId: number;
 }
 
-const GiveRentPopup = ({ isOpen, tokenId, onClose }: GiveRentPopupProps) => {
-  const { account } = useWallet();
+const GiveRentPopup: React.FC<GiveRentPopupProps> = ({ isOpen, onClose, tokenId }) => {
+  //const { account } = useWallet();
   const { showToast } = useToast();
 
-  const [rentAmount, setRentAmountValue] = useState("");
-  const [rentPeriod, setRentPeriod] = useState("");
-  const [receiver, setReceiver] = useState(account || "");
-  const [loading, setLoading] = useState(false);
-
-  const handleSetRent = async () => {
-    if (!rentAmount || !rentPeriod || !receiver)
-      return showToast("Please fill all fields", "info");
-
-    try {
-      setLoading(true);
-      const result = await setRent(tokenId, rentAmount, Number(rentPeriod), receiver);
-      showToast(result.message, "success");
-      onClose();
-    } catch (err: any) {
-      console.error(err);
-      showToast(err.message || "Failed to set rent", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [tenantAddress, setTenantAddress] = useState("");
+  const [rentAmount, setRentAmount] = useState("");
+  const [duration, setDuration] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
+  const handleSetRent = async () => {
+    if (!tenantAddress || !rentAmount || !duration) {
+      showToast("Please fill all fields", "error");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await setRent(
+        tokenId,
+        tenantAddress,
+        parseFloat(rentAmount),
+        duration
+      );
+      showToast(res?.message || "Rent successfully set!", "success");
+      onClose();
+    } catch (error: any) {
+      showToast(error.message || "Failed to set rent", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5"
-      >
-        <div className="flex items-center justify-between border-b pb-3">
-          <h2 className="text-xl font-bold text-gray-800">Set Rent Details</h2>
-          <button onClick={onClose}>
-            <IoClose size={24} className="text-gray-600 hover:text-black" />
-          </button>
-        </div>
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50">
+      <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-md p-6 relative">
+        <button
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+          onClick={onClose}
+        >
+          <FaTimes size={20} />
+        </button>
+
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+          Set Rent for Property
+        </h2>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Rent Amount (ETH)
-            </label>
+            <label className="text-sm font-semibold text-gray-600">Tenant Address</label>
+            <input
+              type="text"
+              value={tenantAddress}
+              onChange={(e) => setTenantAddress(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="0x1234..."
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-semibold text-gray-600">Rent Amount (LKR)</label>
             <input
               type="number"
               value={rentAmount}
-              onChange={(e) => setRentAmountValue(e.target.value)}
-              className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-              placeholder="0.05"
+              onChange={(e) => setRentAmount(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Ex: 25000"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Rent Period (Days)
-            </label>
+            <label className="text-sm font-semibold text-gray-600">Duration (Months)</label>
             <input
               type="number"
-              value={rentPeriod}
-              onChange={(e) => setRentPeriod(e.target.value)}
-              className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-              placeholder="30"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Ex: 12"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Rent Receiver Address
-            </label>
-            <input
-              type="text"
-              value={receiver}
-              onChange={(e) => setReceiver(e.target.value)}
-              className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-              placeholder="0x..."
-            />
-          </div>
+          <button
+            disabled={isSubmitting}
+            onClick={handleSetRent}
+            className={`w-full mt-4 py-2 rounded-lg text-white font-semibold transition ${
+              isSubmitting ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
+            }`}
+          >
+            {isSubmitting ? "Setting..." : "Set Rent"}
+          </button>
         </div>
-
-        <button
-          onClick={handleSetRent}
-          disabled={loading}
-          className={`w-full py-3 rounded-xl font-semibold text-white ${
-            loading
-              ? "bg-gray-400"
-              : "bg-gradient-to-r from-yellow-600 to-amber-600 hover:shadow-lg"
-          }`}
-        >
-          {loading ? "Setting Rent..." : "Set Rent"}
-        </button>
       </div>
     </div>
   );

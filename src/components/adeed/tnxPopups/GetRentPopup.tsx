@@ -1,106 +1,91 @@
 import { useEffect, useState } from "react";
-import { IoClose } from "react-icons/io5";
+import { FaTimes } from "react-icons/fa";
+//import { useWallet } from "../../../contexts/WalletContext";
 import { useToast } from "../../../contexts/ToastContext";
 import { getRentDetails, payRent } from "../../../web3.0/rentIntegration";
+import { ethers } from "ethers";
 
 interface GetRentPopupProps {
   isOpen: boolean;
-  tokenId: number;
   onClose: () => void;
+  tokenId: number;
 }
 
-const GetRentPopup = ({ isOpen, tokenId, onClose }: GetRentPopupProps) => {
+const GetRentPopup: React.FC<GetRentPopupProps> = ({ isOpen, onClose, tokenId }) => {
+  //const { account } = useWallet();
   const { showToast } = useToast();
-
-  const [rentDetails, setRentDetails] = useState<{
-    rentAmount: string;
-    rentPeriodDays: number;
-    receiver: string;
-    lastPaid: string;
-  } | null>(null);
-
-  const [loading, setLoading] = useState(false);
+  const [rentDetails, setRentDetails] = useState<any>(null);
+  const [isPaying, setIsPaying] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) return;
-    (async () => {
+    const loadRentDetails = async () => {
       try {
-        const data = await getRentDetails(tokenId);
-        setRentDetails(data);
-      } catch (err: any) {
-        showToast("Failed to fetch rent details", "error");
+        const res = await getRentDetails(tokenId);
+        setRentDetails(res);
+      } catch (error) {
+        console.error("Error loading rent details:", error);
       }
-    })();
+    };
+    if (isOpen) loadRentDetails();
   }, [isOpen, tokenId]);
-
-  const handlePayRent = async () => {
-    if (!rentDetails) return;
-    setLoading(true);
-    try {
-      const res = await payRent(tokenId, rentDetails.rentAmount);
-      showToast(res.message, "success");
-      onClose();
-    } catch (err: any) {
-      showToast(err.message || "Rent payment failed", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (!isOpen) return null;
 
+  const handlePayRent = async () => {
+    if (!rentDetails) return;
+    setIsPaying(true);
+    try {
+      const res = await payRent(tokenId, rentDetails.amount);
+      showToast(res?.message || "Rent payment successful", "success");
+      onClose();
+    } catch (error: any) {
+      showToast(error.message || "Payment failed", "error");
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5"
-      >
-        <div className="flex items-center justify-between border-b pb-3">
-          <h2 className="text-xl font-bold text-gray-800">Pay Rent</h2>
-          <button onClick={onClose}>
-            <IoClose size={24} className="text-gray-600 hover:text-black" />
-          </button>
-        </div>
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50">
+      <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-md p-6 relative">
+        <button
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+          onClick={onClose}
+        >
+          <FaTimes size={20} />
+        </button>
+
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+          Rent Details
+        </h2>
 
         {rentDetails ? (
-          <div className="space-y-3 text-sm text-gray-700">
-            <div>
-              <strong>Rent Amount:</strong> {rentDetails.rentAmount} ETH
+          <div className="space-y-3">
+            <div className="text-sm text-gray-700">
+              <strong>Landlord:</strong> {rentDetails.owner}
             </div>
-            <div>
-              <strong>Rent Period:</strong> {rentDetails.rentPeriodDays} days
+            <div className="text-sm text-gray-700">
+              <strong>Tenant:</strong> {rentDetails.tenant}
             </div>
-            <div>
-              <strong>Receiver:</strong> {rentDetails.receiver.slice(0, 6)}...
-              {rentDetails.receiver.slice(-4)}
+            <div className="text-sm text-gray-700">
+              <strong>Amount:</strong> {ethers.formatEther(rentDetails.amount)} LKR
             </div>
-            <div>
-              <strong>Last Paid:</strong>{" "}
-              {Number(rentDetails.lastPaid) > 0
-                ? new Date(Number(rentDetails.lastPaid) * 1000).toLocaleString()
-                : "Never"}
+            <div className="text-sm text-gray-700">
+              <strong>Duration:</strong> {rentDetails.duration} months
             </div>
+            <button
+              disabled={isPaying}
+              onClick={handlePayRent}
+              className={`w-full mt-5 py-2 rounded-lg text-white font-semibold transition ${
+                isPaying ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
+              }`}
+            >
+              {isPaying ? "Processing..." : "Pay Rent"}
+            </button>
           </div>
         ) : (
-          <p className="text-gray-500 text-sm text-center py-4">
-            No rent details found for this property.
-          </p>
+          <p className="text-gray-500 text-center">Loading rent details...</p>
         )}
-
-        <button
-          onClick={handlePayRent}
-          disabled={loading || !rentDetails}
-          className={`w-full py-3 rounded-xl font-semibold text-white ${
-            loading || !rentDetails
-              ? "bg-gray-400"
-              : "bg-gradient-to-r from-yellow-600 to-amber-600 hover:shadow-lg"
-          }`}
-        >
-          {loading ? "Processing..." : "Pay Rent"}
-        </button>
       </div>
     </div>
   );
