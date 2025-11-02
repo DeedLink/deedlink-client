@@ -17,6 +17,7 @@ interface DeedActionBarProps {
   tokenId?: number;
   deedId?: string;
   numberOfFT: number;
+  actionHappened?: boolean;
 
   onEdit?: () => void;
   onTransfer?: () => void;
@@ -34,6 +35,7 @@ const DeedActionBar = ({
   deedNumber,
   tokenId,
   deedId,
+  actionHappened,
   onEdit,
   onTransfer,
   onDirectTransfer,
@@ -65,13 +67,13 @@ const DeedActionBar = ({
 
   useEffect(() => {
     getTransactions();
-  }, [deedId]);
+  }, [deedId, actionHappened]);
 
   useEffect(() => {
     if (titles[0]) {
       setState(titles[0].status);
     }
-  }, [titles]);
+  }, [titles, actionHappened]);
 
   const isLocked = state === "pending";
 

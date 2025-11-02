@@ -262,6 +262,7 @@ const ADeedPage = () => {
               deedNumber={deed.deedNumber}
               deedId={deed._id}
               tokenId={deed.tokenId}
+              actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
               onEdit={handleEdit}
               onTransfer={handleTransfer}
               onDirectTransfer={handleDirectTransfer}
@@ -511,6 +512,7 @@ const ADeedPage = () => {
             onFractioning={handleFractioning}
             deedNumber={deed.deedNumber}
             deedId={deed._id}
+            actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
             tokenId={deed.tokenId}
             onEdit={handleEdit}
             onTransfer={handleTransfer}
