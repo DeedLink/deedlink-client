@@ -19,6 +19,7 @@ import { DirectTransferPopup } from "../components/adeed/tnxPopups/DirectTransfe
 import SaleEscrowPopup from "../components/adeed/tnxPopups/SaleEscrowPopup";
 import GiveRentPopup from "../components/adeed/tnxPopups/GiveRentPopup";
 import GetRentPopup from "../components/adeed/tnxPopups/GetRentPopup";
+import { getRentDetails } from "../web3.0/rentIntegration";
 
 interface ISignatures {
   surveyor: boolean;
@@ -238,6 +239,17 @@ const ADeedPage = () => {
   },[deedNumber]);
 
   getNumberOfFT();
+
+  const getTheRentDetails =async()=>{
+    if(deed?.tokenId){
+      const res = await getRentDetails(deed?.tokenId);
+      console.log("Rent Details: ", res);
+    }
+  }
+
+  useEffect(()=>{
+    getTheRentDetails();
+  },[deed]);
 
   if (!deed) {
     return (
