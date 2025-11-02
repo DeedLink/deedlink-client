@@ -28,16 +28,21 @@ const GiveRentPopup: React.FC<GiveRentPopupProps> = ({ isOpen, onClose, tokenId 
     }
 
     setIsSubmitting(true);
+    console.log({        tokenId,
+        tenantAddress,
+        rentAmount,
+        duration});
     try {
       const res = await setRent(
         tokenId,
-        tenantAddress,
-        parseFloat(rentAmount),
-        duration
+        rentAmount,
+        parseInt(duration),
+        tenantAddress
       );
       showToast(res?.message || "Rent successfully set!", "success");
       onClose();
     } catch (error: any) {
+      console.log(error.message)
       showToast(error.message || "Failed to set rent", "error");
     } finally {
       setIsSubmitting(false);
@@ -45,7 +50,7 @@ const GiveRentPopup: React.FC<GiveRentPopupProps> = ({ isOpen, onClose, tokenId 
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50 text-black">
       <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-md p-6 relative">
         <button
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
