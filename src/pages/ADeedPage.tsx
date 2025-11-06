@@ -21,6 +21,7 @@ import GiveRentPopup from "../components/adeed/tnxPopups/GiveRentPopup";
 import GetRentPopup from "../components/adeed/tnxPopups/GetRentPopup";
 import { getRentDetails } from "../web3.0/rentIntegration";
 import TitleHistory from "../components/parts/TitleHistory";
+import type { Rent } from "../types/rent";
 
 interface ISignatures {
   surveyor: boolean;
@@ -46,7 +47,7 @@ const ADeedPage = () => {
   const [openSaleEscrow, setOpenSaleEscrow] = useState(false);
   const [openGiveRent, setOpenGiveRent] = useState(false);
   const [openGetRent, setOpenGetRent] = useState(false);
-  const [rentDetails, setRentDetails] = useState<any>();
+  const [rentDetails, setRentDetails] = useState<Rent>();
 
   const centerLocation = deed ? getCenterOfLocations(deed.location) : null;
 
@@ -239,19 +240,18 @@ const ADeedPage = () => {
     getTheRentDetails();
   },[deed]);
 
-  const fetchRentDetails=async()=>{
-    if(!deed?.tokenId)
-      return;
-    try{
-      const rent = await getRentDetails(deed?.tokenId);
-      if(rent){
-        setRentDetails(rent);
-      }
+  const fetchRentDetails = async (): Promise<void> => {
+    console.log(deed);
+    if (!deed?.tokenId) return;
+
+    try {
+      const rent = await getRentDetails(deed.tokenId);
+      console.log("Rent: ",rent);
+      if (rent) setRentDetails(rent);
+    } catch (error) {
+      console.error(error);
     }
-    catch(e){
-      console.log(e);
-    }
-  }
+  };
 
   useEffect(()=>{
     fetchRentDetails();
@@ -269,13 +269,14 @@ const ADeedPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white pt-20 relative">
-      {
-        rentDetails && (
-          <div className="absolute bottom-10 right-10 border w-40 h-40 z-50 bg-black text-white">
-            {JSON.stringify(rentDetails)}
-          </div>
-        )
-      }
+    {rentDetails && (
+      <div className="absolute bottom-10 right-10 border w-60 h-auto z-50 bg-black text-white p-3 rounded-lg">
+        <p>Amount: {rentDetails.rentAmount} ETH</p>
+        <p>Period: {Number(rentDetails.rentPeriodDays)} days</p>
+        <p>Last Paid: {new Date(Number(rentDetails.lastPaid) * 1000).toLocaleString()}</p>
+        <p>Receiver: {shortAddress(rentDetails.receiver)}</p>
+      </div>
+    )}
       <div className="flex max-w-boundary mx-auto w-full h-full">
         <div className="max-w-7xl mx-auto px-4 py-8 h-full w-full">
           <button

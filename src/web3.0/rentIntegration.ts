@@ -53,7 +53,7 @@ export async function payRent(tokenId: number, rentAmountInEth: string) {
 // View current rent details
 export async function getRentDetails(tokenId: number) {
   const nft = await getPropertyNFTContract();
-  const rent = await nft.getRentStatus(tokenId);
+  const rent = await nft.rentInfo(tokenId);
 
   return {
     rentAmount: ethers.formatEther(rent.amount),
