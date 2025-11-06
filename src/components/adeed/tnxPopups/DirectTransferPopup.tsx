@@ -82,7 +82,8 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
           100,
           "gift",
           res.txHash,
-          "Direct Transfer (Gift/No Payment)"
+          "Direct Transfer (Gift/No Payment)",
+          "completed"
         );
 
         await updateFullOwnerAddress(tokenId, selectedWallet.toLowerCase());

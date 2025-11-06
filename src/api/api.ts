@@ -359,7 +359,8 @@ export const createTransaction = async (
   type: string,
   hash?: string,
   blockchain_identification?: string,
-  description?: string
+  description?: string,
+  status?: string
 ): Promise<any> => {
   const res = await tnxApi.post(`/`, {
     deedId,
@@ -370,7 +371,8 @@ export const createTransaction = async (
     hash,
     blockchain_identification,
     description,
-    type
+    type,
+    status
   });
   return res.data;
 }
