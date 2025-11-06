@@ -1,5 +1,5 @@
 import { IoClose } from "react-icons/io5";
-import { FaFileSignature, FaUserShield, FaMapMarkedAlt, FaRoute, FaLayerGroup, FaExpand, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaExternalLinkAlt } from "react-icons/fa";
+import { FaFileSignature, FaUserShield, FaMapMarkedAlt, FaRoute, FaExpand, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaExternalLinkAlt } from "react-icons/fa";
 import { formatCurrency, formatNumber, shortAddress, timeAgo } from "../../utils/format";
 import type { IDeed } from "../../types/responseDeed";
 import MapPreview from "./MapPreview";
@@ -10,6 +10,7 @@ import { getPlanByPlanNumber, getTransactionsByDeedId } from "../../api/api";
 import { useToast } from "../../contexts/ToastContext";
 import { defaultPlan, type Plan } from "../../types/plan";
 import { useNavigate } from "react-router-dom";
+import TitleHistory from "../parts/TitleHistory";
 
 interface ISignatures {
   surveyor: boolean;
@@ -63,19 +64,6 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", si
       year: 'numeric',
       month: 'short',
       day: 'numeric',
-    });
-  };
-
-  const formatDateWithTime = (date: Date | number) => {
-    const dateObj = typeof date === 'number' ? new Date(date) : new Date(date);
-    return dateObj.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true,
     });
   };
 
@@ -236,27 +224,8 @@ const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", si
                 </section>
               )}
 
-              <section className="rounded-xl border border-black/5 p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <FaLayerGroup className="text-green-700" />
-                  <h4 className="font-semibold">Title History</h4>
-                </div>
-                <div className="space-y-3 overflow-auto max-h-64 pr-1 py-1">
-                  {(!tnx || tnx.length === 0) && <p className="text-gray-500 text-sm">No transfers recorded.</p>}
-                  {tnx?.map((t, idx) => (
-                    <div key={t._id || idx} className="flex items-center justify-between text-sm">
-                      <div className="flex-1">
-                        <div className="font-medium">{shortAddress(t.from)} → {shortAddress(t.to)}</div>
-                        <div className="text-gray-500 text-xs">{formatDateWithTime(new Date(t.date).getTime())}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-gray-700">{t.share}%</div>
-                        {t.amount > 0 && <div className="text-gray-500 text-xs">{formatCurrency(t.amount, currency)}</div>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
+              <TitleHistory tnx={tnx}/>
+
             </div>
 
             <aside className="space-y-5">
