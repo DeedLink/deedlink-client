@@ -19,7 +19,6 @@ import { DirectTransferPopup } from "../components/adeed/tnxPopups/DirectTransfe
 import SaleEscrowPopup from "../components/adeed/tnxPopups/SaleEscrowPopup";
 import GiveRentPopup from "../components/adeed/tnxPopups/GiveRentPopup";
 import GetRentPopup from "../components/adeed/tnxPopups/GetRentPopup";
-import { getRentDetails } from "../web3.0/rentIntegration";
 import TitleHistory from "../components/parts/TitleHistory";
 
 interface ISignatures {
@@ -227,17 +226,6 @@ const ADeedPage = () => {
 
   getNumberOfFT();
 
-  const getTheRentDetails =async()=>{
-    if(deed?.tokenId){
-      const res = await getRentDetails(deed?.tokenId);
-      console.log("Rent Details: ", res);
-    }
-  }
-
-  useEffect(()=>{
-    getTheRentDetails();
-  },[deed]);
-
   if (!deed) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex items-center justify-center">
@@ -249,7 +237,7 @@ const ADeedPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white pt-20">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white pt-20 relative">
       <div className="flex max-w-boundary mx-auto w-full h-full">
         <div className="max-w-7xl mx-auto px-4 py-8 h-full w-full">
           <button

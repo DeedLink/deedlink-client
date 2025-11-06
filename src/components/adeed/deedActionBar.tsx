@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import type { Title } from "../../types/title";
 import { getTransactionsByDeedId } from "../../api/api";
+import RentUI from "../parts/RentUI";
 
 interface DeedActionBarProps {
   deedNumber: string;
@@ -182,6 +183,14 @@ const DeedActionBar = ({
             />
           )}
         </div>
+
+        {
+          tokenId && (
+          <div className="mt-6 pt-5 border-t border-gray-200">
+            <RentUI tokenId={tokenId}/>
+          </div>
+          )
+        }
 
         <div className="mt-6 pt-5 border-t border-gray-200">
           <div className="text-xs text-gray-500 uppercase font-semibold mb-2">
