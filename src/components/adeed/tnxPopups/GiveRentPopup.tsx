@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
-//import { useWallet } from "../../../contexts/WalletContext";
 import { useToast } from "../../../contexts/ToastContext";
 import { setRent } from "../../../web3.0/rentIntegration";
 import type { User } from "../../../types/types";
@@ -184,7 +183,7 @@ const GiveRentPopup: React.FC<GiveRentPopupProps> = ({ isOpen, onClose, tokenId 
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-600">Rent Amount (LKR)</label>
+            <label className="text-sm font-semibold text-gray-600">Rent Amount (ETH)</label>
             <input
               type="number"
               value={rentAmount}
