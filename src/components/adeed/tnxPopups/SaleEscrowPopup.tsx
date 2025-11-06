@@ -122,17 +122,17 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
 
         if(result.escrowAddress && breakdown?.sellerAmount){
           //const init_tnx = await createTransaction()
-          await createTransaction(
+          await createTransaction({
             deedId,
-            account as string,
-            selectedWallet,
-            parseFloat(salePrice),
-            100,
-            "escrow_sale",
-            result.stampFeeTxHash,
-            result.escrowAddress,
-            `Escrow Sale - ${result.stampFeeTxHash || "no_hash"}`
-          );
+            from: account as string,
+            to: selectedWallet,
+            amount: parseFloat(salePrice),
+            share: 100,
+            type: "escrow_sale",
+            blockchain_identification: result.escrowAddress,
+            hash: result.stampFeeTxHash,
+            description: `Escrow Sale - ${result.stampFeeTxHash || "no_hash"}`
+          })
           
           console.log("Escrow: ",Encryting({
             deedId: deedId,

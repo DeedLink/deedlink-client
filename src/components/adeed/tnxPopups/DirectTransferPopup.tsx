@@ -74,17 +74,17 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
       const res = await transferNFT(account as string, selectedWallet, tokenId);
 
       if (res.txHash) {
-        await createTransaction(
+        await createTransaction({
           deedId,
-          account as string,
-          selectedWallet,
-          0,
-          100,
-          "gift",
-          res.txHash,
-          "Direct Transfer (Gift/No Payment)",
-          "completed"
-        );
+          from: account as string,
+          to: selectedWallet,
+          amount: 0,
+          share: 100,
+          type: "direct_transfer",
+          hash: res.txHash,
+          description: "Direct Transfer (Gift/No Payment)",
+          status: "completed",
+        });
 
         await updateFullOwnerAddress(tokenId, selectedWallet.toLowerCase());
 

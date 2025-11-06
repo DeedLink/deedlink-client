@@ -61,15 +61,18 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, deedId, onClos
         try {
           // 🔹 Step 2: Record transaction in DB
           const update_db = await createTransaction(
-            deedId,
-            account as string,
-            selectedWallet,
-            0,
-            100,
-            res.txHash,
-            "direct_transfer",
-            "Full Ownership Transfer"
-          );
+            {
+              deedId,
+              from: account as string,
+              to: selectedWallet,
+              amount: 0,
+              share: 100,
+              hash: res.txHash,
+              type: "direct_transfer",
+              description: "Full Ownership Transfer",
+              status: "completed"
+            }
+          )
           console.log("Transaction recorded in DB:", update_db);
 
           // 🔹 Step 3: Update owner address in deed DB
