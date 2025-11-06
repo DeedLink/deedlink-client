@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaFileSignature, FaUserShield, FaMapMarkedAlt, FaRoute, FaLayerGroup, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaArrowLeft, FaExpand } from "react-icons/fa";
+import { FaFileSignature, FaUserShield, FaMapMarkedAlt, FaRoute, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaArrowLeft, FaExpand } from "react-icons/fa";
 import { formatCurrency, formatNumber, shortAddress, timeAgo } from "../utils/format";
 import type { IDeed } from "../types/responseDeed";
 import MapPreview from "../components/deeds/MapPreview";
@@ -76,19 +76,6 @@ const ADeedPage = () => {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
-    });
-  };
-
-  const formatDateWithTime = (date: Date | number) => {
-    const dateObj = typeof date === 'number' ? new Date(date) : new Date(date);
-    return dateObj.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true,
     });
   };
 
