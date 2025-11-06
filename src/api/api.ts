@@ -3,6 +3,7 @@ import { getItem, setItem } from "../storage/storage";
 import type { AuthResponse, KYCUploadResponse, LoginRequest, RegisterRequest, SetPasswordRequest, User, userPasswordStatusResponse, userStatusNotRegisteredResponse, userStatusResponse, VerifyKYCRequest } from "../types/types";
 import type { RegisterDeedRequest } from "../types/regitseringdeedtype";
 import type { IDeed } from "../types/responseDeed";
+import type { TransactionPayload } from "../types/transaction";
 
 // Later added when vercel testing
 const isVercelTest = import.meta.env.VITE_VERCEL_TEST === true || import.meta.env.VITE_VERCEL_TEST === "true";
@@ -350,32 +351,10 @@ export const getTransactionById = async (tnxId: string): Promise<any> => {
 };
 
 // Create a new transaction (protected)
-export const createTransaction = async (
-  deedId: string,
-  from: string,
-  to: string,
-  amount: number,
-  share: number,
-  type: string,
-  hash?: string,
-  blockchain_identification?: string,
-  description?: string,
-  status?: string
-): Promise<any> => {
-  const res = await tnxApi.post(`/`, {
-    deedId,
-    from,
-    to,
-    amount,
-    share,
-    hash,
-    blockchain_identification,
-    description,
-    type,
-    status
-  });
+export const createTransaction = async (payload: TransactionPayload): Promise<any> => {
+  const res = await tnxApi.post(`/`, payload);
   return res.data;
-}
+};
 
 // Update tnx status by id
 export const transactionStatus = async (blockchain_identification: string, status: string): Promise<any> => {
