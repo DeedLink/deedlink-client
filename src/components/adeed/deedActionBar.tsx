@@ -184,9 +184,13 @@ const DeedActionBar = ({
           )}
         </div>
 
-        <div className="mt-6 pt-5 border-t border-gray-200">
-          <RentUI tokenId={tokenId}/>
-        </div>
+        {
+          tokenId && (
+          <div className="mt-6 pt-5 border-t border-gray-200">
+            <RentUI tokenId={tokenId}/>
+          </div>
+          )
+        }
 
         <div className="mt-6 pt-5 border-t border-gray-200">
           <div className="text-xs text-gray-500 uppercase font-semibold mb-2">
