@@ -87,7 +87,7 @@ export const TitleHistory = ({ tnx }: { tnx: Title[] }) => {
               className="flex items-center justify-between text-sm border-b border-gray-100 pb-2"
             >
               <div className="flex-1">
-                <div className="font-medium">
+                <div className="font-medium text-black">
                   {shortAddress(t.from)} → {shortAddress(t.to)}
                 </div>
                 {t.date && (
