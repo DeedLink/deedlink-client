@@ -5,6 +5,7 @@ import { getPlanByPlanNumber, getTransactionsByDeedId } from "../../api/api";
 import { useToast } from "../../contexts/ToastContext";
 import { useEffect, useState } from "react";
 import { defaultPlan, type Plan } from "../../types/plan";
+import TitleHistory from "../parts/TitleHistory";
 
 interface ISignatures {
   surveyor: boolean;
@@ -65,20 +66,6 @@ const DeedDetailsPopup = ({
       day: 'numeric',
     });
   };
-
-  const formatDateWithTime = (date: Date | number) => {
-    const dateObj = typeof date === 'number' ? new Date(date) : new Date(date);
-    return dateObj.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true,
-    });
-  };
-
 
   const getSurveyPlan=async()=>{
     if(deed.surveyPlanNumber){
@@ -232,30 +219,7 @@ const DeedDetailsPopup = ({
                 </section>
               )}
 
-              <section className="rounded-lg border border-black/5 p-3 sm:p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <FaLayerGroup className="text-green-700" size={16} />
-                  <h4 className="font-semibold text-sm sm:text-base">Title History</h4>
-                </div>
-                {tnx && tnx.length > 0 ? (
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {tnx.map((t, idx) => (
-                      <div key={t._id || idx} className="flex items-start justify-between text-xs sm:text-sm gap-2">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium truncate">{shortAddress(t.from)} → {shortAddress(t.to)}</div>
-                          <div className="text-gray-500 text-xs">{formatDateWithTime(new Date(t.date).getTime())}</div>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <div className="text-gray-700 text-xs sm:text-sm">{t.share}%</div>
-                          {t.amount > 0 && <div className="text-gray-500 text-xs">{formatCurrency(t.amount)}</div>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-xs sm:text-sm">No transfers recorded.</p>
-                )}
-              </section>
+              <TitleHistory tnx={tnx}/>
 
               <section className="rounded-lg border border-black/5 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-3">
