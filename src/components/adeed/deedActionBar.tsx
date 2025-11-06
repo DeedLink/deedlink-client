@@ -12,6 +12,7 @@ import {
 import type { Title } from "../../types/title";
 import { getTransactionsByDeedId } from "../../api/api";
 import RentUI from "../parts/RentUI";
+import { FaShop } from "react-icons/fa6";
 
 interface DeedActionBarProps {
   deedNumber: string;
@@ -29,6 +30,7 @@ interface DeedActionBarProps {
   onSaleEscrow: () => void;
   onRent: () => void;
   onPowerOfAttorney: () => void;
+  onOpenMarket: () => void;
 }
 
 const DeedActionBar = ({
@@ -45,6 +47,7 @@ const DeedActionBar = ({
   onFractioning,
   onRent,
   onPowerOfAttorney,
+  onOpenMarket,
   numberOfFT,
 }: DeedActionBarProps) => {
   const [state, setState] = useState<"pending" | "completed" | "failed">("completed");
@@ -142,6 +145,15 @@ const DeedActionBar = ({
               label="Grant Power of Attorney"
               onClick={onPowerOfAttorney}
               color="bg-purple-600 hover:bg-purple-700"
+            />
+          )}
+
+          {onOpenMarket && (
+            <ActionButton
+              icon={<FaShop size={18} />}
+              label="Add to Open Market"
+              onClick={onOpenMarket}
+              color="bg-red-600 hover:bg-red-700"
             />
           )}
 
