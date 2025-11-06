@@ -20,6 +20,7 @@ import SaleEscrowPopup from "../components/adeed/tnxPopups/SaleEscrowPopup";
 import GiveRentPopup from "../components/adeed/tnxPopups/GiveRentPopup";
 import GetRentPopup from "../components/adeed/tnxPopups/GetRentPopup";
 import TitleHistory from "../components/parts/TitleHistory";
+import AddToMarketPopup from "../components/adeed/tnxPopups/AddToMarketPopup";
 
 interface ISignatures {
   surveyor: boolean;
@@ -542,10 +543,10 @@ const ADeedPage = () => {
       )}
 
       {openMarket && deed.tokenId && (
-        <GiveRentPopup
-          isOpen={openGetRent}
+        <AddToMarketPopup
+          isOpen={openMarket}
           tokenId={deed.tokenId}
-          onClose={() => setOpenGiveRent(false)}
+          onClose={() => setOpenMarket(false)}
         />
       )}
     </div>
