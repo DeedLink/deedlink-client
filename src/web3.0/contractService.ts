@@ -156,6 +156,11 @@ export async function createFractionalToken(nftId: number, name: string, symbol:
   return event?.args?.tokenAddress;
 }
 
+export async function getFTBalance(tokenAddress: string, account: string) {
+  const fft = await getFactoryContract();
+  return await fft.getFractionBalance(tokenAddress,account);
+}
+
 export async function getFractionalTokenAddress(nftId: number) {
   const factory = await getFactoryContract();
   return await factory.propertyToFractionToken(nftId);
@@ -168,10 +173,10 @@ export async function transferFT(tokenAddress: string, to: string, amount: numbe
   return await tx.wait();
 }
 
-export async function getFTBalance(tokenAddress: string, account: string) {
-  const ft = await getFractionalTokenContract(tokenAddress);
-  return await ft.balanceOf(account);
-}
+// export async function getFTBalance(tokenAddress: string, account: string) {
+//   const ft = await getFractionalTokenContract(tokenAddress);
+//   return await ft.balanceOf(account);
+// }
 
 // Get signing status
 export async function getSignatures(tokenId: number) {

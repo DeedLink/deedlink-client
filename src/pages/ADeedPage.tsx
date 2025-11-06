@@ -20,6 +20,7 @@ import SaleEscrowPopup from "../components/adeed/tnxPopups/SaleEscrowPopup";
 import GiveRentPopup from "../components/adeed/tnxPopups/GiveRentPopup";
 import GetRentPopup from "../components/adeed/tnxPopups/GetRentPopup";
 import TitleHistory from "../components/parts/TitleHistory";
+import AddToMarketPopup from "../components/adeed/tnxPopups/AddToMarketPopup";
 
 interface ISignatures {
   surveyor: boolean;
@@ -45,6 +46,7 @@ const ADeedPage = () => {
   const [openSaleEscrow, setOpenSaleEscrow] = useState(false);
   const [openGiveRent, setOpenGiveRent] = useState(false);
   const [openGetRent, setOpenGetRent] = useState(false);
+  const [openMarket, setOpenMarket] = useState(false);
 
   const centerLocation = deed ? getCenterOfLocations(deed.location) : null;
 
@@ -132,6 +134,10 @@ const ADeedPage = () => {
   const handleDownload = () => {
     showToast("Download functionality coming soon", "info");
   };
+
+  const handleOpenMarket =()=>{
+    setOpenMarket(true);
+  }
 
   const handleShare = () => {
     if (navigator.share) {
@@ -257,6 +263,7 @@ const ADeedPage = () => {
               onDownload={handleDownload}
               onShare={handleShare}
               onViewBlockchain={handleViewBlockchain}
+              onOpenMarket={handleOpenMarket}
               numberOfFT={numberOfFT}
               onRent={() => setOpenGiveRent(true)}
               onPowerOfAttorney={() => {}}
@@ -486,6 +493,7 @@ const ADeedPage = () => {
             onDownload={handleDownload}
             onShare={handleShare}
             onViewBlockchain={handleViewBlockchain}
+            onOpenMarket={handleOpenMarket}
             numberOfFT={numberOfFT}
             onRent={() => setOpenGiveRent(true)}
             onPowerOfAttorney={() => {}}
@@ -513,10 +521,11 @@ const ADeedPage = () => {
       }
       { 
         openSaleEscrow && deed.tokenId && (    
-        <SaleEscrowPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openSaleEscrow} onClose={() => setOpenSaleEscrow(false)}>
-        </SaleEscrowPopup>
-      )
+          <SaleEscrowPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openSaleEscrow} onClose={() => setOpenSaleEscrow(false)}>
+          </SaleEscrowPopup>
+        )
       }
+
       {openGiveRent && deed.tokenId && (
         <GiveRentPopup
           isOpen={openGiveRent}
@@ -530,6 +539,14 @@ const ADeedPage = () => {
           isOpen={openGetRent}
           tokenId={deed.tokenId}
           onClose={() => setOpenGetRent(false)}
+        />
+      )}
+
+      {openMarket && deed.tokenId && (
+        <AddToMarketPopup
+          isOpen={openMarket}
+          tokenId={deed.tokenId}
+          onClose={() => setOpenMarket(false)}
         />
       )}
     </div>
