@@ -11,7 +11,6 @@ const RentUI = ({ tokenId }: { tokenId: number }) => {
     if (!tokenId) return;
     try {
       const rent = await getRentDetails(tokenId);
-      console.log("Rent: ", rent);
       if (rent) setRentDetails(rent);
     } catch (error) {
       console.error(error);
@@ -24,53 +23,57 @@ const RentUI = ({ tokenId }: { tokenId: number }) => {
 
   if (!rentDetails) {
     return (
-      <div className="flex flex-col items-center justify-center h-48 text-gray-500 animate-pulse">
-        <FaClock className="text-2xl mb-2" />
+      <div className="flex flex-col items-center justify-center h-32 text-gray-500 text-sm">
+        <FaClock className="text-lg mb-1" />
         <p>Loading rent details...</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-full mx-auto bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl">
-      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 text-center flex items-center justify-center gap-2">
-        <FaMoneyBillWave className="text-green-600 dark:text-green-400" />
+    <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+        <FaMoneyBillWave className="text-green-600" />
         Rent Overview
       </h3>
 
-      <div className="space-y-4">
+      <div className="space-y-3 text-sm">
         <div className="flex items-center justify-between">
-          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium">
+          <span className="flex items-center gap-2 text-gray-600 font-medium">
             <FaEthereum className="text-indigo-500" /> Amount
           </span>
-          <span className="text-gray-900 dark:text-gray-100 font-semibold">
+          <span className="text-gray-900 font-semibold">
             {rentDetails.rentAmount} ETH
           </span>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium">
+          <span className="flex items-center gap-2 text-gray-600 font-medium">
             <FaClock className="text-yellow-500" /> Period
           </span>
-          <span className="text-gray-900 dark:text-gray-100 font-semibold">
+          <span className="text-gray-900 font-semibold">
             {Number(rentDetails.rentPeriodDays)} Months
           </span>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium">
+          <span className="flex items-center gap-2 text-gray-600 font-medium">
             <FaClock className="text-blue-500" /> Last Paid
           </span>
-          <span className="text-gray-900 dark:text-gray-100 text-sm">
-            {new Date(Number(rentDetails.lastPaid) * 1000).toLocaleString()}
+          <span className="text-gray-900">
+            {new Date(Number(rentDetails.lastPaid) * 1000).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
           </span>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium">
+          <span className="flex items-center gap-2 text-gray-600 font-medium">
             <FaUserAlt className="text-purple-500" /> Receiver
           </span>
-          <span className="text-gray-900 dark:text-gray-100 font-semibold">
+          <span className="text-gray-900 font-semibold">
             {shortAddress(rentDetails.receiver)}
           </span>
         </div>
