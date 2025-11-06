@@ -1,5 +1,5 @@
 import { IoClose } from "react-icons/io5";
-import { FaFileSignature, FaUserShield, FaMapMarkedAlt, FaLayerGroup, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaIdCard, FaPhone, FaHome, FaRoute } from "react-icons/fa";
+import { FaFileSignature, FaUserShield, FaMapMarkedAlt, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaIdCard, FaPhone, FaHome, FaRoute } from "react-icons/fa";
 import type { IDeed } from "../../types/responseDeed";
 import { getPlanByPlanNumber, getTransactionsByDeedId } from "../../api/api";
 import { useToast } from "../../contexts/ToastContext";
