@@ -15,7 +15,6 @@ interface GiveRentPopupProps {
 }
 
 const GiveRentPopup: React.FC<GiveRentPopupProps> = ({ isOpen, onClose, tokenId }) => {
-  //const { account } = useWallet();
   const { showToast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");

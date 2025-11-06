@@ -80,7 +80,7 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
           to: selectedWallet,
           amount: 0,
           share: 100,
-          type: "direct_transfer",
+          type: "gift",
           hash: res.txHash,
           description: "Direct Transfer (Gift/No Payment)",
           status: "completed",
