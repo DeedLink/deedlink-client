@@ -70,7 +70,7 @@ export const TitleHistory = ({ tnx }: { tnx: Title[] }) => {
     <section className="rounded-xl border border-black/5 p-4">
       <div className="flex items-center gap-2 mb-3">
         <FaLayerGroup className="text-green-700" />
-        <h4 className="font-semibold">Title History</h4>
+        <h4 className="font-semibold text-black">Title History</h4>
       </div>
 
       <div className="space-y-3 overflow-auto max-h-64 pr-1 py-1">
