@@ -20,7 +20,6 @@ interface DeedActionBarProps {
   numberOfFT: number;
   actionHappened?: boolean;
 
-  onEdit?: () => void;
   onTransfer?: () => void;
   onDownload?: () => void;
   onShare?: () => void;
@@ -37,7 +36,6 @@ const DeedActionBar = ({
   tokenId,
   deedId,
   actionHappened,
-  onEdit,
   onTransfer,
   onDirectTransfer,
   onSaleEscrow,
@@ -90,15 +88,6 @@ const DeedActionBar = ({
         </h3>
 
         <div className="flex flex-col gap-3">
-          {onEdit && (
-            <ActionButton
-              icon={<FaEdit size={18} />}
-              label="Edit Deed"
-              onClick={onEdit}
-              color="bg-green-600 hover:bg-green-700"
-            />
-          )}
-
           <ActionButton
             icon={<FaEdit size={18} />}
             label="Create Fractions"

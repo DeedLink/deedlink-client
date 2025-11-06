@@ -106,10 +106,6 @@ const ADeedPage = () => {
     }
   };
 
-  const handleEdit = async() => {
-    showToast("Edit functionality coming soon", "info");
-  };
-
   const handleFractioning = async() =>{
     if(deed?.tokenId){
       const res = await createFractionalToken(deed?.tokenId, deed?.deedNumber, deed?.deedNumber, 1000000);
@@ -255,7 +251,6 @@ const ADeedPage = () => {
               deedId={deed._id}
               tokenId={deed.tokenId}
               actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
-              onEdit={handleEdit}
               onTransfer={handleTransfer}
               onDirectTransfer={handleDirectTransfer}
               onSaleEscrow={handleSaleEscrow}
@@ -485,7 +480,6 @@ const ADeedPage = () => {
             deedId={deed._id}
             actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
             tokenId={deed.tokenId}
-            onEdit={handleEdit}
             onTransfer={handleTransfer}
             onDirectTransfer={handleDirectTransfer}
             onSaleEscrow={handleSaleEscrow}
