@@ -1,4 +1,3 @@
-// SaleEscrowPopup.tsx - Sale with Payment & Escrow
 import { type FC, useState, useEffect } from "react";
 import { createTransaction, getUsers } from "../../../api/api";
 import type { User } from "../../../types/types";
