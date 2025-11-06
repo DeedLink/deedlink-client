@@ -46,6 +46,7 @@ const ADeedPage = () => {
   const [openSaleEscrow, setOpenSaleEscrow] = useState(false);
   const [openGiveRent, setOpenGiveRent] = useState(false);
   const [openGetRent, setOpenGetRent] = useState(false);
+  const [rentDetails, setRentDetails] = useState<any>();
 
   const centerLocation = deed ? getCenterOfLocations(deed.location) : null;
 
@@ -238,6 +239,24 @@ const ADeedPage = () => {
     getTheRentDetails();
   },[deed]);
 
+  const fetchRentDetails=async()=>{
+    if(!deed?.tokenId)
+      return;
+    try{
+      const rent = await getRentDetails(deed?.tokenId);
+      if(rent){
+        setRentDetails(rent);
+      }
+    }
+    catch(e){
+      console.log(e);
+    }
+  }
+
+  useEffect(()=>{
+    fetchRentDetails();
+  },[deed]);
+
   if (!deed) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex items-center justify-center">
@@ -249,7 +268,14 @@ const ADeedPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white pt-20">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white pt-20 relative">
+      {
+        rentDetails && (
+          <div className="absolute bottom-10 right-10 border w-40 h-40 z-50 bg-black text-white">
+            {JSON.stringify(rentDetails)}
+          </div>
+        )
+      }
       <div className="flex max-w-boundary mx-auto w-full h-full">
         <div className="max-w-7xl mx-auto px-4 py-8 h-full w-full">
           <button
