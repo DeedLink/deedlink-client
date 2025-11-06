@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 //import { useWallet } from "../../../contexts/WalletContext";
 import { useToast } from "../../../contexts/ToastContext";
 import { setRent } from "../../../web3.0/rentIntegration";
+import type { User } from "../../../types/types";
+import { getUsers } from "../../../api/api";
+import { useWallet } from "../../../contexts/WalletContext";
 
 interface GiveRentPopupProps {
   isOpen: boolean;
@@ -13,13 +16,51 @@ interface GiveRentPopupProps {
 const GiveRentPopup: React.FC<GiveRentPopupProps> = ({ isOpen, onClose, tokenId }) => {
   //const { account } = useWallet();
   const { showToast } = useToast();
-
+  const [users, setUsers] = useState<User[]>([]);
+  const [search, setSearch] = useState("");
   const [tenantAddress, setTenantAddress] = useState("");
   const [rentAmount, setRentAmount] = useState("");
   const [duration, setDuration] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const { account } = useWallet();
 
   if (!isOpen) return null;
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await getUsers();
+        const data = Array.isArray(res) ? res : [];
+        const filtered = data.filter(
+          (u) =>
+            u.walletAddress &&
+            u.walletAddress !== account &&
+            u.kycStatus === "verified" &&
+            u.role === "user"
+        );
+        setUsers(filtered);
+        setFilteredUsers(filtered);
+      } catch {
+        setUsers([]);
+        setFilteredUsers([]);
+      }
+    };
+    if (isOpen) fetchUsers();
+  }, [isOpen, account]);
+
+  useEffect(() => {
+    const val = search.trim().toLowerCase();
+    setFilteredUsers(
+      val === ""
+        ? users
+        : users.filter(
+            (u) =>
+              u.name?.toLowerCase().includes(val) ||
+              u.walletAddress?.toLowerCase().includes(val)
+          )
+    );
+  }, [search, users]);
 
   const handleSetRent = async () => {
     if (!tenantAddress || !rentAmount || !duration) {

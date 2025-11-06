@@ -47,7 +47,6 @@ const ADeedPage = () => {
   const [openGiveRent, setOpenGiveRent] = useState(false);
   const [openGetRent, setOpenGetRent] = useState(false);
 
-
   const centerLocation = deed ? getCenterOfLocations(deed.location) : null;
 
   const latestValue = deed?.valuation && deed.valuation.length > 0
