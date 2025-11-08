@@ -350,6 +350,33 @@ export const getTransactionById = async (tnxId: string): Promise<any> => {
   return res.data;
 };
 
+// Get all transactions (protected)
+export const getAllTransactions = async (): Promise<any[]> => {
+  const res = await tnxApi.get(`/`, {
+    validateStatus: () => true,
+  });
+  return res.data;
+};
+
+// Get transactions by type and status (protected)
+// If API doesn't support query params, fetches all and filters client-side
+export const getTransactionsByTypeAndStatus = async (type: string, status: string): Promise<any[]> => {
+  try {
+    // Try with query parameters first
+    const res = await tnxApi.get(`/?type=${type}&status=${status}`, {
+      validateStatus: () => true,
+    });
+    return res.data;
+  } catch (error) {
+    // Fallback: fetch all and filter client-side
+    console.warn("Query parameters not supported, filtering client-side");
+    const allTransactions = await getAllTransactions();
+    return allTransactions.filter(
+      (txn: any) => txn.type === type && txn.status === status
+    );
+  }
+};
+
 // Create a new transaction (protected)
 export const createTransaction = async (payload: TransactionPayload): Promise<any> => {
   const res = await tnxApi.post(`/`, payload);
