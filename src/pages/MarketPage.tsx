@@ -97,7 +97,7 @@ const MarketPage: React.FC = () => {
   };
 
   const handleViewDetails = (deedNumber: string) => {
-    navigate(`/deed/${deedNumber}`);
+    navigate(`/market/${deedNumber}`);
   };
 
   if (loading) {

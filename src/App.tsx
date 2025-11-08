@@ -15,6 +15,7 @@ import DeedRegistrationPage from './pages/DeedRegistrationPage';
 import ProtectedRoute from './contexts/ProtectedRoute';
 import { ToastProvider } from './contexts/ToastContext';
 import ADeedPage from './pages/ADeedPage';
+import MarketDeedPage from './pages/MarketDeedPage';
 import { QRProvider } from './contexts/QRContext';
 import { AlertProvider } from './contexts/AlertContext';
 import { FloatingNotifyProvider } from './contexts/FloatingNotifyContext';
@@ -58,6 +59,11 @@ function App() {
                             <Route path="/deed/:deedNumber" element={
                               <ProtectedRoute>
                                 <ADeedPage/>
+                              </ProtectedRoute>
+                              } />
+                            <Route path="/market/:deedNumber" element={
+                              <ProtectedRoute>
+                                <MarketDeedPage/>
                               </ProtectedRoute>
                               } />
                           </Routes>
