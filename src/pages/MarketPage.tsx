@@ -18,7 +18,7 @@ const MarketPage: React.FC = () => {
 
   useEffect(() => {
     fetchMarketProperties();
-  }, []);
+  }, [account]);
 
   useEffect(() => {
     showLoader();
@@ -102,54 +102,79 @@ const MarketPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-[#1C1B1F] text-[#FEFBF6] min-h-screen pt-20 flex items-center justify-center">
-        <p className="text-[#FEFBF6]/70 text-lg">Loading marketplace...</p>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 pt-20 flex items-center justify-center">
+        <p className="text-indigo-700 text-lg font-medium">Loading marketplace...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#1C1B1F] text-[#FEFBF6] min-h-screen pt-20">
-      <section className="py-12 px-6 md:px-16">
-        <h1 className="text-5xl font-bold text-[#A6D1E6] mb-6">Property Marketplace</h1>
-
-        <div className="flex gap-4 mb-8">
-          {["ALL", "NFT", "FT"].map((f) => (
-            <button
-              key={f}
-              className={`px-4 py-2 rounded-full font-semibold transition ${
-                filter === f ? "bg-gradient-to-r from-green-400 to-emerald-400 text-black" : "bg-white/10 text-[#FEFBF6] hover:bg-white/20"
-              }`}
-              onClick={() => setFilter(f as any)}
-            >
-              {f}
-            </button>
-          ))}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <header className="sticky top-0 z-40 backdrop-blur-md bg-white/80 border-b border-indigo-200/50 shadow-sm pt-20">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Property Marketplace
+            </h1>
+            <div className="h-2 w-40 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+          </div>
+          <div className="mt-4 flex items-center gap-3">
+            {["ALL", "NFT", "FT"].map((f) => (
+              <button
+                key={f}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  filter === f
+                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-200"
+                    : "bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300"
+                }`}
+                onClick={() => setFilter(f as any)}
+              >
+                {f}
+              </button>
+            ))}
+            <div className="ml-auto text-sm text-indigo-600">
+              <span className="font-semibold">{filteredProperties.length}</span> properties
+            </div>
+          </div>
         </div>
+      </header>
 
-        <h2 className="text-3xl font-bold text-[#7F5283] mb-4">My Listings</h2>
-        {myProperties.length > 0 ? (
-          <MarketPropertyGrid 
-            properties={myProperties} 
-            onViewDetails={handleViewDetails}
-          />
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {!account ? (
+          <div className="text-center py-20 bg-white/80 backdrop-blur-sm rounded-2xl border border-indigo-200/50 shadow-lg">
+            <p className="text-2xl font-semibold text-indigo-700">Connect Your Wallet</p>
+            <p className="text-indigo-500 mt-2">Please connect your wallet to view the marketplace.</p>
+          </div>
         ) : (
-          <p className="text-[#FEFBF6]/70">You have no properties listed for sale.</p>
-        )}
-      </section>
+          <>
+            {myProperties.length > 0 && (
+              <section className="mb-8">
+                <h2 className="text-xl font-bold text-indigo-700 mb-4">My Listings</h2>
+                <MarketPropertyGrid 
+                  properties={myProperties} 
+                  onViewDetails={handleViewDetails}
+                />
+              </section>
+            )}
 
-      <section className="py-12 px-6 md:px-16 bg-[#2A292E] rounded-t-3xl">
-        <h2 className="text-3xl font-bold text-[#7F5283] mb-4">Available Properties</h2>
-        {otherProperties.length > 0 ? (
-          <MarketPropertyGrid 
-            properties={otherProperties} 
-            onBuy={handleBuy}
-            onViewDetails={handleViewDetails}
-          />
-        ) : (
-          <p className="text-[#FEFBF6]/70">No properties available in the market.</p>
+            <section>
+              <h2 className="text-xl font-bold text-indigo-700 mb-4">
+                Available Properties
+                {otherProperties.length > 0 && (
+                  <span className="ml-2 text-base font-normal text-indigo-500">
+                    ({otherProperties.length})
+                  </span>
+                )}
+              </h2>
+              <MarketPropertyGrid 
+                properties={otherProperties} 
+                onBuy={handleBuy}
+                onViewDetails={handleViewDetails}
+              />
+            </section>
+          </>
         )}
-      </section>
+      </main>
     </div>
   );
 };

@@ -1,5 +1,14 @@
 import React from "react";
-import { FaFileSignature, FaCubes, FaMapMarkerAlt, FaDollarSign } from "react-icons/fa";
+import {
+  FaFileSignature,
+  FaCubes,
+  FaMapMarkerAlt,
+  FaRegClock,
+  FaExpand,
+  FaTag,
+} from "react-icons/fa";
+import { formatCurrency, formatNumber, timeAgo, shortAddress } from "../../utils/format";
+import ShareBadge from "../deeds/ShareBadge";
 import type { IDeed } from "../../types/responseDeed";
 import type { Title } from "../../types/title";
 
@@ -34,111 +43,147 @@ const MarketPropertyCard: React.FC<MarketPropertyCardProps> = ({
     : 0;
 
   return (
-    <div className="bg-[#1C1B1F]/70 backdrop-blur-lg border border-white/10 rounded-3xl shadow-2xl p-6 flex flex-col justify-between h-full transition-transform transform hover:-translate-y-2 hover:scale-105 hover:shadow-emerald-500/50">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          {isNFT ? (
-            <FaFileSignature className="text-green-400 text-3xl" />
-          ) : (
-            <FaCubes className="text-purple-500 text-3xl" />
-          )}
-          <div>
-            <h3 className="font-bold text-lg text-[#FEFBF6]">Deed #{deed.deedNumber}</h3>
-            <p className="text-xs text-[#FEFBF6]/70">{deed.deedType.deedType}</p>
-          </div>
-        </div>
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-semibold ${
-            isNFT
-              ? "bg-gradient-to-r from-green-400 to-emerald-400 text-black"
-              : "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-          }`}
-        >
-          {isNFT ? "NFT" : "FT"}
-        </span>
-      </div>
-
-      <div className="space-y-2 mb-4">
-        {isFT && (
-          <p className="text-[#FEFBF6]/70 text-sm">
-            Ownership Share: <span className="font-semibold text-[#A6D1E6]">{transaction.share}%</span>
-          </p>
-        )}
-        
-        <div className="flex items-center gap-2 text-[#FEFBF6]/70 text-sm">
-          <span className="text-xl">{getLandTypeIcon(deed.landType)}</span>
-          <span className="capitalize">{deed.landType}</span>
-        </div>
-
-        {deed.landAddress && (
-          <div className="flex items-start gap-2 text-[#FEFBF6]/70 text-sm">
-            <FaMapMarkerAlt className="text-[#7F5283] flex-shrink-0 mt-0.5" />
-            <span className="line-clamp-2">{deed.landAddress}</span>
-          </div>
-        )}
-
-        {deed.landArea && (
-          <p className="text-[#FEFBF6]/70 text-sm">
-            Area: <span className="font-semibold">{deed.landArea} {deed.landSizeUnit || "Sqm"}</span>
-          </p>
-        )}
-
-        {latestValue > 0 && (
-          <div className="flex items-center gap-2 text-[#FEFBF6]/70 text-sm">
-            <FaDollarSign className="text-green-400" />
-            <span>Estimated Value: <span className="font-semibold text-green-400">${latestValue.toLocaleString()}</span></span>
-          </div>
-        )}
-
-        {transaction.description && (
-          <p className="text-[#FEFBF6]/60 text-xs mt-2 line-clamp-2 italic">
-            "{transaction.description}"
-          </p>
-        )}
-      </div>
-
-      <div className="border-t border-white/10 pt-4 mt-auto">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-xs text-[#FEFBF6]/70">Price</p>
-            <p className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-              ${transaction.amount.toLocaleString()}
+    <div className="group rounded-2xl shadow-lg border border-indigo-200/50 hover:shadow-2xl hover:border-indigo-300 transition-all overflow-hidden flex flex-col justify-between bg-white/90 backdrop-blur-sm">
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              {isNFT ? (
+                <FaFileSignature className="text-indigo-600 flex-shrink-0" />
+              ) : (
+                <FaCubes className="text-purple-600 flex-shrink-0" />
+              )}
+              <h3 className="font-semibold text-indigo-700 truncate">
+                Deed #{deed.deedNumber}
+              </h3>
+              <span
+                className={`px-2 py-0.5 rounded-md text-xs font-semibold ${
+                  isNFT
+                    ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
+                    : "bg-purple-100 text-purple-700 border border-purple-200"
+                }`}
+              >
+                {isNFT ? "NFT" : "FT"}
+              </span>
+            </div>
+            <p className="text-xs text-indigo-500 mt-0.5 truncate">
+              {deed.deedType.deedType}
             </p>
           </div>
+
+          <button
+            onClick={() => onViewDetails?.(deed.deedNumber)}
+            className="opacity-0 group-hover:opacity-100 transition px-3 py-1.5 rounded-lg border border-indigo-600 text-indigo-700 hover:bg-indigo-50 flex items-center gap-2 cursor-pointer flex-shrink-0"
+            title="Open details"
+          >
+            <FaExpand /> View
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mt-4 text-black">
+          <div>
+            <div className="text-xs text-indigo-500">Sale Price</div>
+            <div className="font-semibold text-indigo-700">
+              {formatCurrency(transaction.amount, "USD")}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-indigo-500">Estimated Value</div>
+            <div className="font-semibold text-indigo-600">
+              {latestValue > 0 ? formatCurrency(latestValue, "USD") : "N/A"}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-indigo-500">Area</div>
+            <div className="font-semibold text-indigo-700">
+              {formatNumber(deed.landArea)} {deed.landSizeUnit || "Sqm"}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-indigo-500">Land Type</div>
+            <div className="font-semibold capitalize flex items-center gap-1 text-indigo-700">
+              <span>{getLandTypeIcon(deed.landType)}</span>
+              <span className="truncate">{deed.landType ?? "Unknown"}</span>
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-indigo-500">Location</div>
+            <div className="font-semibold text-sm truncate text-indigo-700">
+              {deed.district}, {deed.division}
+            </div>
+          </div>
+
           {transaction.date && (
-            <p className="text-xs text-[#FEFBF6]/50">
-              Listed: {new Date(transaction.date).toLocaleDateString()}
-            </p>
+            <div>
+              <div className="text-xs text-indigo-500">Listed</div>
+              <div className="font-semibold text-sm flex items-center gap-1 text-indigo-600">
+                <FaRegClock className="text-indigo-400" size={10} />
+                {timeAgo(new Date(transaction.date).getTime())}
+              </div>
+            </div>
+          )}
+
+          {deed.landAddress && (
+            <div className="col-span-2">
+              <div className="text-xs text-indigo-500">Address</div>
+              <div className="font-semibold text-sm truncate flex items-center gap-1 text-indigo-700">
+                <FaMapMarkerAlt className="text-indigo-400 flex-shrink-0" size={10} />
+                {deed.landAddress}
+              </div>
+            </div>
+          )}
+
+          {isFT && (
+            <div className="col-span-2">
+              <div className="text-xs text-indigo-500 mb-1">Ownership Share</div>
+              <ShareBadge share={transaction.share} />
+            </div>
+          )}
+
+          {transaction.description && (
+            <div className="col-span-2">
+              <div className="text-xs text-indigo-500">Description</div>
+              <p className="text-sm text-indigo-600 line-clamp-2 mt-0.5">
+                {transaction.description}
+              </p>
+            </div>
           )}
         </div>
 
-        <div className="flex gap-2">
-          {onViewDetails && (
-            <button
-              className="flex-1 bg-white/10 text-[#FEFBF6] rounded-full py-2 font-semibold hover:bg-white/20 transition text-sm"
-              onClick={() => onViewDetails(deed.deedNumber)}
-            >
-              View Details
-            </button>
-          )}
-          {!isMine && onBuy && (
-            <button
-              className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full py-2 font-semibold hover:brightness-110 transition"
-              onClick={() => onBuy(transaction._id || "", deed._id)}
-            >
-              Buy Now
-            </button>
-          )}
-          {isMine && (
-            <button
-              className="flex-1 bg-gradient-to-r from-green-400 to-emerald-400 text-black rounded-full py-2 font-semibold hover:brightness-110 transition"
-              disabled
-            >
-              Your Listing
-            </button>
-          )}
+        <div className="mt-4 flex items-center justify-between pt-4 border-t border-indigo-100">
+          <div className="flex items-center gap-2">
+            <FaTag className="text-indigo-400" size={12} />
+            <span className="text-xs text-indigo-500">Seller</span>
+          </div>
+          <span className="text-xs font-medium text-indigo-700" title={transaction.from}>
+            {shortAddress(transaction.from)}
+          </span>
         </div>
       </div>
+
+      <div className="px-5 pb-5">
+        {!isMine && onBuy ? (
+          <button
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg py-2.5 font-semibold hover:from-indigo-700 hover:to-purple-700 transition shadow-md shadow-indigo-200 hover:shadow-lg"
+            onClick={() => onBuy(transaction._id || "", deed._id)}
+          >
+            Buy Now
+          </button>
+        ) : isMine ? (
+          <button
+            className="w-full bg-indigo-100 text-indigo-600 rounded-lg py-2.5 font-semibold cursor-not-allowed border border-indigo-200"
+            disabled
+          >
+            Your Listing
+          </button>
+        ) : null}
+      </div>
+
+      <div className="h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
     </div>
   );
 };

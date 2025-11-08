@@ -22,8 +22,9 @@ const MarketPropertyGrid: React.FC<MarketPropertyGridProps> = ({
 }) => {
   if (properties.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-[#FEFBF6]/70 text-lg">No properties available in the market.</p>
+      <div className="text-center py-20 bg-white/80 backdrop-blur-sm rounded-2xl border border-indigo-200/50 shadow-lg">
+        <p className="text-xl font-semibold text-indigo-700">No properties available</p>
+        <p className="text-indigo-500 mt-2">Check back later for new listings.</p>
       </div>
     );
   }
