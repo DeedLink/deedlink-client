@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { createTransaction } from "../../../api/api";
+import { useWallet } from "../../../contexts/WalletContext";
 
 interface AddToMarketPopupProps {
   isOpen: boolean;
   tokenId: number;
+  deedId: string;
   onClose: () => void;
   ownedFractionalTokens?: number;
   totalFractionalTokens?: number;
@@ -12,6 +15,7 @@ interface AddToMarketPopupProps {
 const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
   isOpen,
   tokenId,
+  deedId,
   onClose,
   ownedFractionalTokens = 0,
   totalFractionalTokens = 0,
@@ -20,6 +24,9 @@ const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
   const [image, setImage] = useState<File | null>(null);
   const [salePrice, setSalePrice] = useState("");
   const [ftAmount, setFtAmount] = useState(0);
+  const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { account } = useWallet();
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -31,6 +38,54 @@ const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
 
   const isFullOwner = !hasFractionalized;
   const canSellFT = hasFractionalized && ownedFractionalTokens > 0;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!salePrice || parseFloat(salePrice) <= 0) {
+      alert("Please enter a valid sale price!");
+      return;
+    }
+
+    if (canSellFT && (ftAmount <= 0 || ftAmount > ownedFractionalTokens)) {
+      alert("Please enter a valid number of tokens to sell!");
+      return;
+    }
+
+    if (!account) {
+      alert("Please connect your wallet!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const share = isFullOwner ? 100 : (ftAmount / totalFractionalTokens) * 100;
+      
+      await createTransaction({
+        deedId,
+        from: account,
+        to: "", // Receiver not defined for open_market transactions
+        amount: parseFloat(salePrice),
+        share: share,
+        type: "open_market",
+        status: "pending",
+        description: description || `List ${isFullOwner ? "full property" : `${ftAmount} fractional tokens`} on market`,
+      });
+
+      alert(`✅ Property listed on market successfully!`);
+      onClose();
+      // Reset form
+      setSalePrice("");
+      setFtAmount(0);
+      setDescription("");
+      setImage(null);
+    } catch (error: any) {
+      console.error("Failed to list on market:", error);
+      alert(`❌ Failed to list on market: ${error.message || "Unknown error"}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div
@@ -46,7 +101,7 @@ const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
           {isFullOwner ? `List Full Property #${tokenId}` : `List Fractional Tokens of #${tokenId}`}
         </h2>
 
-        <form className="flex flex-col gap-3">
+        <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
           <input
             type="number"
             min={0}
@@ -83,6 +138,8 @@ const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
           <textarea
             rows={3}
             placeholder="Description..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-green-300 bg-white"
           />
 
@@ -105,11 +162,11 @@ const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
             <button
               type="submit"
               className={`px-4 py-2 rounded-lg text-white transition ${
-                (isFullOwner || canSellFT) ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed"
+                (isFullOwner || canSellFT) && !loading ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed"
               }`}
-              disabled={!isFullOwner && !canSellFT}
+              disabled={(!isFullOwner && !canSellFT) || loading}
             >
-              List
+              {loading ? "Listing..." : "List"}
             </button>
           </div>
         </form>

@@ -542,10 +542,11 @@ const ADeedPage = () => {
         />
       )}
 
-      {openMarket && deed.tokenId && (
+      {openMarket && deed.tokenId && deed._id && (
         <AddToMarketPopup
           isOpen={openMarket}
           tokenId={deed.tokenId}
+          deedId={deed._id}
           onClose={() => setOpenMarket(false)}
         />
       )}
