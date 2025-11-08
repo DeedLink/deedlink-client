@@ -1,20 +1,22 @@
 import { FaTag } from "react-icons/fa";
 import { formatCurrency, shortAddress, timeAgo } from "../../utils/format";
 import type { Title } from "../../types/title";
+import type { IDeed } from "../../types/responseDeed";
 
 interface MarketListingSectionProps {
+  deed: IDeed;
   marketTransaction: Title;
   account: string | null;
   onBuy: () => void;
 }
 
 const MarketListingSection: React.FC<MarketListingSectionProps> = ({
+  deed: _deed,
   marketTransaction,
   account,
   onBuy,
 }) => {
   const isNFT = marketTransaction.share === 100;
-  const isFT = marketTransaction.share < 100;
 
   const formatDate = (date: Date | number) => {
     const dateObj = typeof date === 'number' ? new Date(date) : new Date(date);
@@ -56,7 +58,7 @@ const MarketListingSection: React.FC<MarketListingSectionProps> = ({
           <div>
             <div className="text-xs text-indigo-500 uppercase font-semibold">Listed</div>
             <div className="font-medium text-indigo-700 mt-1">
-              {formatDate(marketTransaction.date)} • {timeAgo(new Date(marketTransaction.date).getTime())}
+              {formatDate(new Date(marketTransaction.date))} • {timeAgo(new Date(marketTransaction.date).getTime())}
             </div>
           </div>
         )}

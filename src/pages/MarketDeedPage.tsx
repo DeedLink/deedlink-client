@@ -18,6 +18,7 @@ import BlockchainOwnersSection from "../components/market/BlockchainOwnersSectio
 import LandDetailsSection from "../components/market/LandDetailsSection";
 import BoundaryDeedsSection from "../components/market/BoundaryDeedsSection";
 import MarketDeedSidebar from "../components/market/MarketDeedSidebar";
+import MarketplaceBuyPopup from "../components/market/MarketplaceBuyPopup";
 
 const MarketDeedPage = () => {
   const { deedNumber } = useParams();
@@ -31,6 +32,7 @@ const MarketDeedPage = () => {
   const { showAlert } = useAlert();
   const [tnx, setTnx] = useState<any[]>([]);
   const [marketTransaction, setMarketTransaction] = useState<Title | null>(null);
+  const [isBuyPopupOpen, setIsBuyPopupOpen] = useState(false);
 
   const latestValue = deed?.valuation && deed.valuation.length > 0
     ? deed.valuation.slice().sort((a, b) => b.timestamp - a.timestamp)[0]?.estimatedValue || 0
@@ -113,12 +115,22 @@ const MarketDeedPage = () => {
   }, [deed]);
 
   const handleBuy = () => {
-    showAlert({
-      type: "info",
-      title: "Purchase Property",
-      message: "This feature is coming soon! You will be able to purchase properties directly from the marketplace.",
-      confirmText: "OK",
-    });
+    if (!account) {
+      showAlert({
+        type: "warning",
+        title: "Wallet Required",
+        message: "Please connect your wallet to purchase properties.",
+        confirmText: "OK",
+      });
+      return;
+    }
+    setIsBuyPopupOpen(true);
+  };
+
+  const handlePurchaseComplete = () => {
+    // Refresh market transaction and transactions
+    fetchMarketTransaction();
+    getTransactions();
   };
 
   if (!deed) {
@@ -157,6 +169,7 @@ const MarketDeedPage = () => {
               <div className="lg:col-span-3 space-y-6">
                 {marketTransaction && (
                   <MarketListingSection
+                    deed={deed}
                     marketTransaction={marketTransaction}
                     account={account}
                     onBuy={handleBuy}
@@ -186,6 +199,16 @@ const MarketDeedPage = () => {
         isOpen={isMapOpen}
         onClose={() => setIsMapOpen(false)}
       />
+
+      {marketTransaction && (
+        <MarketplaceBuyPopup
+          isOpen={isBuyPopupOpen}
+          deed={deed}
+          marketTransaction={marketTransaction}
+          onClose={() => setIsBuyPopupOpen(false)}
+          onPurchaseComplete={handlePurchaseComplete}
+        />
+      )}
     </div>
   );
 };

@@ -2,15 +2,18 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getTransactionsByTypeAndStatus, getDeedById } from "../api/api";
 import MarketPropertyGrid, { type MarketProperty } from "../components/market/MarketPropertyGrid";
+import MarketplaceBuyPopup from "../components/market/MarketplaceBuyPopup";
 import { useLoader } from "../contexts/LoaderContext";
 import { useWallet } from "../contexts/WalletContext";
 import { useAlert } from "../contexts/AlertContext";
 import type { Title } from "../types/title";
+import type { IDeed } from "../types/responseDeed";
 
 const MarketPage: React.FC = () => {
   const [properties, setProperties] = useState<MarketProperty[]>([]);
   const [filter, setFilter] = useState<"ALL" | "NFT" | "FT">("ALL");
   const [loading, setLoading] = useState(true);
+  const [buyPopupData, setBuyPopupData] = useState<{ deed: IDeed; transaction: Title } | null>(null);
   const { showLoader, hideLoader } = useLoader();
   const { account } = useWallet();
   const { showAlert } = useAlert();
@@ -85,15 +88,33 @@ const MarketPage: React.FC = () => {
   const myProperties = filteredProperties.filter(p => p.isMine);
   const otherProperties = filteredProperties.filter(p => !p.isMine);
 
-  const handleBuy = (_transactionId: string, _deedId: string) => {
-    showAlert({
-      type: "info",
-      title: "Purchase Property",
-      message: "This feature is coming soon! You will be able to purchase properties directly from the marketplace.",
-      confirmText: "OK",
-    });
-    // TODO: Implement buy functionality
-    // navigate(`/purchase/${_transactionId}`);
+  const handleBuy = (transactionId: string, deedId: string) => {
+    if (!account) {
+      showAlert({
+        type: "warning",
+        title: "Wallet Required",
+        message: "Please connect your wallet to purchase properties.",
+        confirmText: "OK",
+      });
+      return;
+    }
+
+    const property = properties.find(p => p.transaction._id === transactionId && p.deed._id === deedId);
+    if (property) {
+      setBuyPopupData({ deed: property.deed, transaction: property.transaction });
+    } else {
+      showAlert({
+        type: "error",
+        title: "Error",
+        message: "Property not found. Please refresh the page.",
+        confirmText: "OK",
+      });
+    }
+  };
+
+  const handlePurchaseComplete = () => {
+    // Refresh properties after purchase
+    fetchMarketProperties();
   };
 
   const handleViewDetails = (deedNumber: string) => {
@@ -175,6 +196,16 @@ const MarketPage: React.FC = () => {
           </>
         )}
       </main>
+
+      {buyPopupData && (
+        <MarketplaceBuyPopup
+          isOpen={!!buyPopupData}
+          deed={buyPopupData.deed}
+          marketTransaction={buyPopupData.transaction}
+          onClose={() => setBuyPopupData(null)}
+          onPurchaseComplete={handlePurchaseComplete}
+        />
+      )}
     </div>
   );
 };
