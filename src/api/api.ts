@@ -15,7 +15,8 @@ export const API = {
   tnx: isVercelTest ? import.meta.env.VITE_VERCEL_TNX_API_URL : import.meta.env.VITE_TNX_API_URL,
   pinata: isVercelTest ? import.meta.env.VITE_VERCEL_PINATA_API_URL : import.meta.env.VITE_PINATA_API_URL,
   survey: isVercelTest ? import.meta.env.VITE_VERCEL_SURVEY_PLAN_API_URL : import.meta.env.VITE_SURVEY_PLAN_API_URL,
-  //notification: isVercelTest ? import.meta.env.VITE_VERCEL_NOTIFICATION_API_URL : import.meta.env.VITE_VERCEL_NOTIFICATION_API_URL
+  //notification: isVercelTest ? import.meta.env.VITE_VERCEL_NOTIFICATION_API_URL : import.meta.env.VITE_VERCEL_NOTIFICATION_API_URL,
+  market: isVercelTest ? import.meta.env.VITE_MARKETPLACE_API_URL: import.meta.env.VITE_MARKETPLACE_API_URL
 };
 
 console.log("isVercelTest:", isVercelTest);
@@ -404,3 +405,17 @@ export const updateFullOwnerAddress = async (
 // export const sendNotification =(data: any)=>{
 //   return "ok";
 // }
+
+// MarketPlace API
+
+const marketplaceApi = axios.create({
+  baseURL: API.market,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export const getMarketPlace = async (): Promise<any> => {
+  const res: AxiosResponse<any> = await marketplaceApi.get("/");
+  return res.data;
+};
