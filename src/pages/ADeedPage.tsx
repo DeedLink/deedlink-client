@@ -544,6 +544,7 @@ const ADeedPage = () => {
 
       {openMarket && deed.tokenId && (
         <AddToMarketPopup
+          deed={deed}
           isOpen={openMarket}
           tokenId={deed.tokenId}
           onClose={() => setOpenMarket(false)}

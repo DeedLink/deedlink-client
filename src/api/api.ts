@@ -4,6 +4,7 @@ import type { AuthResponse, KYCUploadResponse, LoginRequest, RegisterRequest, Se
 import type { RegisterDeedRequest } from "../types/regitseringdeedtype";
 import type { IDeed } from "../types/responseDeed";
 import type { TransactionPayload } from "../types/transaction";
+import type { Marketplace } from "../types/marketplace";
 
 // Later added when vercel testing
 const isVercelTest = import.meta.env.VITE_VERCEL_TEST === true || import.meta.env.VITE_VERCEL_TEST === "true";
@@ -415,7 +416,33 @@ const marketplaceApi = axios.create({
   },
 });
 
-export const getMarketPlace = async (): Promise<any> => {
-  const res: AxiosResponse<any> = await marketplaceApi.get("/");
+
+// Get all marketplaces
+export const getMarketPlaces = async (): Promise<Marketplace[]> => {
+  const res: AxiosResponse<Marketplace[]> = await marketplaceApi.get("/");
+  return res.data;
+};
+
+// Get marketplace by ID
+export const getMarketPlaceById = async (id: string): Promise<Marketplace> => {
+  const res: AxiosResponse<Marketplace> = await marketplaceApi.get(`/${id}`);
+  return res.data;
+};
+
+// Create a new marketplace
+export const createMarketPlace = async (marketplaceData: Omit<Marketplace, "_id" | "timestamp" | "status">): Promise<Marketplace> => {
+  const res: AxiosResponse<Marketplace> = await marketplaceApi.post("/", marketplaceData);
+  return res.data;
+};
+
+// pdate an existing marketplace
+export const updateMarketPlace = async (id: string, marketplaceData: Partial<Marketplace>): Promise<Marketplace> => {
+  const res: AxiosResponse<Marketplace> = await marketplaceApi.put(`/${id}`, marketplaceData);
+  return res.data;
+};
+
+// Delete a marketplace by ID
+export const deleteMarketPlace = async (id: string): Promise<{ message: string }> => {
+  const res: AxiosResponse<{ message: string }> = await marketplaceApi.delete(`/${id}`);
   return res.data;
 };
