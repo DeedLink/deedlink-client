@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
+import type { IDeed } from "../../../types/responseDeed";
+import type { Marketplace } from "../../../types/marketplace";
+import { createMarketPlace } from "../../../api/api";
+import { useWallet } from "../../../contexts/WalletContext";
 
 interface AddToMarketPopupProps {
+  deed: IDeed;
   isOpen: boolean;
   tokenId: number;
   onClose: () => void;
@@ -10,6 +15,7 @@ interface AddToMarketPopupProps {
 }
 
 const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
+  deed,
   isOpen,
   tokenId,
   onClose,
@@ -20,6 +26,11 @@ const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
   const [image, setImage] = useState<File | null>(null);
   const [salePrice, setSalePrice] = useState("");
   const [ftAmount, setFtAmount] = useState(0);
+  const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { account } = useWallet();
+
+  if(!account) return;
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -31,6 +42,33 @@ const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
 
   const isFullOwner = !hasFractionalized;
   const canSellFT = hasFractionalized && ownedFractionalTokens > 0;
+
+  const handleAddToMarket = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if ((!isFullOwner && !canSellFT) || !salePrice) return;
+
+    try {
+      setLoading(true);
+
+      const newMarket: Omit<Marketplace, "_id" | "timestamp" | "status"> = {
+        marketPlaceId: `MP-${Date.now()}`,
+        from: account,
+        amount: Number(salePrice),
+        deedId: deed._id || "",
+        tokenId: tokenId.toString(),
+        share: isFullOwner ? 100 : ftAmount,
+        description,
+      };
+
+      await createMarketPlace(newMarket);
+      onClose();
+    } catch (error) {
+      console.error("Error adding to marketplace:", error);
+      alert("Failed to list property on marketplace.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div
@@ -46,7 +84,7 @@ const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
           {isFullOwner ? `List Full Property #${tokenId}` : `List Fractional Tokens of #${tokenId}`}
         </h2>
 
-        <form className="flex flex-col gap-3">
+        <form className="flex flex-col gap-3" onSubmit={handleAddToMarket}>
           <input
             type="number"
             min={0}
@@ -83,6 +121,8 @@ const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
           <textarea
             rows={3}
             placeholder="Description..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-green-300 bg-white"
           />
 
@@ -101,15 +141,19 @@ const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
           )}
 
           <div className="flex justify-between mt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+              Cancel
+            </button>
             <button
               type="submit"
+              disabled={!isFullOwner && !canSellFT || loading}
               className={`px-4 py-2 rounded-lg text-white transition ${
-                (isFullOwner || canSellFT) ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed"
+                (isFullOwner || canSellFT)
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-gray-400 cursor-not-allowed"
               }`}
-              disabled={!isFullOwner && !canSellFT}
             >
-              List
+              {loading ? "Listing..." : "List"}
             </button>
           </div>
         </form>
