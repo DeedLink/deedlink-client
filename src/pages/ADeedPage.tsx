@@ -185,6 +185,20 @@ const ADeedPage = () => {
     showToast("Blockchain explorer coming soon", "info");
   };
 
+  const handleRemoveMarketListing = async (marketId: string) => {
+    try {
+      showLoader();
+      await deleteMarketPlacesById(marketId);
+      showToast("Listing removed successfully", "success");
+      await getMarketPlaceData();
+    } catch (error) {
+      console.error("Error removing marketplace listing:", error);
+      showToast("Failed to remove listing", "error");
+    } finally {
+      hideLoader();
+    }
+  };
+
   const fetchDeed = async () => {
     if (!deedNumber) return;
     
@@ -254,6 +268,51 @@ const ADeedPage = () => {
 
   getNumberOfFT();
 
+  const renderMarketplaceBanner = () => {
+    if (!marketPlaceData || marketPlaceData.filter(m => m.status === "open_to_sale").length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="flex items-center gap-3 bg-green-100 border border-green-300 text-green-800 px-5 py-3 rounded-2xl shadow-md animate-fadeIn flex-col">
+        <span className="font-medium">
+          This deed is currently listed on the open market.
+        </span>
+        {marketPlaceData
+          .filter(m => m.status === "open_to_sale")
+          .map((item) => (
+            <div key={item._id} className="bg-white/60 rounded-xl p-4 mt-2 shadow-sm border border-green-200 w-full flex flex-col">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                <p><span className="font-semibold">Market ID:</span> {item.marketPlaceId}</p>
+                <p><span className="font-semibold">Token ID:</span> {item.tokenId}</p>
+                <p><span className="font-semibold">Share:</span> {item.share}%</p>
+                <p><span className="font-semibold">Amount:</span> {item.amount} ETH</p>
+                <p><span className="font-semibold">Description:</span> {item.description}</p>
+              </div>
+              <p className="text-md text-green-700 mt-2">
+                Listed on: {item.timestamp ? new Date(item.timestamp).toLocaleString() : "N/A"}
+              </p>
+              {item._id && typeof item._id === 'string' && (
+                <div className="w-full flex items-end justify-end mt-4">
+                  <button 
+                    onClick={() => handleRemoveMarketListing(item._id ?? "")} 
+                    className="py-2 px-4 rounded-md bg-red-600 cursor-pointer hover:bg-red-400 text-white transition-colors"
+                  >
+                    Remove Selling Ad
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+      </div>
+    );
+  };
+
+  const handleMarketplaceClose = () => {
+    setOpenMarket(false);
+    getMarketPlaceData();
+  };
+
   if (!deed) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex items-center justify-center">
@@ -277,60 +336,25 @@ const ADeedPage = () => {
           </button>
 
           <div className="lg:hidden mb-6">
-            {
-              marketPlaceData && marketPlaceData.filter(m => m.status === "open_to_sale").length > 0 ? (
-                <div className="flex items-center gap-3 bg-green-100 border border-green-300 text-green-800 px-5 py-3 rounded-2xl shadow-md animate-fadeIn flex-col">
-                  <span className="font-medium">
-                    This deed is currently listed on the open market.
-                  </span>
-                  {marketPlaceData
-                    .filter(m => m.status === "open_to_sale")
-                    .map((item) => (
-                      <div key={item._id} className="bg-white/60 rounded-xl p-4 mt-2 shadow-sm border border-green-200 w-full flex flex-col">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                          <p><span className="font-semibold">Market ID:</span> {item.marketPlaceId}</p>
-                          <p><span className="font-semibold">Token ID:</span> {item.tokenId}</p>
-                          <p><span className="font-semibold">Share:</span> {item.share}%</p>
-                          <p><span className="font-semibold">Amount:</span> {item.amount} ETH</p>
-                          <p><span className="font-semibold">Description:</span> {item.description}</p>
-                        </div>
-                        <p className="text-md text-green-700 mt-2">
-                          Listed on: {item.timestamp ? new Date(item.timestamp).toLocaleString() : "N/A"}
-                        </p>
-                        {
-                          item._id && (
-                            <div className="w-full flex items-end justify-end mt-4">
-                              {
-                                typeof(item._id)==='string' && (
-                                    <button onClick={()=>deleteMarketPlacesById(item._id ?? "")} className="py-2 px-4 rounded-md bg-red-600 cursor-pointer hover:bg-red-400 text-white">Remove Selling Ad</button>
-                                  )
-                              }
-                            </div>
-                          )
-                        }
-                      </div>
-                    ))}
-                </div>
-              ) : (
-                <DeedActionBar
-                  onFractioning={handleFractioning}
-                  deedNumber={deed.deedNumber}
-                  deedId={deed._id}
-                  tokenId={deed.tokenId}
-                  actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
-                  onTransfer={handleTransfer}
-                  onDirectTransfer={handleDirectTransfer}
-                  onSaleEscrow={handleSaleEscrow}
-                  onDownload={handleDownload}
-                  onShare={handleShare}
-                  onViewBlockchain={handleViewBlockchain}
-                  onOpenMarket={handleOpenMarket}
-                  numberOfFT={numberOfFT}
-                  onRent={() => setOpenGiveRent(true)}
-                  onPowerOfAttorney={() => {}}
-                />
-              )
-            }
+            {renderMarketplaceBanner() || (
+              <DeedActionBar
+                onFractioning={handleFractioning}
+                deedNumber={deed.deedNumber}
+                deedId={deed._id}
+                tokenId={deed.tokenId}
+                actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
+                onTransfer={handleTransfer}
+                onDirectTransfer={handleDirectTransfer}
+                onSaleEscrow={handleSaleEscrow}
+                onDownload={handleDownload}
+                onShare={handleShare}
+                onViewBlockchain={handleViewBlockchain}
+                onOpenMarket={handleOpenMarket}
+                numberOfFT={numberOfFT}
+                onRent={() => setOpenGiveRent(true)}
+                onPowerOfAttorney={() => {}}
+              />
+            )}
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg border border-black/5 overflow-hidden mb-6">
@@ -544,60 +568,25 @@ const ADeedPage = () => {
           </div>
         </div>
         <div className="hidden lg:block py-14 min-h-full pt-20 max-w-full mx-auto">
-            {
-              marketPlaceData && marketPlaceData.filter(m => m.status === "open_to_sale").length > 0 ? (
-                <div className="flex items-center gap-3 bg-green-100 border border-green-300 text-green-800 px-5 py-3 rounded-2xl shadow-md animate-fadeIn flex-col">
-                  <span className="font-medium">
-                    This deed is currently listed on the open market.
-                  </span>
-                  {marketPlaceData
-                    .filter(m => m.status === "open_to_sale")
-                    .map((item) => (
-                      <div key={item._id} className="bg-white/60 rounded-xl p-4 mt-2 shadow-sm border border-green-200 w-full flex flex-col">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                          <p><span className="font-semibold">Market ID:</span> {item.marketPlaceId}</p>
-                          <p><span className="font-semibold">Token ID:</span> {item.tokenId}</p>
-                          <p><span className="font-semibold">Share:</span> {item.share}%</p>
-                          <p><span className="font-semibold">Amount:</span> {item.amount} ETH</p>
-                          <p><span className="font-semibold">Description:</span> {item.description}</p>
-                        </div>
-                        <p className="text-md text-green-700 mt-2">
-                          Listed on: {item.timestamp ? new Date(item.timestamp).toLocaleString() : "N/A"}
-                        </p>
-                        {
-                          item._id && (
-                            <div className="w-full flex items-end justify-end mt-4">
-                              {
-                                typeof(item._id)==='string' && (
-                                    <button onClick={()=>deleteMarketPlacesById(item._id ?? "")} className="py-2 px-4 rounded-md bg-red-600 cursor-pointer hover:bg-red-400 text-white">Remove Selling Ad</button>
-                                  )
-                              }
-                            </div>
-                          )
-                        }
-                      </div>
-                    ))}
-                </div>
-              ) : (
-                <DeedActionBar
-                  onFractioning={handleFractioning}
-                  deedNumber={deed.deedNumber}
-                  deedId={deed._id}
-                  tokenId={deed.tokenId}
-                  actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
-                  onTransfer={handleTransfer}
-                  onDirectTransfer={handleDirectTransfer}
-                  onSaleEscrow={handleSaleEscrow}
-                  onDownload={handleDownload}
-                  onShare={handleShare}
-                  onViewBlockchain={handleViewBlockchain}
-                  onOpenMarket={handleOpenMarket}
-                  numberOfFT={numberOfFT}
-                  onRent={() => setOpenGiveRent(true)}
-                  onPowerOfAttorney={() => {}}
-                />
-              )
-            }
+          {renderMarketplaceBanner() || (
+            <DeedActionBar
+              onFractioning={handleFractioning}
+              deedNumber={deed.deedNumber}
+              deedId={deed._id}
+              tokenId={deed.tokenId}
+              actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
+              onTransfer={handleTransfer}
+              onDirectTransfer={handleDirectTransfer}
+              onSaleEscrow={handleSaleEscrow}
+              onDownload={handleDownload}
+              onShare={handleShare}
+              onViewBlockchain={handleViewBlockchain}
+              onOpenMarket={handleOpenMarket}
+              numberOfFT={numberOfFT}
+              onRent={() => setOpenGiveRent(true)}
+              onPowerOfAttorney={() => {}}
+            />
+          )}
         </div>
       </div>
 
@@ -647,7 +636,7 @@ const ADeedPage = () => {
           deed={deed}
           isOpen={openMarket}
           tokenId={deed.tokenId}
-          onClose={() => setOpenMarket(false)}
+          onClose={handleMarketplaceClose}
         />
       )}
     </div>
