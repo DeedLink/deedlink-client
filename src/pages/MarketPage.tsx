@@ -1,67 +1,83 @@
 import React, { useEffect, useState } from "react";
-import { sampleTokens } from "../constants/const";
-import type { Token } from "../types/types";
-import TokenGrid from "../components/market/TokenGrid";
 import { useLoader } from "../contexts/LoaderContext";
 import { useAlert } from "../contexts/AlertContext";
+import { getMarketPlaces } from "../api/api";
+import type { Marketplace } from "../types/marketplace";
+import MarketplaceGrid from "../components/marketplace-components/MarketplaceGrid";
 
 const MarketPage: React.FC = () => {
-  const [tokens, _setTokens] = useState<Token[]>(sampleTokens);
-  const [filter, setFilter] = useState<"ALL" | "NFT" | "FT">("ALL");
+  const [marketplaces, setMarketplaces] = useState<Marketplace[]>([]);
+  const [filter, setFilter] = useState<"ALL" | "AVAILABLE" | "SOLD">("ALL");
   const { showLoader, hideLoader } = useLoader();
   const { showAlert } = useAlert();
 
-  useEffect(()=>{
-    showAlert({
-      type: "warning",
-      title: "⚠️ Under Development",
-      message: "This marketplace feature is currently under development. Please check back soon!",
-      confirmText: "OK",
-    });
-  },[]);
+  const fetchMarketplaces = async () => {
+    showLoader();
+    try {
+      const data = await getMarketPlaces();
+      setMarketplaces(data || []);
+    } catch (error) {
+      console.error("Failed to fetch marketplaces:", error);
+      showAlert({
+        type: "error",
+        title: "Error",
+        message: "Failed to load marketplace data. Please try again.",
+        confirmText: "OK",
+      });
+    } finally {
+      hideLoader();
+    }
+  };
 
   useEffect(() => {
-    showLoader();
-    const timer = setTimeout(() => {
-      hideLoader();
-    }, 2000);
+    fetchMarketplaces();
+  }, []);
 
-    return () => clearTimeout(timer);
-  },[]);
-
-  const filteredTokens = filter === "ALL" ? tokens : tokens.filter(t => t.type === filter);
-  const myTokens = filteredTokens.filter(t => t.isMine);
-  const otherTokens = filteredTokens.filter(t => !t.isMine);
-
-  const handleBuy = (id: string) => alert(`Buying token ${id}`);
-  const handleSell = (id: string) => alert(`Selling token ${id}`);
+  const filteredMarketplaces = marketplaces.filter(m => {
+    if (filter === "ALL") return true;
+    if (filter === "AVAILABLE") return m.status === "open_to_sale";
+    if (filter === "SOLD") return m.status === "sale_completed";
+    return true;
+  });
 
   return (
-    <div className="bg-[#1C1B1F] text-[#FEFBF6] min-h-screen pt-20">
-      <section className="py-12 px-6 md:px-16">
-        <h1 className="text-5xl font-bold text-[#A6D1E6] mb-6">Token Marketplace</h1>
+    <div className="bg-gradient-to-b from-emerald-50 to-white min-h-screen pt-20">
+      <section className="py-12 px-6 md:px-16 max-w-7xl mx-auto">
+        <h1 className="text-5xl font-bold text-green-900 mb-6">Deed Marketplace</h1>
+        <p className="text-gray-600 mb-8 text-lg">Browse and purchase fractional ownership of property deeds</p>
 
         <div className="flex gap-4 mb-8">
-          {["ALL", "NFT", "FT"].map((f) => (
+          {[
+            { key: "ALL", label: "All Listings" },
+            { key: "AVAILABLE", label: "Available" },
+            { key: "SOLD", label: "Sold" }
+          ].map((f) => (
             <button
-              key={f}
-              className={`px-4 py-2 rounded-full font-semibold transition ${
-                filter === f ? "bg-gradient-to-r from-green-400 to-emerald-400 text-black" : "bg-white/10 text-[#FEFBF6] hover:bg-white/20"
+              key={f.key}
+              className={`px-6 py-2 rounded-full font-semibold transition ${
+                filter === f.key 
+                  ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
               }`}
-              onClick={() => setFilter(f as any)}
+              onClick={() => setFilter(f.key as any)}
             >
-              {f}
+              {f.label}
             </button>
           ))}
         </div>
 
-        <h2 className="text-3xl font-bold text-[#7F5283] mb-4">My Tokens</h2>
-        {myTokens.length > 0 ? <TokenGrid tokens={myTokens} onSell={handleSell} /> : <p className="text-[#FEFBF6]/70">You have no tokens for sale.</p>}
-      </section>
+        <div className="mb-4 text-sm text-gray-600">
+          Showing {filteredMarketplaces.length} {filteredMarketplaces.length === 1 ? 'listing' : 'listings'}
+        </div>
 
-      <section className="py-12 px-6 md:px-16 bg-[#2A292E] rounded-t-3xl">
-        <h2 className="text-3xl font-bold text-[#7F5283] mb-4">Market Tokens</h2>
-        {otherTokens.length > 0 ? <TokenGrid tokens={otherTokens} onBuy={handleBuy} /> : <p className="text-[#FEFBF6]/70">No tokens available in the market.</p>}
+        {filteredMarketplaces.length > 0 ? (
+          <MarketplaceGrid marketplaces={filteredMarketplaces} onUpdate={fetchMarketplaces} />
+        ) : (
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
+            <p className="text-gray-500 text-lg">No listings available at the moment.</p>
+            <p className="text-gray-400 mt-2">Check back later for new opportunities!</p>
+          </div>
+        )}
       </section>
     </div>
   );
