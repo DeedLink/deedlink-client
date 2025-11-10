@@ -435,7 +435,7 @@ export const createMarketPlace = async (marketplaceData: Omit<Marketplace, "_id"
   return res.data;
 };
 
-// pdate an existing marketplace
+// update an existing marketplace
 export const updateMarketPlace = async (id: string, marketplaceData: Partial<Marketplace>): Promise<Marketplace> => {
   const res: AxiosResponse<Marketplace> = await marketplaceApi.put(`/${id}`, marketplaceData);
   return res.data;
@@ -444,5 +444,17 @@ export const updateMarketPlace = async (id: string, marketplaceData: Partial<Mar
 // Delete a marketplace by ID
 export const deleteMarketPlace = async (id: string): Promise<{ message: string }> => {
   const res: AxiosResponse<{ message: string }> = await marketplaceApi.delete(`/${id}`);
+  return res.data;
+};
+
+// Get marketplace by Deed ID
+export const getMarketPlaceByDeedId = async (deedId: string): Promise<Marketplace[]> => {
+  const res: AxiosResponse<Marketplace[]> = await marketplaceApi.get(`/deed/${deedId}`);
+  return res.data;
+};
+
+// Get marketplace by Token ID
+export const getMarketPlaceByTokenId = async (tokenId: string): Promise<Marketplace[]> => {
+  const res: AxiosResponse<Marketplace[]> = await marketplaceApi.get(`/token/${tokenId}`);
   return res.data;
 };

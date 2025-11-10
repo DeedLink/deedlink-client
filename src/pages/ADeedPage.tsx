@@ -6,7 +6,7 @@ import type { IDeed } from "../types/responseDeed";
 import MapPreview from "../components/deeds/MapPreview";
 import MapPopup from "../components/deeds/MapPopup";
 import { getCenterOfLocations } from "../utils/functions";
-import { getPlanByPlanNumber, getDeedByDeedNumber, getTransactionsByDeedId } from "../api/api";
+import { getPlanByPlanNumber, getDeedByDeedNumber, getTransactionsByDeedId, getMarketPlaceByDeedId } from "../api/api";
 import { useToast } from "../contexts/ToastContext";
 import { defaultPlan, type Plan } from "../types/plan";
 import { useLoader } from "../contexts/LoaderContext";
@@ -21,6 +21,7 @@ import GiveRentPopup from "../components/adeed/tnxPopups/GiveRentPopup";
 import GetRentPopup from "../components/adeed/tnxPopups/GetRentPopup";
 import TitleHistory from "../components/parts/TitleHistory";
 import AddToMarketPopup from "../components/adeed/tnxPopups/AddToMarketPopup";
+import type { Marketplace } from "../types/marketplace";
 
 interface ISignatures {
   surveyor: boolean;
@@ -47,8 +48,34 @@ const ADeedPage = () => {
   const [openGiveRent, setOpenGiveRent] = useState(false);
   const [openGetRent, setOpenGetRent] = useState(false);
   const [openMarket, setOpenMarket] = useState(false);
+  const [marketPlaceData, setMarketPlaceData] = useState<Marketplace[]>();
+
+  const getMarketPlaceData = async () => {
+    try {
+      if(!deed?._id) return;
+      const res = await getMarketPlaceByDeedId(deed._id);
+      setMarketPlaceData(res);
+      console.log("Marketplace data:", res);
+    } catch (error) {
+      console.error("Error fetching marketplace data:", error);
+    }
+  };
+  
+  useEffect(() => {
+    if(deed) {
+      getMarketPlaceData();
+    }
+  }, [deed]);
 
   const centerLocation = deed ? getCenterOfLocations(deed.location) : null;
+  
+  useEffect(() => {
+    if (openTransact || openDirectTransfer || openSaleEscrow || openGiveRent || openGetRent || openMarket) {
+      document.body.classList.add("no-scroll");
+    } else {
+      document.body.classList.remove("no-scroll");
+    }
+  }, [openTransact, openDirectTransfer, openSaleEscrow, openGiveRent, openGetRent, openMarket]);
 
   const latestValue = deed?.valuation && deed.valuation.length > 0
     ? deed.valuation.slice().sort((a, b) => b.timestamp - a.timestamp)[0]?.estimatedValue || 0
@@ -197,7 +224,6 @@ const ADeedPage = () => {
     }
   };
 
-
   const getTransactions = async () => {
     if (deed && deed._id) {
       const tnx = await getTransactionsByDeedId(deed._id);
@@ -251,23 +277,49 @@ const ADeedPage = () => {
           </button>
 
           <div className="lg:hidden mb-6">
-            <DeedActionBar
-              onFractioning={handleFractioning}
-              deedNumber={deed.deedNumber}
-              deedId={deed._id}
-              tokenId={deed.tokenId}
-              actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
-              onTransfer={handleTransfer}
-              onDirectTransfer={handleDirectTransfer}
-              onSaleEscrow={handleSaleEscrow}
-              onDownload={handleDownload}
-              onShare={handleShare}
-              onViewBlockchain={handleViewBlockchain}
-              onOpenMarket={handleOpenMarket}
-              numberOfFT={numberOfFT}
-              onRent={() => setOpenGiveRent(true)}
-              onPowerOfAttorney={() => {}}
-            />
+            {
+              marketPlaceData && marketPlaceData.filter(m => m.status === "open_to_sale").length > 0 ? (
+                <div className="flex items-center gap-3 bg-green-100 border border-green-300 text-green-800 px-5 py-3 rounded-2xl shadow-md animate-fadeIn flex-col">
+                  <span className="font-medium">
+                    This deed is currently listed on the open market.
+                  </span>
+                  {marketPlaceData
+                    .filter(m => m.status === "open_to_sale")
+                    .map((item) => (
+                      <div key={item._id} className="bg-white/60 rounded-xl p-4 mt-2 shadow-sm border border-green-200 w-full flex flex-col">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                          <p><span className="font-semibold">Market ID:</span> {item.marketPlaceId}</p>
+                          <p><span className="font-semibold">Token ID:</span> {item.tokenId}</p>
+                          <p><span className="font-semibold">Share:</span> {item.share}%</p>
+                          <p><span className="font-semibold">Amount:</span> {item.amount} ETH</p>
+                          <p><span className="font-semibold">Description:</span> {item.description}</p>
+                        </div>
+                        <p className="text-md text-green-700 mt-2">
+                          Listed on: {item.timestamp ? new Date(item.timestamp).toLocaleString() : "N/A"}
+                        </p>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <DeedActionBar
+                  onFractioning={handleFractioning}
+                  deedNumber={deed.deedNumber}
+                  deedId={deed._id}
+                  tokenId={deed.tokenId}
+                  actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
+                  onTransfer={handleTransfer}
+                  onDirectTransfer={handleDirectTransfer}
+                  onSaleEscrow={handleSaleEscrow}
+                  onDownload={handleDownload}
+                  onShare={handleShare}
+                  onViewBlockchain={handleViewBlockchain}
+                  onOpenMarket={handleOpenMarket}
+                  numberOfFT={numberOfFT}
+                  onRent={() => setOpenGiveRent(true)}
+                  onPowerOfAttorney={() => {}}
+                />
+              )
+            }
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg border border-black/5 overflow-hidden mb-6">
@@ -481,23 +533,49 @@ const ADeedPage = () => {
           </div>
         </div>
         <div className="hidden lg:block py-14 min-h-full pt-20 max-w-full mx-auto">
-          <DeedActionBar
-            onFractioning={handleFractioning}
-            deedNumber={deed.deedNumber}
-            deedId={deed._id}
-            actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
-            tokenId={deed.tokenId}
-            onTransfer={handleTransfer}
-            onDirectTransfer={handleDirectTransfer}
-            onSaleEscrow={handleSaleEscrow}
-            onDownload={handleDownload}
-            onShare={handleShare}
-            onViewBlockchain={handleViewBlockchain}
-            onOpenMarket={handleOpenMarket}
-            numberOfFT={numberOfFT}
-            onRent={() => setOpenGiveRent(true)}
-            onPowerOfAttorney={() => {}}
-          />
+            {
+              marketPlaceData && marketPlaceData.filter(m => m.status === "open_to_sale").length > 0 ? (
+                <div className="flex items-center gap-3 bg-green-100 border border-green-300 text-green-800 px-5 py-3 rounded-2xl shadow-md animate-fadeIn flex-col">
+                  <span className="font-medium">
+                    This deed is currently listed on the open market.
+                  </span>
+                  {marketPlaceData
+                    .filter(m => m.status === "open_to_sale")
+                    .map((item) => (
+                      <div key={item._id} className="bg-white/60 rounded-xl p-4 mt-2 shadow-sm border border-green-200 w-full flex flex-col">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                          <p><span className="font-semibold">Market ID:</span> {item.marketPlaceId}</p>
+                          <p><span className="font-semibold">Token ID:</span> {item.tokenId}</p>
+                          <p><span className="font-semibold">Share:</span> {item.share}%</p>
+                          <p><span className="font-semibold">Amount:</span> {item.amount} ETH</p>
+                          <p><span className="font-semibold">Description:</span> {item.description}</p>
+                        </div>
+                        <p className="text-md text-green-700 mt-2">
+                          Listed on: {item.timestamp ? new Date(item.timestamp).toLocaleString() : "N/A"}
+                        </p>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <DeedActionBar
+                  onFractioning={handleFractioning}
+                  deedNumber={deed.deedNumber}
+                  deedId={deed._id}
+                  tokenId={deed.tokenId}
+                  actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
+                  onTransfer={handleTransfer}
+                  onDirectTransfer={handleDirectTransfer}
+                  onSaleEscrow={handleSaleEscrow}
+                  onDownload={handleDownload}
+                  onShare={handleShare}
+                  onViewBlockchain={handleViewBlockchain}
+                  onOpenMarket={handleOpenMarket}
+                  numberOfFT={numberOfFT}
+                  onRent={() => setOpenGiveRent(true)}
+                  onPowerOfAttorney={() => {}}
+                />
+              )
+            }
         </div>
       </div>
 
