@@ -73,7 +73,7 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({ marketplace, onUpdate
         isAvailable ? 'border-green-200' : 'border-gray-200 opacity-75'
       }`}>
         <div className={`p-6 rounded-t-2xl ${
-          isAvailable ? 'bg-gradient-to-r from-green-600 to-emerald-600' : 'bg-gray-500'
+          isAvailable ? 'bg-green-600' : 'bg-gray-500'
         }`}>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl font-bold text-white">Deed #{deed.deedNumber}</h3>
@@ -118,14 +118,14 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({ marketplace, onUpdate
           <div className="flex gap-3">
             <button
               onClick={handleViewDeed}
-              className="flex-1 px-4 py-2 rounded-lg border-2 border-green-600 text-green-600 font-semibold hover:bg-green-50 transition"
+              className="flex-1 px-4 py-2 rounded-lg border-2 border-green-600 text-green-600 font-semibold hover:bg-green-50 transition cursor-pointer"
             >
               View Deed
             </button>
             {isAvailable && (
               <button
                 onClick={handleBuy}
-                className="flex-1 px-4 py-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:shadow-lg transition"
+                className="flex-1 px-4 py-2 rounded-lg bg-green-600 text-white font-semibold hover:shadow-lg transition cursor-pointer"
               >
                 Buy Now
               </button>
