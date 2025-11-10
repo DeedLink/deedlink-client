@@ -36,15 +36,6 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({ marketplace, onUpdate
     fetchDeed();
   }, [marketplace.deedId]);
 
-  const formatDate = (timestamp?: number) => {
-    if (!timestamp) return "N/A";
-    return new Date(timestamp).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
   const handleViewDeed = () => {
     if (deed?.deedNumber) {
       navigate(`/deed/${deed.deedNumber}`);
@@ -114,7 +105,7 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({ marketplace, onUpdate
 
             <div className="flex items-center gap-2 text-gray-500">
               <FaClock />
-              <span className="text-xs">Listed on {formatDate(marketplace.timestamp)}</span>
+              <span className="text-xs">Listed on {marketplace.timestamp ? new Date(marketplace.timestamp).toLocaleString() : "N/A"}</span>
             </div>
           </div>
 

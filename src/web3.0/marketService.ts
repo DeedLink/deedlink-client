@@ -1,8 +1,10 @@
 export const buyFromMarketplace=(
         marketPlaceId: string,
-        tokenId: number,
+        tokenId: string,
         share: number,
-        amountInWei: number         
+        amountInWei: bigint         
         )=>{
+
+    console.log("Buying from marketplace:", { marketPlaceId, tokenId, share, amountInWei });
     return true;
 }
