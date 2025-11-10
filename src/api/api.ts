@@ -458,3 +458,9 @@ export const getMarketPlaceByTokenId = async (tokenId: string): Promise<Marketpl
   const res: AxiosResponse<Marketplace[]> = await marketplaceApi.get(`/token/${tokenId}`);
   return res.data;
 };
+
+// Delete marketplaces by Deed ID
+export const deleteMarketPlacesById = async (marketPlaceId: string): Promise<{ message: string }> => {
+  const res: AxiosResponse<{ message: string }> = await marketplaceApi.delete(`/${marketPlaceId}`);
+  return res.data;
+};
