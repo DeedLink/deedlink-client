@@ -6,7 +6,7 @@ import type { IDeed } from "../types/responseDeed";
 import MapPreview from "../components/deeds/MapPreview";
 import MapPopup from "../components/deeds/MapPopup";
 import { getCenterOfLocations } from "../utils/functions";
-import { getPlanByPlanNumber, getDeedByDeedNumber, getTransactionsByDeedId, getMarketPlaceByDeedId } from "../api/api";
+import { getPlanByPlanNumber, getDeedByDeedNumber, getTransactionsByDeedId, getMarketPlaceByDeedId, deleteMarketPlacesById } from "../api/api";
 import { useToast } from "../contexts/ToastContext";
 import { defaultPlan, type Plan } from "../types/plan";
 import { useLoader } from "../contexts/LoaderContext";
@@ -297,6 +297,17 @@ const ADeedPage = () => {
                         <p className="text-md text-green-700 mt-2">
                           Listed on: {item.timestamp ? new Date(item.timestamp).toLocaleString() : "N/A"}
                         </p>
+                        {
+                          item._id && (
+                            <div className="w-full flex items-end justify-end mt-4">
+                              {
+                                typeof(item._id)==='string' && (
+                                    <button onClick={()=>deleteMarketPlacesById(item._id ?? "")} className="py-2 px-4 rounded-md bg-red-600 cursor-pointer hover:bg-red-400 text-white">Remove Selling Ad</button>
+                                  )
+                              }
+                            </div>
+                          )
+                        }
                       </div>
                     ))}
                 </div>
@@ -553,6 +564,17 @@ const ADeedPage = () => {
                         <p className="text-md text-green-700 mt-2">
                           Listed on: {item.timestamp ? new Date(item.timestamp).toLocaleString() : "N/A"}
                         </p>
+                        {
+                          item._id && (
+                            <div className="w-full flex items-end justify-end mt-4">
+                              {
+                                typeof(item._id)==='string' && (
+                                    <button onClick={()=>deleteMarketPlacesById(item._id ?? "")} className="py-2 px-4 rounded-md bg-red-600 cursor-pointer hover:bg-red-400 text-white">Remove Selling Ad</button>
+                                  )
+                              }
+                            </div>
+                          )
+                        }
                       </div>
                     ))}
                 </div>
