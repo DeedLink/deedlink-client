@@ -49,6 +49,14 @@ const ADeedPage = () => {
   const [openMarket, setOpenMarket] = useState(false);
 
   const centerLocation = deed ? getCenterOfLocations(deed.location) : null;
+  
+  useEffect(() => {
+    if (openTransact || openDirectTransfer || openSaleEscrow || openGiveRent || openGetRent || openMarket) {
+      document.body.classList.add("no-scroll");
+    } else {
+      document.body.classList.remove("no-scroll");
+    }
+  }, [openTransact, openDirectTransfer, openSaleEscrow, openGiveRent, openGetRent, openMarket]);
 
   const latestValue = deed?.valuation && deed.valuation.length > 0
     ? deed.valuation.slice().sort((a, b) => b.timestamp - a.timestamp)[0]?.estimatedValue || 0

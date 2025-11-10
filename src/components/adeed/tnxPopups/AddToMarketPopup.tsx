@@ -72,7 +72,7 @@ const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-2"
       onClick={onClose}
     >
       <div
