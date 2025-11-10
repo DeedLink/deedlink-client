@@ -54,9 +54,9 @@ const MarketPage: React.FC = () => {
           ].map((f) => (
             <button
               key={f.key}
-              className={`px-6 py-2 rounded-full font-semibold transition ${
+              className={`px-6 py-2 rounded-full font-semibold transition cursor-pointer ${
                 filter === f.key 
-                  ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg" 
+                  ? "bg-green-600 text-white shadow-lg" 
                   : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
               }`}
               onClick={() => setFilter(f.key as any)}

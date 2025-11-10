@@ -164,7 +164,7 @@ const ADeedPage = () => {
 
   const handleOpenMarket =()=>{
     setOpenMarket(true);
-  }
+  };
 
   const handleShare = () => {
     if (navigator.share) {
@@ -232,7 +232,7 @@ const ADeedPage = () => {
       }
     } catch (error) {
       console.error("Failed to fetch deed:", error);
-      showToast("Failed to load deed", "error");
+      //showToast("Failed to load deed", "error");
     } finally {
       hideLoader();
     }
@@ -250,7 +250,7 @@ const ADeedPage = () => {
         console.log(sortedTnx);
       }
     } else {
-      showToast("Deed ID not found", "error");
+      //showToast("Deed ID not found", "error");
     }
   };
   
