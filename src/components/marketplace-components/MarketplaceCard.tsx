@@ -10,9 +10,14 @@ import BuyMarketplacePopup from "./BuyMarketplacePopup";
 interface MarketplaceCardProps {
   marketplace: Marketplace;
   onUpdate: () => void;
+  isOwnListing?: boolean;
 }
 
-const MarketplaceCard: React.FC<MarketplaceCardProps> = ({ marketplace, onUpdate }) => {
+const MarketplaceCard: React.FC<MarketplaceCardProps> = ({ 
+  marketplace, 
+  onUpdate,
+  isOwnListing = false
+}) => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [deed, setDeed] = useState<IDeed | null>(null);
@@ -47,6 +52,10 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({ marketplace, onUpdate
       showToast("This listing has already been sold", "error");
       return;
     }
+    if (isOwnListing) {
+      showToast("You cannot buy your own listing", "info");
+      return;
+    }
     setShowBuyPopup(true);
   };
 
@@ -70,37 +79,43 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({ marketplace, onUpdate
   return (
     <>
       <div className={`bg-white rounded-2xl shadow-lg border transition-all hover:shadow-xl ${
-        isAvailable ? 'border-green-200' : 'border-gray-200 opacity-75'
+        isOwnListing ? 'border-blue-200' : isAvailable ? 'border-green-200' : 'border-gray-200 opacity-75'
       }`}>
         <div className={`p-6 rounded-t-2xl ${
-          isAvailable ? 'bg-green-600' : 'bg-gray-500'
+          isOwnListing ? 'bg-blue-600' : isAvailable ? 'bg-green-600' : 'bg-gray-500'
         }`}>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl font-bold text-white">Deed #{deed.deedNumber}</h3>
             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-              isAvailable ? 'bg-white text-green-700' : 'bg-gray-700 text-white'
+              isOwnListing 
+                ? 'bg-white text-blue-700'
+                : isAvailable 
+                  ? 'bg-white text-green-700' 
+                  : 'bg-gray-700 text-white'
             }`}>
-              {isAvailable ? 'Available' : 'Sold'}
+              {isOwnListing ? 'Your Listing' : isAvailable ? 'Available' : 'Sold'}
             </span>
           </div>
-          <p className="text-green-100 text-sm">{deed.deedType.deedType}</p>
+          <p className={`text-sm ${isOwnListing ? 'text-blue-100' : 'text-green-100'}`}>
+            {deed.deedType.deedType}
+          </p>
         </div>
 
         <div className="p-6">
           <div className="space-y-3 mb-6">
             <div className="flex items-center gap-2 text-gray-700">
-              <FaMapMarkerAlt className="text-green-600" />
+              <FaMapMarkerAlt className={isOwnListing ? "text-blue-600" : "text-green-600"} />
               <span className="text-sm">{deed.district}, {deed.division}</span>
             </div>
 
             <div className="flex items-center gap-2 text-gray-700">
-              <FaPercentage className="text-green-600" />
+              <FaPercentage className={isOwnListing ? "text-blue-600" : "text-green-600"} />
               <span className="text-sm font-semibold">Share: {marketplace.share}%</span>
             </div>
 
             <div className="flex items-center gap-2 text-gray-700">
-              <FaEthereum className="text-green-600" />
-              <span className="text-lg font-bold text-green-900">{marketplace.amount} ETH</span>
+              <FaEthereum className={isOwnListing ? "text-blue-600" : "text-green-600"} />
+              <span className="text-lg font-bold text-gray-900">{marketplace.amount} ETH</span>
             </div>
 
             <div className="flex items-center gap-2 text-gray-500">
@@ -118,16 +133,28 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({ marketplace, onUpdate
           <div className="flex gap-3">
             <button
               onClick={handleViewDeed}
-              className="flex-1 px-4 py-2 rounded-lg border-2 border-green-600 text-green-600 font-semibold hover:bg-green-50 transition cursor-pointer"
+              className={`flex-1 px-4 py-2 rounded-lg border-2 font-semibold transition cursor-pointer ${
+                isOwnListing
+                  ? 'border-blue-600 text-blue-600 hover:bg-blue-50'
+                  : 'border-green-600 text-green-600 hover:bg-green-50'
+              }`}
             >
               View Deed
             </button>
-            {isAvailable && (
+            {isAvailable && !isOwnListing && (
               <button
                 onClick={handleBuy}
                 className="flex-1 px-4 py-2 rounded-lg bg-green-600 text-white font-semibold hover:shadow-lg transition cursor-pointer"
               >
                 Buy Now
+              </button>
+            )}
+            {isOwnListing && (
+              <button
+                disabled
+                className="flex-1 px-4 py-2 rounded-lg bg-gray-300 text-gray-500 font-semibold cursor-not-allowed"
+              >
+                Your Listing
               </button>
             )}
           </div>

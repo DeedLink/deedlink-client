@@ -274,8 +274,8 @@ const ADeedPage = () => {
     }
 
     return (
-      <div className="flex items-center gap-3 bg-green-100 border border-green-300 text-green-800 px-5 py-3 rounded-2xl shadow-md animate-fadeIn flex-col">
-        <span className="font-medium">
+      <div className="flex items-center gap-3 bg-green-100 border border-green-300 text-green-800 px-5 py-5 rounded-2xl shadow-md animate-fadeIn flex-col">
+        <span className="font-medium bg-white/60 rounded-xl p-4 shadow-sm border border-green-200 w-full flex flex-col">
           This deed is currently listed on the open market.
         </span>
         {marketPlaceData
