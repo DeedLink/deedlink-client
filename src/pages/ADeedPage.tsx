@@ -632,8 +632,8 @@ const ADeedPage = () => {
         />
       )}
 
-      {openLastWill && deed.tokenId && (
-        <SetLastWillPopup isOpen={openLastWill} onClose={()=>setOpenLastWill(false)} tokenId={deed.tokenId}/>
+      {openLastWill && deed.tokenId && deed.deedNumber && (
+        <SetLastWillPopup isOpen={openLastWill} onClose={()=>setOpenLastWill(false)} tokenId={deed.tokenId} deedNumber={deed.deedNumber}/>
       )}
     </div>
   );

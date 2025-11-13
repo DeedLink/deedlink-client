@@ -1,62 +1,88 @@
 import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { useToast } from "../../../contexts/ToastContext";
-import { setLastWill } from "../../../web3.0/lastWillIntegration";
 import type { User } from "../../../types/types";
-import { getUsers } from "../../../api/api";
+import { getDeedByDeedNumber, getUsers } from "../../../api/api";
 import { useWallet } from "../../../contexts/WalletContext";
 import { shortAddress } from "../../../utils/format";
 import { IoCheckmarkCircle, IoSearchOutline } from "react-icons/io5";
+import { setLastWill } from "../../../web3.0/lastWillIntegration";
 
 interface SetLastWillPopupProps {
   isOpen: boolean;
   onClose: () => void;
   tokenId: number;
+  deedNumber: string;
 }
 
 const STAMP_DUTY_RATE = 0.03;
 const GOV_FEE_FIXED = 500;
 
-const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, tokenId }) => {
+const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, tokenId, deedNumber }) => {
   const { showToast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
-  const [search, setSearch] = useState("");
+  const [notaries, setNotaries] = useState<User[]>([]);
+  const [searchBeneficiary, setSearchBeneficiary] = useState("");
+  const [searchNotary, setSearchNotary] = useState("");
   const [beneficiaryAddress, setBeneficiaryAddress] = useState("");
   const [notaryAddress, setNotaryAddress] = useState("");
-  const [estimatedValue, setEstimatedValue] = useState("");
+  const [estimatedValue, setEstimatedValue] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [filteredBeneficiaries, setFilteredBeneficiaries] = useState<User[]>([]);
+  const [filteredNotaries, setFilteredNotaries] = useState<User[]>([]);
   const { account } = useWallet();
 
-  const stampDuty = estimatedValue ? (parseFloat(estimatedValue) * STAMP_DUTY_RATE).toFixed(2) : "0.00";
-  const totalGovFee = estimatedValue ? (parseFloat(estimatedValue) * STAMP_DUTY_RATE + GOV_FEE_FIXED).toFixed(2) : "0.00";
+  const stampDuty = estimatedValue ? (estimatedValue * STAMP_DUTY_RATE).toFixed(2) : "0.00";
+  const totalGovFee = estimatedValue ? (estimatedValue * STAMP_DUTY_RATE + GOV_FEE_FIXED).toFixed(2) : "0.00";
 
   if (!isOpen) return null;
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchData = async () => {
       try {
-        const res = await getUsers();
-        const data = Array.isArray(res) ? res : [];
-        const filtered = data.filter(
+        const [usersRes, deedRes] = await Promise.all([
+          getUsers(),
+          getDeedByDeedNumber(deedNumber)
+        ]);
+
+        const data = Array.isArray(usersRes) ? usersRes : [];
+        const currentUserBeneficiaries = data.filter(
           (u) =>
             u.walletAddress &&
             u.walletAddress !== account &&
-            u.kycStatus === "verified"
+            u.kycStatus === "verified" &&
+            u.role === "user"
         );
-        setUsers(filtered);
-        setFilteredUsers(filtered);
-      } catch {
-        setUsers([]);
-        setFilteredUsers([]);
+        const notaryList = data.filter(
+          (u) =>
+            u.walletAddress &&
+            u.walletAddress !== account &&
+            u.kycStatus === "verified" &&
+            u.role === "notary"
+        );
+
+        setUsers(currentUserBeneficiaries);
+        setFilteredBeneficiaries(currentUserBeneficiaries);
+        setNotaries(notaryList);
+        setFilteredNotaries(notaryList);
+
+        if (deedRes && deedRes.valuation && deedRes.valuation.length > 0) {
+          const latestValuation = deedRes.valuation
+            .slice()
+            .sort((a: any, b: any) => b.timestamp - a.timestamp)[0];
+          setEstimatedValue(latestValuation.estimatedValue || 0);
+        }
+      } catch (error) {
+        showToast("Failed to load data", "error");
       }
     };
-    if (isOpen) fetchUsers();
-  }, [isOpen, account]);
+
+    if (isOpen) fetchData();
+  }, [isOpen, tokenId, account]);
 
   useEffect(() => {
-    const val = search.trim().toLowerCase();
-    setFilteredUsers(
+    const val = searchBeneficiary.trim().toLowerCase();
+    setFilteredBeneficiaries(
       val === ""
         ? users
         : users.filter(
@@ -65,16 +91,24 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
               u.walletAddress?.toLowerCase().includes(val)
           )
     );
-  }, [search, users]);
+  }, [searchBeneficiary, users]);
+
+  useEffect(() => {
+    const val = searchNotary.trim().toLowerCase();
+    setFilteredNotaries(
+      val === ""
+        ? notaries
+        : notaries.filter(
+            (u) =>
+              u.name?.toLowerCase().includes(val) ||
+              u.walletAddress?.toLowerCase().includes(val)
+          )
+    );
+  }, [searchNotary, notaries]);
 
   const handleSetLastWill = async () => {
-    if (!beneficiaryAddress || !notaryAddress || !estimatedValue) {
-      showToast("Please fill all fields", "error");
-      return;
-    }
-
-    if (parseFloat(estimatedValue) <= 0) {
-      showToast("Estimated value must be greater than zero", "error");
+    if (!beneficiaryAddress || !notaryAddress || estimatedValue <= 0) {
+      showToast("Please complete all required fields", "error");
       return;
     }
 
@@ -84,7 +118,7 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
         tokenId,
         beneficiaryAddress,
         notaryAddress,
-        parseFloat(estimatedValue)
+        estimatedValue
       );
       showToast(res?.message || "Last Will successfully set!", "success");
       onClose();
@@ -97,9 +131,9 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50 text-black">
-      <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-md p-6 relative">
+      <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-md p-6 relative max-h-[90vh] overflow-y-auto">
         <button
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 z-10"
           onClick={onClose}
         >
           <FaTimes size={20} />
@@ -109,48 +143,26 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
           Set Last Will
         </h2>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
-            <label className="text-sm font-semibold text-gray-600">Beneficiary Address</label>
-            <input
-              type="text"
-              value={beneficiaryAddress}
-              onChange={(e) => setBeneficiaryAddress(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              placeholder="0x1234..."
-            />
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-white px-3 text-gray-500 uppercase tracking-wide">
-                Or Select Beneficiary
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <div className="relative mb-3">
-              <IoSearchOutline
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                size={18}
-              />
-              <input
-                type="text"
-                placeholder="Search beneficiary by name or address"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-gray-800 placeholder-gray-400"
-              />
-            </div>
-            <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-100">
-              {filteredUsers.length > 0 ? (
-                filteredUsers
-                  .filter((u) => u.walletAddress)
-                  .map((user) => (
+            <label className="text-sm font-semibold text-gray-600">Beneficiary (Verified User)</label>
+            <div className="mt-1">
+              <div className="relative mb-2">
+                <IoSearchOutline
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={18}
+                />
+                <input
+                  type="text"
+                  placeholder="Search by name or address"
+                  value={searchBeneficiary}
+                  onChange={(e) => setSearchBeneficiary(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-gray-800 placeholder-gray-400"
+                />
+              </div>
+              <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-100">
+                {filteredBeneficiaries.length > 0 ? (
+                  filteredBeneficiaries.map((user) => (
                     <div
                       key={user.walletAddress}
                       onClick={() => setBeneficiaryAddress(user.walletAddress!)}
@@ -178,34 +190,78 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
                       </div>
                     </div>
                   ))
-              ) : (
-                <div className="p-6 text-center text-gray-400 text-sm">
-                  No verified users found
-                </div>
-              )}
+                ) : (
+                  <div className="p-5 text-center text-gray-400 text-sm">
+                    No verified users found
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-600">Notary Address</label>
-            <input
-              type="text"
-              value={notaryAddress}
-              onChange={(e) => setNotaryAddress(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              placeholder="0x5678..."
-            />
+            <label className="text-sm font-semibold text-gray-600">Notary (Verified Notary)</label>
+            <div className="mt-1">
+              <div className="relative mb-2">
+                <IoSearchOutline
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={18}
+                />
+                <input
+                  type="text"
+                  placeholder="Search notary by name or address"
+                  value={searchNotary}
+                  onChange={(e) => setSearchNotary(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-gray-800 placeholder-gray-400"
+                />
+              </div>
+              <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-100">
+                {filteredNotaries.length > 0 ? (
+                  filteredNotaries.map((notary) => (
+                    <div
+                      key={notary.walletAddress}
+                      onClick={() => setNotaryAddress(notary.walletAddress!)}
+                      className={`px-4 py-3 cursor-pointer transition ${
+                        notaryAddress === notary.walletAddress
+                          ? "bg-emerald-50"
+                          : "hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="min-w-0">
+                          <div className="font-semibold text-sm text-gray-900 truncate">
+                            {notary.name || "Unnamed Notary"}
+                          </div>
+                          <div className="text-xs text-gray-500 font-mono">
+                            {shortAddress(notary.walletAddress!)}
+                          </div>
+                        </div>
+                        {notaryAddress === notary.walletAddress && (
+                          <IoCheckmarkCircle
+                            className="text-emerald-600 flex-shrink-0 ml-2"
+                            size={20}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-5 text-center text-gray-400 text-sm">
+                    No verified notaries found
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-600">Estimated Property Value (LKR)</label>
-            <input
-              type="number"
-              value={estimatedValue}
-              onChange={(e) => setEstimatedValue(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              placeholder="Ex: 25000000"
-            />
+            <label className="text-sm font-semibold text-gray-600">Property Valuation (LKR)</label>
+            <div className="mt-1 p-4 bg-gray-50 border border-gray-200 rounded-xl text-center">
+              <div className="text-2xl font-bold text-emerald-700">
+                LKR {estimatedValue.toLocaleString()}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">Latest valuation from deed</div>
+            </div>
           </div>
 
           <div className="bg-emerald-50 rounded-xl p-4 space-y-2 border border-emerald-200">
@@ -225,12 +281,12 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
           </div>
 
           <button
-            disabled={isSubmitting}
+            disabled={isSubmitting || !beneficiaryAddress || !notaryAddress || estimatedValue <= 0}
             onClick={handleSetLastWill}
-            className={`w-full mt-4 py-3 rounded-lg text-white font-semibold transition text-base ${
-              isSubmitting 
-                ? "bg-emerald-400 cursor-not-allowed" 
-                : "bg-emerald-600 hover:bg-emerald-700 shadow-lg"
+            className={`w-full mt-4 py-3 rounded-lg text-white font-semibold transition text-base shadow-lg ${
+              isSubmitting || !beneficiaryAddress || !notaryAddress || estimatedValue <= 0
+                ? "bg-emerald-400 cursor-not-allowed"
+                : "bg-emerald-600 hover:bg-emerald-700"
             }`}
           >
             {isSubmitting ? "Setting Last Will..." : "Set Last Will"}
