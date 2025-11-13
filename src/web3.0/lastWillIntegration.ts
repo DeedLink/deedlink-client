@@ -9,6 +9,8 @@ const setLastWill = async (
   //   .setLastWill(tokenId, beneficiary, notary, estimatedValue)
   //   .send({ from: window.ethereum.selectedAddress });
 
+  console.log("Setting Last Will:", { tokenId, beneficiary, notary, estimatedValue });
+
   return { message: "Last Will set successfully" /*, tx*/ };
 };
 
