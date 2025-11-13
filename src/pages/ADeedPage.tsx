@@ -52,17 +52,16 @@ const ADeedPage = () => {
 
   const getMarketPlaceData = async () => {
     try {
-      if(!deed?._id) return;
+      if (!deed?._id) return;
       const res = await getMarketPlaceByDeedId(deed._id);
       setMarketPlaceData(res);
-      console.log("Marketplace data:", res);
     } catch (error) {
       console.error("Error fetching marketplace data:", error);
     }
   };
   
   useEffect(() => {
-    if(deed) {
+    if (deed) {
       getMarketPlaceData();
     }
   }, [deed]);
@@ -91,10 +90,10 @@ const ADeedPage = () => {
 
   const getLandTypeColor = (type: string) => {
     const lowerType = type.toLowerCase();
-    if (lowerType.includes("paddy")) return "bg-green-100 text-green-800";
-    if (lowerType.includes("highland")) return "bg-yellow-100 text-yellow-800";
-    if (lowerType.includes("residential")) return "bg-blue-100 text-blue-800";
-    return "bg-gray-100 text-gray-800";
+    if (lowerType.includes("paddy")) return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    if (lowerType.includes("highland")) return "bg-amber-50 text-amber-700 border-amber-200";
+    if (lowerType.includes("residential")) return "bg-blue-50 text-blue-700 border-blue-200";
+    return "bg-gray-50 text-gray-700 border-gray-200";
   };
 
   const formatDate = (date: Date | number) => {
@@ -125,23 +124,19 @@ const ADeedPage = () => {
       }
 
       const balance = await getFTBalance(tokenAddress, account);
-
       const formattedBalance = ethers.formatUnits(balance, 0);
-
-      console.log("Fractional Tokens:", formattedBalance);
       setNumberOfFT(parseInt(formattedBalance));
     } catch (err) {
       console.error("Failed to get fractional token balance:", err);
     }
   };
 
-  const handleFractioning = async() =>{
-    if(deed?.tokenId){
+  const handleFractioning = async () => {
+    if (deed?.tokenId) {
       const res = await createFractionalToken(deed?.tokenId, deed?.deedNumber, deed?.deedNumber, 1000000);
-      console.log(res);
+      console.log("Fractioning result:", res);
       showToast("Fractioning success", "success");
-    }
-    else{
+    } else {
       showToast("Fractioning failed!", "error");
     }
   };
@@ -162,7 +157,7 @@ const ADeedPage = () => {
     showToast("Download functionality coming soon", "info");
   };
 
-  const handleOpenMarket =()=>{
+  const handleOpenMarket = () => {
     setOpenMarket(true);
   };
 
@@ -199,6 +194,10 @@ const ADeedPage = () => {
     }
   };
 
+  const handleLastWill = () => {
+    showToast("Last will functionality coming soon", "info");
+  };
+
   const fetchDeed = async () => {
     if (!deedNumber) return;
     
@@ -232,7 +231,6 @@ const ADeedPage = () => {
       }
     } catch (error) {
       console.error("Failed to fetch deed:", error);
-      //showToast("Failed to load deed", "error");
     } finally {
       hideLoader();
     }
@@ -245,26 +243,22 @@ const ADeedPage = () => {
         const sortedTnx = tnx.sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
-
         setTnx(sortedTnx);
-        console.log(sortedTnx);
       }
-    } else {
-      //showToast("Deed ID not found", "error");
     }
   };
   
-  useEffect(()=>{
+  useEffect(() => {
     getTransactions();
-  },[deed]);
+  }, [deed]);
 
   useEffect(() => {
     fetchDeed();
   }, [deedNumber]);
 
-  useEffect(()=>{
+  useEffect(() => {
     getNumberOfFT();
-  },[deedNumber]);
+  }, [deedNumber]);
 
   getNumberOfFT();
 
@@ -274,14 +268,14 @@ const ADeedPage = () => {
     }
 
     return (
-      <div className="flex items-center gap-3 bg-green-100 border border-green-300 text-green-800 px-5 py-5 rounded-2xl shadow-md animate-fadeIn flex-col">
-        <span className="font-medium bg-white/60 rounded-xl p-4 shadow-sm border border-green-200 w-full flex flex-col">
+      <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-5 rounded-2xl shadow-sm flex-col">
+        <span className="font-medium bg-white rounded-xl p-4 shadow-sm border border-emerald-100 w-full flex flex-col">
           This deed is currently listed on the open market.
         </span>
         {marketPlaceData
           .filter(m => m.status === "open_to_sale")
           .map((item) => (
-            <div key={item._id} className="bg-white/60 rounded-xl p-4 mt-2 shadow-sm border border-green-200 w-full flex flex-col">
+            <div key={item._id} className="bg-white rounded-xl p-4 mt-2 shadow-sm border border-emerald-100 w-full flex flex-col">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                 <p><span className="font-semibold">Market ID:</span> {item.marketPlaceId}</p>
                 <p><span className="font-semibold">Token ID:</span> {item.tokenId}</p>
@@ -289,14 +283,14 @@ const ADeedPage = () => {
                 <p><span className="font-semibold">Amount:</span> {item.amount} ETH</p>
                 <p><span className="font-semibold">Description:</span> {item.description}</p>
               </div>
-              <p className="text-md text-green-700 mt-2">
+              <p className="text-md text-emerald-700 mt-2">
                 Listed on: {item.timestamp ? new Date(item.timestamp).toLocaleString() : "N/A"}
               </p>
               {item._id && typeof item._id === 'string' && (
                 <div className="w-full flex items-end justify-end mt-4">
                   <button 
                     onClick={() => handleRemoveMarketListing(item._id ?? "")} 
-                    className="py-2 px-4 rounded-md bg-red-600 cursor-pointer hover:bg-red-400 text-white transition-colors"
+                    className="py-2 px-4 rounded-md bg-red-600 cursor-pointer hover:bg-red-700 text-white transition-colors font-medium"
                   >
                     Remove Selling Ad
                   </button>
@@ -315,7 +309,7 @@ const ADeedPage = () => {
 
   if (!deed) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl font-semibold text-gray-700">Loading deed information...</p>
         </div>
@@ -324,12 +318,12 @@ const ADeedPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white pt-20 relative">
+    <div className="min-h-screen bg-gray-50 pt-20 relative">
       <div className="flex max-w-boundary mx-auto w-full h-full">
         <div className="max-w-7xl mx-auto px-4 py-8 h-full w-full">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-green-700 hover:text-green-800 font-medium mb-6 transition"
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium mb-6 transition"
           >
             <FaArrowLeft />
             <span>Back</span>
@@ -353,35 +347,36 @@ const ADeedPage = () => {
                 numberOfFT={numberOfFT}
                 onRent={() => setOpenGiveRent(true)}
                 onPowerOfAttorney={() => {}}
+                onLastWill={handleLastWill}
               />
             )}
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-black/5 overflow-hidden mb-6">
-            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 flex items-center justify-between">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+            <div className="bg-emerald-600 p-6 flex items-center justify-between">
               <div className="flex items-center gap-3 text-white">
                 <FaFileSignature size={32} />
                 <div>
                   <h1 className="text-3xl font-bold">Deed #{deed.deedNumber}</h1>
-                  <p className="text-green-100 mt-1">
+                  <p className="text-emerald-100 mt-1">
                     {deed.deedType.deedType} • {deed.district}, {deed.division}
                   </p>
                 </div>
               </div>
               <div className="text-white">
-                Number of fractional tokens: {numberOfFT}
+                Fractional tokens: {numberOfFT}
               </div>
             </div>
 
             <div className="p-6">
               <div className="grid lg:grid-cols-4 gap-6">
                 <div className="lg:col-span-3 space-y-6">
-                  <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                  <section className="rounded-xl border border-gray-200 p-5 bg-white">
                     <div className="flex items-center gap-2 mb-4">
-                      <FaUserShield className="text-green-700" size={20} />
+                      <FaUserShield className="text-emerald-700" size={20} />
                       <h2 className="text-lg font-bold text-gray-900">Owner Information</h2>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white rounded-lg p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
                       <div>
                         <div className="text-xs text-gray-500 uppercase font-semibold">Full Name</div>
                         <div className="font-medium text-gray-800 mt-1">{deed.ownerFullName}</div>
@@ -401,9 +396,9 @@ const ADeedPage = () => {
                     </div>
                   </section>
 
-                  <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                  <section className="rounded-xl border border-gray-200 p-5 bg-white">
                     <div className="flex items-center gap-2 mb-4">
-                      <FaUserShield className="text-green-700" size={20} />
+                      <FaUserShield className="text-emerald-700" size={20} />
                       <h2 className="text-lg font-bold text-gray-900">Blockchain Owners</h2>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -415,12 +410,12 @@ const ADeedPage = () => {
                     </div>
                   </section>
 
-                  <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                  <section className="rounded-xl border border-gray-200 p-5 bg-white">
                     <div className="flex items-center gap-2 mb-4">
-                      <FaMapMarkedAlt className="text-green-700" size={20} />
+                      <FaMapMarkedAlt className="text-emerald-700" size={20} />
                       <h2 className="text-lg font-bold text-gray-900">Land Details</h2>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white rounded-lg p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
                       <div>
                         <div className="text-xs text-gray-500 uppercase font-semibold">Title Number</div>
                         <div className="font-medium text-gray-800 mt-1">{deed.landTitleNumber}</div>
@@ -445,15 +440,15 @@ const ADeedPage = () => {
                   </section>
 
                   {plan?.sides && Object.keys(plan.sides).length > 0 && (
-                    <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                    <section className="rounded-xl border border-gray-200 p-5 bg-white">
                       <div className="flex items-center gap-2 mb-4">
-                        <FaRoute className="text-green-700" size={20} />
+                        <FaRoute className="text-emerald-700" size={20} />
                         <h2 className="text-lg font-bold text-gray-900">Boundary Deeds</h2>
                       </div>
-                      <div className="bg-white rounded-lg p-4">
+                      <div className="bg-gray-50 rounded-lg p-4">
                         <ul className="space-y-3">
                           {Object.entries(plan.sides).map(([direction, deedNum]) => (
-                            <li key={direction} className="flex items-center justify-between border-b border-gray-100 pb-2 last:border-0">
+                            <li key={direction} className="flex items-center justify-between border-b border-gray-200 pb-2 last:border-0">
                               <span className="font-semibold text-gray-800">{direction}</span>
                               <span className="text-gray-600">{deedNum || 'N/A'}</span>
                             </li>
@@ -462,31 +457,31 @@ const ADeedPage = () => {
                       </div>
                     </section>
                   )}
-                  <TitleHistory tnx={tnx}/>
+                  <TitleHistory tnx={tnx} />
                 </div>
 
                 <aside className="space-y-6">
-                  <div className="rounded-xl border border-black/5 p-5 bg-gradient-to-br from-green-50 to-emerald-50">
+                  <div className="rounded-xl border border-gray-200 p-5 bg-white">
                     <div className="text-xs text-gray-600 uppercase font-semibold">Estimated Value</div>
-                    <div className="text-3xl font-bold text-green-900 mt-2">
+                    <div className="text-3xl font-bold text-gray-900 mt-2">
                       {formatCurrency(latestValue, "LKR")}
                     </div>
                     
                     <div className="mt-5 text-xs text-gray-600 uppercase font-semibold">Area</div>
-                    <div className="text-3xl font-bold text-green-900 mt-2">
+                    <div className="text-3xl font-bold text-gray-900 mt-2">
                       {formatNumber(deed.landArea)} {deed.landSizeUnit || "m²"}
                     </div>
                     
                     <div className="mt-5 text-xs text-gray-600 uppercase font-semibold">Land Type</div>
-                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs 3xl:text-base mt-2 ${getLandTypeColor(deed.landType)}`}>
+                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs mt-2 border-2 ${getLandTypeColor(deed.landType)}`}>
                       <span className="text-xl">{getLandTypeIcon(deed.landType)}</span>
                       <span className="capitalize">{deed.landType}</span>
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                  <div className="rounded-xl border border-gray-200 p-5 bg-white">
                     <div className="flex items-center gap-2 mb-3">
-                      <FaCalendarAlt className="text-green-700" />
+                      <FaCalendarAlt className="text-emerald-700" />
                       <h3 className="font-bold text-gray-900">Registered</h3>
                     </div>
                     <div className="text-gray-700 font-medium">
@@ -498,7 +493,7 @@ const ADeedPage = () => {
                   </div>
 
                   {signatures && (
-                    <div className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                    <div className="rounded-xl border border-gray-200 p-5 bg-white">
                       <h3 className="font-bold text-gray-900 mb-4">Signatures</h3>
                       <div className="space-y-3">
                         {[
@@ -506,11 +501,11 @@ const ADeedPage = () => {
                           { label: "Notary", value: signatures.notary, assigned: deed.notaryAssigned },
                           { label: "IVSL", value: signatures.ivsl, assigned: deed.ivslAssigned },
                         ].map((sig) => (
-                          <div key={sig.label} className="bg-white rounded-lg p-3">
+                          <div key={sig.label} className="bg-gray-50 rounded-lg p-3">
                             <div className="flex items-center justify-between">
                               <span className="font-semibold text-gray-800">{sig.label}</span>
                               {sig.value ? (
-                                <FaCheckCircle className="text-green-600" size={20} />
+                                <FaCheckCircle className="text-emerald-600" size={20} />
                               ) : (
                                 <FaTimesCircle className="text-gray-400" size={20} />
                               )}
@@ -525,38 +520,38 @@ const ADeedPage = () => {
                   )}
 
                   {deed.tokenId !== undefined && (
-                    <div className="rounded-xl border border-black/5 p-5 bg-gradient-to-br from-emerald-50 to-green-50">
+                    <div className="rounded-xl border border-gray-200 p-5 bg-white">
                       <div className="text-xs text-gray-600 uppercase font-semibold">Token ID</div>
-                      <div className="text-2xl font-bold text-green-900 mt-2">#{deed.tokenId}</div>
+                      <div className="text-2xl font-bold text-gray-900 mt-2">#{deed.tokenId}</div>
                     </div>
                   )}
 
                   {((deed.location && deed.location.length > 0) || (plan?.coordinates && plan.coordinates.length > 0)) && (
-                    <section className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                    <section className="rounded-xl border border-gray-200 p-5 bg-white">
                       <div className="flex items-center gap-2 mb-4">
-                        <FaMapMarkedAlt className="text-green-700" size={20} />
+                        <FaMapMarkedAlt className="text-emerald-700" size={20} />
                         <h3 className="font-bold text-gray-900">Map View</h3>
                       </div>
-                      <div className="relative group h-fit w-full rounded-lg border border-black/5 overflow-hidden">
+                      <div className="relative group h-fit w-full rounded-lg border border-gray-200 overflow-hidden">
                         <MapPreview points={plan?.coordinates && plan.coordinates.length > 0 ? plan.coordinates : deed.location} />
                         <button
                           onClick={() => setIsMapOpen(true)}
-                          className="absolute top-3 right-3 bg-white px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition flex items-center gap-2"
+                          className="absolute top-3 right-3 bg-white px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition flex items-center gap-2 border border-gray-200"
                         >
-                          <FaExpand size={14} className="text-green-700" />
-                          <span className="text-sm font-semibold text-green-700">Expand</span>
+                          <FaExpand size={14} className="text-emerald-700" />
+                          <span className="text-sm font-semibold text-emerald-700">Expand</span>
                         </button>
                       </div>
                     </section>
                   )}
 
                   {centerLocation && (
-                    <div className="rounded-xl border border-black/5 p-5 bg-gray-50">
+                    <div className="rounded-xl border border-gray-200 p-5 bg-white">
                       <div className="flex items-center gap-2 mb-3">
-                        <FaMapMarkedAlt className="text-green-700" />
+                        <FaMapMarkedAlt className="text-emerald-700" />
                         <h3 className="font-bold text-gray-900">Center Location</h3>
                       </div>
-                      <div className="text-gray-700 font-mono text-sm bg-white rounded-lg p-3">
+                      <div className="text-gray-700 font-mono text-sm bg-gray-50 rounded-lg p-3">
                         <div>Lat: {centerLocation.latitude.toFixed(6)}</div>
                         <div className="mt-1">Lng: {centerLocation.longitude.toFixed(6)}</div>
                       </div>
@@ -585,6 +580,7 @@ const ADeedPage = () => {
               numberOfFT={numberOfFT}
               onRent={() => setOpenGiveRent(true)}
               onPowerOfAttorney={() => {}}
+              onLastWill={handleLastWill}
             />
           )}
         </div>
@@ -596,24 +592,18 @@ const ADeedPage = () => {
         onClose={() => setIsMapOpen(false)}
       />
 
-      {
-        openTransact && deed.tokenId && (
-          <TransactPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openTransact} onClose={() => setOpenTransact(false)}>
-          </TransactPopup>
-        )
-      }
-      { 
-        openDirectTransfer && deed.tokenId && (
+      {openTransact && deed.tokenId && (
+        <TransactPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openTransact} onClose={() => setOpenTransact(false)}>
+        </TransactPopup>
+      )}
+      {openDirectTransfer && deed.tokenId && (
         <DirectTransferPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openDirectTransfer} onClose={() => setOpenDirectTransfer(false)}>
         </DirectTransferPopup>
-      )
-      }
-      { 
-        openSaleEscrow && deed.tokenId && (    
-          <SaleEscrowPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openSaleEscrow} onClose={() => setOpenSaleEscrow(false)}>
-          </SaleEscrowPopup>
-        )
-      }
+      )}
+      {openSaleEscrow && deed.tokenId && (
+        <SaleEscrowPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openSaleEscrow} onClose={() => setOpenSaleEscrow(false)}>
+        </SaleEscrowPopup>
+      )}
 
       {openGiveRent && deed.tokenId && (
         <GiveRentPopup

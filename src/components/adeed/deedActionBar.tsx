@@ -8,6 +8,7 @@ import {
   FaKey,
   FaHome,
   FaLock,
+  FaGifts
 } from "react-icons/fa";
 import { FaShop } from "react-icons/fa6";
 import ActionButton from "./actionButton";
@@ -30,6 +31,7 @@ interface DeedActionBarProps {
   onRent: () => void;
   onPowerOfAttorney: () => void;
   onOpenMarket: () => void;
+  onLastWill: () => void;
 }
 
 const DeedActionBar = ({
@@ -48,6 +50,7 @@ const DeedActionBar = ({
   onPowerOfAttorney,
   onOpenMarket,
   numberOfFT,
+  onLastWill,
 }: DeedActionBarProps) => {
   const [state, setState] = useState<"pending" | "completed" | "failed">("completed");
   const [titles, setTitles] = useState<any[]>([]);
@@ -140,6 +143,15 @@ const DeedActionBar = ({
               icon={<FaShop size={16} />}
               label="Add to Open Market"
               onClick={onOpenMarket}
+              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
+            />
+          )}
+
+          {onLastWill && (
+            <ActionButton
+              icon={<FaGifts size={16} />}
+              label="Create Last Will"
+              onClick={onLastWill}
               color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
             />
           )}
