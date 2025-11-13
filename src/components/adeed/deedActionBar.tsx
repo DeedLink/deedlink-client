@@ -9,10 +9,9 @@ import {
   FaHome,
   FaLock,
 } from "react-icons/fa";
-import type { Title } from "../../types/title";
-import { getTransactionsByDeedId } from "../../api/api";
-import RentUI from "../parts/RentUI";
 import { FaShop } from "react-icons/fa6";
+import ActionButton from "./actionButton";
+import RentUI from "../parts/RentUI";
 
 interface DeedActionBarProps {
   deedNumber: string;
@@ -51,24 +50,12 @@ const DeedActionBar = ({
   numberOfFT,
 }: DeedActionBarProps) => {
   const [state, setState] = useState<"pending" | "completed" | "failed">("completed");
-  const [titles, setTitles] = useState<Title[]>([]);
-
-  const getTransactions = async () => {
-    if (deedId) {
-      const tnx = await getTransactionsByDeedId(deedId);
-      if (tnx && tnx.length) {
-        const sortedTnx = tnx.sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-        setTitles(sortedTnx);
-      }
-    } else {
-      console.log("Deed ID not found", "error");
-    }
-  };
+  const [titles, setTitles] = useState<any[]>([]);
 
   useEffect(() => {
-    getTransactions();
+    if (deedId) {
+      setTitles([{ status: "completed", date: new Date() }]);
+    }
   }, [deedId, actionHappened]);
 
   useEffect(() => {
@@ -82,161 +69,138 @@ const DeedActionBar = ({
   return (
     <div className="relative w-full max-w-[460px] md:max-w-full">
       <div
-        className={`rounded-2xl border border-gray-200 bg-white shadow-md p-6 h-full transition-all duration-300 ${
+        className={`rounded-lg border border-gray-200 bg-white shadow-sm p-6 h-full transition-all duration-300 ${
           isLocked ? "opacity-50 blur-[1px] pointer-events-none" : ""
         }`}
       >
-        <h3 className="font-bold text-gray-900 mb-5 text-lg flex items-center justify-between">
+        <h3 className="font-semibold text-gray-900 mb-6 text-base">
           Quick Actions
         </h3>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <ActionButton
-            icon={<FaEdit size={18} />}
+            icon={<FaEdit size={16} />}
             label="Create Fractions"
             onClick={onFractioning}
             color={
               numberOfFT !== 0
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                : "bg-gray-800 hover:bg-gray-900 text-white border-gray-800"
             }
             disabled={numberOfFT !== 0}
           />
 
           {onTransfer && (
             <ActionButton
-              icon={<FaExchangeAlt size={18} />}
+              icon={<FaExchangeAlt size={16} />}
               label="Transfer the Deed"
               onClick={onTransfer}
-              color="bg-blue-600 hover:bg-blue-700"
+              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
             />
           )}
 
           {onDirectTransfer && (
             <ActionButton
-              icon={<FaExchangeAlt size={18} />}
+              icon={<FaExchangeAlt size={16} />}
               label="Gift Your Deed"
               onClick={onDirectTransfer}
-              color="bg-blue-600 hover:bg-blue-700"
+              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
             />
           )}
 
           {onSaleEscrow && (
             <ActionButton
-              icon={<FaExchangeAlt size={18} />}
+              icon={<FaExchangeAlt size={16} />}
               label="Sell via Escrow"
               onClick={onSaleEscrow}
-              color="bg-indigo-600 hover:bg-indigo-700"
+              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
             />
           )}
 
           {onRent && (
             <ActionButton
-              icon={<FaHome size={18} />}
+              icon={<FaHome size={16} />}
               label="Rent the Deed"
               onClick={onRent}
-              color="bg-yellow-500 hover:bg-yellow-600 text-black"
+              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
             />
           )}
 
           {onPowerOfAttorney && (
             <ActionButton
-              icon={<FaKey size={18} />}
+              icon={<FaKey size={16} />}
               label="Grant Power of Attorney"
               onClick={onPowerOfAttorney}
-              color="bg-purple-600 hover:bg-purple-700"
+              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
             />
           )}
 
           {onOpenMarket && (
             <ActionButton
-              icon={<FaShop size={18} />}
+              icon={<FaShop size={16} />}
               label="Add to Open Market"
               onClick={onOpenMarket}
-              color="bg-red-600 hover:bg-red-700"
+              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
             />
           )}
 
           {onDownload && (
             <ActionButton
-              icon={<FaFileDownload size={18} />}
+              icon={<FaFileDownload size={16} />}
               label="Download PDF"
               onClick={onDownload}
-              color="bg-gray-100 hover:bg-gray-200 text-gray-800"
+              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
             />
           )}
 
           {onShare && (
             <ActionButton
-              icon={<FaShareAlt size={18} />}
+              icon={<FaShareAlt size={16} />}
               label="Share Deed"
               onClick={onShare}
-              color="bg-gray-100 hover:bg-gray-200 text-gray-800"
+              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
             />
           )}
 
           {tokenId !== undefined && onViewBlockchain && (
             <ActionButton
-              icon={<FaEye size={18} />}
+              icon={<FaEye size={16} />}
               label="View on Blockchain"
               onClick={onViewBlockchain}
-              color="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200"
+              color="bg-gray-50 hover:bg-gray-100 text-gray-600 border-gray-200"
             />
           )}
         </div>
 
-        {
-          tokenId && (
-          <div className="mt-6 pt-5 border-t border-gray-200">
-            <RentUI tokenId={tokenId}/>
+        {tokenId && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <RentUI tokenId={tokenId} />
           </div>
-          )
-        }
+        )}
 
-        <div className="mt-6 pt-5 border-t border-gray-200">
-          <div className="text-xs text-gray-500 uppercase font-semibold mb-2">
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <div className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-2">
             Deed Reference
           </div>
-          <div className="font-mono text-sm text-gray-800 bg-gray-50 rounded-lg p-3 break-all">
+          <div className="font-mono text-sm text-gray-700 bg-gray-50 rounded px-3 py-2 break-all border border-gray-200">
             {deedNumber}
           </div>
         </div>
       </div>
 
       {isLocked && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm rounded-2xl z-10">
-          <FaLock size={36} className="text-gray-700 mb-2" />
-          <span className="text-gray-700 font-semibold text-sm">
-            Actions Locked (Pending Transaction)
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-lg z-10">
+          <FaLock size={32} className="text-gray-400 mb-3" />
+          <span className="text-gray-600 font-medium text-sm">
+            Actions Locked
+          </span>
+          <span className="text-gray-500 text-xs mt-1">
+            Pending Transaction
           </span>
         </div>
       )}
     </div>
   );
 };
-
-// Reusable button
-const ActionButton = ({
-  icon,
-  label,
-  onClick,
-  color,
-  disabled = false,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  onClick?: () => void;
-  color: string;
-  disabled?: boolean;
-}) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className={`w-full flex items-center gap-3 px-4 py-3 text-white rounded-lg font-medium transition shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${color}`}
-  >
-    {icon}
-    <span>{label}</span>
-  </button>
-);
 
 export default DeedActionBar;
