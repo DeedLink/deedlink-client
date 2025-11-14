@@ -33,12 +33,12 @@ const HomePage = () => {
       <HeroSection />
 
       {user &&  
-      <div className="w-full pt-8 md:pt-12">
+      <div className="w-full pt-8 md:pt-12 px-6 md:px-16">
         <UserDetailsCard user={user}/>
       </div>
       }
 
-      <section className="w-full bg-white max-w-boundary mx-auto py-8 md:py-12">
+      <section className="w-full bg-white max-w-boundary mx-auto py-8 md:py-12 px-6 md:px-16">
         { false && (
           <div className="max-w-boundary mx-auto grid md:grid-cols-3 gap-10 items-start">
             <div className="md:col-span-2">
