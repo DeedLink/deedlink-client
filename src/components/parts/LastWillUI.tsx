@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Certificate } from "../../types/certificate";
-import { getCertificateById } from "../../api/api";
+import { getCertificatesByTokenId } from "../../api/api";
 
 type Props = {
   tokenId: number;
@@ -15,7 +15,7 @@ const LastWillUI = ({ tokenId }: Props) => {
     const loadCertificate = async () => {
       try {
         setLoading(true);
-        const res = await getCertificateById("69168087633cd67124c01939");
+        const res = await getCertificatesByTokenId(tokenId);
         //console.log("Fetched certificate:", res);
         setCertificate(res);
       } catch (err: any) {

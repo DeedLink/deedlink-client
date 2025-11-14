@@ -121,6 +121,8 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
         estimatedValue
       );
 
+      console.log("Last Will set on blockchain:", res);
+
       const payload = {
         type: "last_will",
         title: `Last Will for Token #${tokenId}`,

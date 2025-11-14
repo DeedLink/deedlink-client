@@ -524,3 +524,9 @@ export const deleteCertificate = async (id: string) => {
   const res = await certificateApi.delete(`/${id}`);
   return res.data;
 };
+
+// Get certificates by token ID
+export const getCertificatesByTokenId = async (tokenId: number) => {
+  const res = await certificateApi.get(`/token/${tokenId}`);
+  return res.data;
+};
