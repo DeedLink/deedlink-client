@@ -21,6 +21,10 @@ const RentUI = ({ tokenId }: { tokenId: number }) => {
     fetchRentDetails();
   }, [tokenId]);
 
+  if(rentDetails === null || rentDetails?.receiver === "0x0000000000000000000000000000000000000000") {
+    return;
+  }
+
   if (!rentDetails) {
     return (
       <div className="flex flex-col items-center justify-center h-32 text-gray-500 text-sm">

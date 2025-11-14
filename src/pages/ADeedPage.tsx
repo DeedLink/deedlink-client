@@ -22,6 +22,7 @@ import GetRentPopup from "../components/adeed/tnxPopups/GetRentPopup";
 import TitleHistory from "../components/parts/TitleHistory";
 import AddToMarketPopup from "../components/adeed/tnxPopups/AddToMarketPopup";
 import type { Marketplace } from "../types/marketplace";
+import SetLastWillPopup from "../components/adeed/tnxPopups/SetLastWillPopup";
 
 interface ISignatures {
   surveyor: boolean;
@@ -49,6 +50,7 @@ const ADeedPage = () => {
   const [openGetRent, setOpenGetRent] = useState(false);
   const [openMarket, setOpenMarket] = useState(false);
   const [marketPlaceData, setMarketPlaceData] = useState<Marketplace[]>();
+  const [openLastWill, setOpenLastWill] = useState(false);
 
   const getMarketPlaceData = async () => {
     try {
@@ -195,7 +197,7 @@ const ADeedPage = () => {
   };
 
   const handleLastWill = () => {
-    showToast("Last will functionality coming soon", "info");
+    setOpenLastWill(true);
   };
 
   const fetchDeed = async () => {
@@ -329,7 +331,7 @@ const ADeedPage = () => {
             <span>Back</span>
           </button>
 
-          <div className="lg:hidden mb-6">
+          <div className="lg:hidden mb-6 w-full flex justify-center">
             {renderMarketplaceBanner() || (
               <DeedActionBar
                 onFractioning={handleFractioning}
@@ -628,6 +630,10 @@ const ADeedPage = () => {
           tokenId={deed.tokenId}
           onClose={handleMarketplaceClose}
         />
+      )}
+
+      {openLastWill && deed.tokenId && deed.deedNumber && (
+        <SetLastWillPopup isOpen={openLastWill} onClose={()=>setOpenLastWill(false)} tokenId={deed.tokenId} deedNumber={deed.deedNumber}/>
       )}
     </div>
   );

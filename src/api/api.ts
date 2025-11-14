@@ -17,7 +17,8 @@ export const API = {
   pinata: isVercelTest ? import.meta.env.VITE_VERCEL_PINATA_API_URL : import.meta.env.VITE_PINATA_API_URL,
   survey: isVercelTest ? import.meta.env.VITE_VERCEL_SURVEY_PLAN_API_URL : import.meta.env.VITE_SURVEY_PLAN_API_URL,
   //notification: isVercelTest ? import.meta.env.VITE_VERCEL_NOTIFICATION_API_URL : import.meta.env.VITE_VERCEL_NOTIFICATION_API_URL,
-  market: isVercelTest ? import.meta.env.VITE_MARKETPLACE_API_URL: import.meta.env.VITE_MARKETPLACE_API_URL
+  market: isVercelTest ? import.meta.env.VITE_MARKETPLACE_API_URL: import.meta.env.VITE_MARKETPLACE_API_URL,
+  certificate: isVercelTest ? import.meta.env.VITE_CERTIFICATE_SERVICE_URL : import.meta.env.VITE_CERTIFICATE_SERVICE_URL,
 };
 
 console.log("isVercelTest:", isVercelTest);
@@ -462,5 +463,70 @@ export const getMarketPlaceByTokenId = async (tokenId: string): Promise<Marketpl
 // Delete marketplaces by Deed ID
 export const deleteMarketPlacesById = async (marketPlaceId: string): Promise<{ message: string }> => {
   const res: AxiosResponse<{ message: string }> = await marketplaceApi.delete(`/${marketPlaceId}`);
+  return res.data;
+};
+
+// Certificate related api calls
+
+const certificateApi = axios.create({
+  baseURL: API.certificate,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+certificateApi.interceptors.request.use((config) => {
+  const token = getItem("local", "token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return withVercelHeaders(config);
+});
+
+// Create certificate
+export const createCertificate = async (payload: any) => {
+  const res = await certificateApi.post("/", payload);
+  return res.data;
+};
+
+// List certificates with pagination + filtering + search
+export const listCertificates = async ({
+  type,
+  q,
+  page = 1,
+  limit = 20,
+}: {
+  type?: string;
+  q?: string;
+  page?: number;
+  limit?: number;
+}) => {
+  const res = await certificateApi.get("/", {
+    params: { type, q, page, limit },
+  });
+  return res.data;
+};
+
+// Get certificate by ID
+export const getCertificateById = async (id: string) => {
+  const res = await certificateApi.get(`/${id}`);
+  return res.data;
+};
+
+// Update certificate
+export const updateCertificate = async (id: string, payload: any) => {
+  const res = await certificateApi.put(`/${id}`, payload);
+  return res.data;
+};
+
+// Delete certificate
+export const deleteCertificate = async (id: string) => {
+  const res = await certificateApi.delete(`/${id}`);
+  return res.data;
+};
+
+// Get certificates by token ID
+export const getCertificatesByTokenId = async (tokenId: number) => {
+  const res = await certificateApi.get(`/token/${tokenId}`);
   return res.data;
 };
