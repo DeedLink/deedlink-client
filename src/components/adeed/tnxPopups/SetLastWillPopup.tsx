@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { useToast } from "../../../contexts/ToastContext";
 import type { User } from "../../../types/types";
-import { getDeedByDeedNumber, getUsers } from "../../../api/api";
+import { createCertificate, getDeedByDeedNumber, getUsers } from "../../../api/api";
 import { useWallet } from "../../../contexts/WalletContext";
 import { shortAddress } from "../../../utils/format";
 import { IoCheckmarkCircle, IoSearchOutline } from "react-icons/io5";
@@ -120,7 +120,46 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
         notaryAddress,
         estimatedValue
       );
-      showToast(res?.message || "Last Will successfully set!", "success");
+
+      console.log("Last Will set on blockchain:", res);
+
+      const payload = {
+        type: "last_will",
+        title: `Last Will for Token #${tokenId}`,
+        description: `Last Will declaration for property deed ${deedNumber}`,
+        parties: [
+          {
+            name: "Property Owner",
+            role: "owner",
+            contact: account,
+          },
+          {
+            name: "Beneficiary",
+            role: "beneficiary",
+            contact: beneficiaryAddress,
+          },
+          {
+            name: "Notary",
+            role: "notary",
+            contact: notaryAddress,
+          }
+        ],
+        createdBy: account,
+        data: {
+          tokenId,
+          deedNumber,
+          estimatedValue,
+          stampDuty: Number(stampDuty),
+          fixedFee: GOV_FEE_FIXED,
+          totalFee: Number(totalGovFee),
+          txHash: ""//res?.transactionHash || null
+        }
+      };
+
+      const saved = await createCertificate(payload);
+      console.log("Certificate created:", saved);
+
+      showToast("Last Will successfully set and stored!", "success");
       onClose();
     } catch (error: any) {
       showToast(error.message || "Failed to set Last Will", "error");
@@ -128,6 +167,7 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50 text-black">

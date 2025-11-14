@@ -13,6 +13,7 @@ import {
 import { FaShop } from "react-icons/fa6";
 import ActionButton from "./actionButton";
 import RentUI from "../parts/RentUI";
+import LastWillUI from "../parts/LastWillUI";
 
 interface DeedActionBarProps {
   deedNumber: string;
@@ -187,6 +188,12 @@ const DeedActionBar = ({
         {tokenId && (
           <div className="mt-6 pt-6 border-t border-gray-200">
             <RentUI tokenId={tokenId} />
+          </div>
+        )}
+
+        {tokenId && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <LastWillUI tokenId={tokenId} />
           </div>
         )}
 
