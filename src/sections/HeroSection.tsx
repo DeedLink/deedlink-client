@@ -13,7 +13,7 @@ const HeroSection = () => {
         backgroundImage: `linear-gradient(rgba(0,60,10,0.85), rgba(0,60,10,0.85)), url(${background})`,
       }}
     >
-      <div className="max-w-boundary mx-auto w-full">
+      <div className="max-w-boundary mx-auto w-full px-4 md:px-16">
         <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-6">
           Simplify property ownership with our secure digital deed registry
         </h1>
