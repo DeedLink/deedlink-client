@@ -150,7 +150,7 @@ const ADeedPage = () => {
             )}
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
             <DeedHeader deed={deed} numberOfFT={numberOfFT} />
 
             <div className="p-6">
