@@ -331,7 +331,7 @@ const ADeedPage = () => {
             <span>Back</span>
           </button>
 
-          <div className="lg:hidden mb-6">
+          <div className="lg:hidden mb-6 w-full flex justify-center">
             {renderMarketplaceBanner() || (
               <DeedActionBar
                 onFractioning={handleFractioning}
