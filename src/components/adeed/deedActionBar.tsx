@@ -14,6 +14,7 @@ import { FaShop } from "react-icons/fa6";
 import ActionButton from "./actionButton";
 import RentUI from "../parts/RentUI";
 import LastWillUI from "../parts/LastWillUI";
+import { getTransactionsByDeedId } from "../../api/api";
 
 interface DeedActionBarProps {
   deedNumber: string;
@@ -60,10 +61,22 @@ const DeedActionBar = ({
   const [state, setState] = useState<"pending" | "completed" | "failed">("completed");
   const [titles, setTitles] = useState<any[]>([]);
 
-  useEffect(() => {
+  const getTransactions = async () => {
     if (deedId) {
-      setTitles([{ status: "completed", date: new Date() }]);
+      const tnx = await getTransactionsByDeedId(deedId);
+      if (tnx && tnx.length) {
+        const sortedTnx = tnx.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        setTitles(sortedTnx);
+      }
+    } else {
+      console.log("Deed ID not found", "error");
     }
+  };
+
+  useEffect(() => {
+    getTransactions();
   }, [deedId, actionHappened]);
 
   useEffect(() => {
