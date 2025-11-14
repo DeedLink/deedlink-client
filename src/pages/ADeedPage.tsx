@@ -1,75 +1,46 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaFileSignature, FaUserShield, FaMapMarkedAlt, FaRoute, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaArrowLeft, FaExpand } from "react-icons/fa";
-import { formatCurrency, formatNumber, shortAddress, timeAgo } from "../utils/format";
-import type { IDeed } from "../types/responseDeed";
-import MapPreview from "../components/deeds/MapPreview";
-import MapPopup from "../components/deeds/MapPopup";
-import { getCenterOfLocations } from "../utils/functions";
-import { getPlanByPlanNumber, getDeedByDeedNumber, getTransactionsByDeedId, getMarketPlaceByDeedId, deleteMarketPlacesById } from "../api/api";
+import { FaArrowLeft } from "react-icons/fa";
 import { useToast } from "../contexts/ToastContext";
-import { defaultPlan, type Plan } from "../types/plan";
 import { useLoader } from "../contexts/LoaderContext";
-import { createFractionalToken, getFractionalTokenAddress, getFTBalance, getSignatures } from "../web3.0/contractService";
+import { createFractionalToken } from "../web3.0/contractService";
 import DeedActionBar from "../components/adeed/deedActionBar";
-import { useWallet } from "../contexts/WalletContext";
-import { ethers } from "ethers";
-import TransactPopup from "../components/adeed/transactPopup";
-import { DirectTransferPopup } from "../components/adeed/tnxPopups/DirectTransferPopup";
-import SaleEscrowPopup from "../components/adeed/tnxPopups/SaleEscrowPopup";
-import GiveRentPopup from "../components/adeed/tnxPopups/GiveRentPopup";
-import GetRentPopup from "../components/adeed/tnxPopups/GetRentPopup";
 import TitleHistory from "../components/parts/TitleHistory";
-import AddToMarketPopup from "../components/adeed/tnxPopups/AddToMarketPopup";
-import type { Marketplace } from "../types/marketplace";
-import SetLastWillPopup from "../components/adeed/tnxPopups/SetLastWillPopup";
-
-interface ISignatures {
-  surveyor: boolean;
-  notary: boolean;
-  ivsl: boolean;
-  fully: boolean;
-}
+import { deleteMarketPlacesById } from "../api/api";
+import { useDeedData } from "../hooks/useDeedData";
+import MarketplaceBanner from "../components/adeed/ui/MarketplaceBanner";
+import DeedHeader from "../components/adeed/ui/DeedHeader";
+import OwnerInformation from "../components/adeed/ui/OwnerInformation";
+import BlockchainOwners from "../components/adeed/ui/BlockchainOwners";
+import LandDetails from "../components/adeed/ui/LandDetails";
+import BoundaryDeeds from "../components/adeed/ui/BoundaryDeeds";
+import DeedSidebar from "../components/adeed/ui/DeedSidebar";
+import DeedModals from "../components/adeed/ui/DeedModals";
 
 const ADeedPage = () => {
   const { deedNumber } = useParams();
   const navigate = useNavigate();
-  const [deed, setDeed] = useState<IDeed | null>(null);
-  const [isMapOpen, setIsMapOpen] = useState(false);
-  const [plan, setPlan] = useState<Plan>(defaultPlan);
-  const [signatures, setSignatures] = useState<ISignatures | null>(null);
   const { showToast } = useToast();
   const { showLoader, hideLoader } = useLoader();
-  const { account } = useWallet();
-  const [numberOfFT, setNumberOfFT] = useState(0);
+
+  const {
+    deed,
+    plan,
+    signatures,
+    numberOfFT,
+    tnx,
+    marketPlaceData,
+    getMarketPlaceData
+  } = useDeedData(deedNumber);
+
   const [openTransact, setOpenTransact] = useState(false);
-  const [tnx, setTnx] = useState<any[]>([]);
   const [openDirectTransfer, setOpenDirectTransfer] = useState(false);
   const [openSaleEscrow, setOpenSaleEscrow] = useState(false);
   const [openGiveRent, setOpenGiveRent] = useState(false);
   const [openGetRent, setOpenGetRent] = useState(false);
   const [openMarket, setOpenMarket] = useState(false);
-  const [marketPlaceData, setMarketPlaceData] = useState<Marketplace[]>();
   const [openLastWill, setOpenLastWill] = useState(false);
 
-  const getMarketPlaceData = async () => {
-    try {
-      if (!deed?._id) return;
-      const res = await getMarketPlaceByDeedId(deed._id);
-      setMarketPlaceData(res);
-    } catch (error) {
-      console.error("Error fetching marketplace data:", error);
-    }
-  };
-  
-  useEffect(() => {
-    if (deed) {
-      getMarketPlaceData();
-    }
-  }, [deed]);
-
-  const centerLocation = deed ? getCenterOfLocations(deed.location) : null;
-  
   useEffect(() => {
     if (openTransact || openDirectTransfer || openSaleEscrow || openGiveRent || openGetRent || openMarket) {
       document.body.classList.add("no-scroll");
@@ -77,61 +48,6 @@ const ADeedPage = () => {
       document.body.classList.remove("no-scroll");
     }
   }, [openTransact, openDirectTransfer, openSaleEscrow, openGiveRent, openGetRent, openMarket]);
-
-  const latestValue = deed?.valuation && deed.valuation.length > 0
-    ? deed.valuation.slice().sort((a, b) => b.timestamp - a.timestamp)[0]?.estimatedValue || 0
-    : 0;
-
-  const getLandTypeIcon = (type: string) => {
-    const lowerType = type.toLowerCase();
-    if (lowerType.includes("paddy")) return "🌾";
-    if (lowerType.includes("highland")) return "🌲";
-    if (lowerType.includes("residential")) return "🏘️";
-    return "🏞️";
-  };
-
-  const getLandTypeColor = (type: string) => {
-    const lowerType = type.toLowerCase();
-    if (lowerType.includes("paddy")) return "bg-emerald-50 text-emerald-700 border-emerald-200";
-    if (lowerType.includes("highland")) return "bg-amber-50 text-amber-700 border-amber-200";
-    if (lowerType.includes("residential")) return "bg-blue-50 text-blue-700 border-blue-200";
-    return "bg-gray-50 text-gray-700 border-gray-200";
-  };
-
-  const formatDate = (date: Date | number) => {
-    const dateObj = typeof date === 'number' ? new Date(date) : new Date(date);
-    return dateObj.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  useEffect(() => {
-    if (openTransact) {
-      document.body.classList.add('no-scroll');
-    } else {
-      document.body.classList.remove('no-scroll');
-    }
-  }, [openTransact]);
-
-  const getNumberOfFT = async () => {
-    try {
-      if (!deed?.tokenId || !account) return;
-
-      const tokenAddress = await getFractionalTokenAddress(deed.tokenId);
-      if (!ethers.isAddress(tokenAddress)) {
-        console.error("Invalid token address:", tokenAddress);
-        return;
-      }
-
-      const balance = await getFTBalance(tokenAddress, account);
-      const formattedBalance = ethers.formatUnits(balance, 0);
-      setNumberOfFT(parseInt(formattedBalance));
-    } catch (err) {
-      console.error("Failed to get fractional token balance:", err);
-    }
-  };
 
   const handleFractioning = async () => {
     if (deed?.tokenId) {
@@ -143,24 +59,8 @@ const ADeedPage = () => {
     }
   };
 
-  const handleTransfer = () => {
-    setOpenTransact(true);
-  };
-
-  const handleSaleEscrow = () => {
-    setOpenSaleEscrow(true);
-  };
-
-  const handleDirectTransfer = () => {
-    setOpenDirectTransfer(true);
-  };
-
   const handleDownload = () => {
     showToast("Download functionality coming soon", "info");
-  };
-
-  const handleOpenMarket = () => {
-    setOpenMarket(true);
   };
 
   const handleShare = () => {
@@ -196,114 +96,6 @@ const ADeedPage = () => {
     }
   };
 
-  const handleLastWill = () => {
-    setOpenLastWill(true);
-  };
-
-  const fetchDeed = async () => {
-    if (!deedNumber) return;
-    
-    showLoader();
-    try {
-      const res = await getDeedByDeedNumber(deedNumber);
-      if (res) {
-        setDeed(res);
-        
-        if (res.tokenId !== undefined) {
-          try {
-            const sigs = await getSignatures(res.tokenId);
-            setSignatures(sigs);
-          } catch (error) {
-            console.error("Failed to fetch signatures:", error);
-          }
-        }
-
-        if (res.surveyPlanNumber) {
-          try {
-            const plan_res = await getPlanByPlanNumber(res.surveyPlanNumber);
-            if (plan_res.data) {
-              setPlan(plan_res.data);
-            }
-          } catch (error) {
-            console.error("Failed to fetch survey plan:", error);
-          }
-        }
-      } else {
-        showToast("Deed not found", "error");
-      }
-    } catch (error) {
-      console.error("Failed to fetch deed:", error);
-    } finally {
-      hideLoader();
-    }
-  };
-
-  const getTransactions = async () => {
-    if (deed && deed._id) {
-      const tnx = await getTransactionsByDeedId(deed._id);
-      if (tnx && tnx.length) {
-        const sortedTnx = tnx.sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-        setTnx(sortedTnx);
-      }
-    }
-  };
-  
-  useEffect(() => {
-    getTransactions();
-  }, [deed]);
-
-  useEffect(() => {
-    fetchDeed();
-  }, [deedNumber]);
-
-  useEffect(() => {
-    getNumberOfFT();
-  }, [deedNumber]);
-
-  getNumberOfFT();
-
-  const renderMarketplaceBanner = () => {
-    if (!marketPlaceData || marketPlaceData.filter(m => m.status === "open_to_sale").length === 0) {
-      return null;
-    }
-
-    return (
-      <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-5 rounded-2xl shadow-sm flex-col">
-        <span className="font-medium bg-white rounded-xl p-4 shadow-sm border border-emerald-100 w-full flex flex-col">
-          This deed is currently listed on the open market.
-        </span>
-        {marketPlaceData
-          .filter(m => m.status === "open_to_sale")
-          .map((item) => (
-            <div key={item._id} className="bg-white rounded-xl p-4 mt-2 shadow-sm border border-emerald-100 w-full flex flex-col">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                <p><span className="font-semibold">Market ID:</span> {item.marketPlaceId}</p>
-                <p><span className="font-semibold">Token ID:</span> {item.tokenId}</p>
-                <p><span className="font-semibold">Share:</span> {item.share}%</p>
-                <p><span className="font-semibold">Amount:</span> {item.amount} ETH</p>
-                <p><span className="font-semibold">Description:</span> {item.description}</p>
-              </div>
-              <p className="text-md text-emerald-700 mt-2">
-                Listed on: {item.timestamp ? new Date(item.timestamp).toLocaleString() : "N/A"}
-              </p>
-              {item._id && typeof item._id === 'string' && (
-                <div className="w-full flex items-end justify-end mt-4">
-                  <button 
-                    onClick={() => handleRemoveMarketListing(item._id ?? "")} 
-                    className="py-2 px-4 rounded-md bg-red-600 cursor-pointer hover:bg-red-700 text-white transition-colors font-medium"
-                  >
-                    Remove Selling Ad
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-      </div>
-    );
-  };
-
   const handleMarketplaceClose = () => {
     setOpenMarket(false);
     getMarketPlaceData();
@@ -321,8 +113,8 @@ const ADeedPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 relative">
-      <div className="flex max-w-boundary mx-auto w-full h-full">
-        <div className="max-w-7xl mx-auto px-4 py-8 h-full w-full">
+      <div className="flex max-w-boundary mx-auto w-full min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 py-8 min-h-full w-full">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium mb-6 transition"
@@ -332,309 +124,96 @@ const ADeedPage = () => {
           </button>
 
           <div className="lg:hidden mb-6 w-full flex justify-center">
-            {renderMarketplaceBanner() || (
+            <MarketplaceBanner 
+              marketPlaceData={marketPlaceData} 
+              onRemoveListing={handleRemoveMarketListing}
+            />
+            {(!marketPlaceData || marketPlaceData.filter(m => m.status === "open_to_sale").length === 0) && (
               <DeedActionBar
                 onFractioning={handleFractioning}
                 deedNumber={deed.deedNumber}
                 deedId={deed._id}
                 tokenId={deed.tokenId}
                 actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
-                onTransfer={handleTransfer}
-                onDirectTransfer={handleDirectTransfer}
-                onSaleEscrow={handleSaleEscrow}
+                onTransfer={() => setOpenTransact(true)}
+                onDirectTransfer={() => setOpenDirectTransfer(true)}
+                onSaleEscrow={() => setOpenSaleEscrow(true)}
                 onDownload={handleDownload}
                 onShare={handleShare}
                 onViewBlockchain={handleViewBlockchain}
-                onOpenMarket={handleOpenMarket}
+                onOpenMarket={() => setOpenMarket(true)}
                 numberOfFT={numberOfFT}
                 onRent={() => setOpenGiveRent(true)}
                 onPowerOfAttorney={() => {}}
-                onLastWill={handleLastWill}
+                onLastWill={() => setOpenLastWill(true)}
               />
             )}
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-            <div className="bg-emerald-600 p-6 flex items-center justify-between">
-              <div className="flex items-center gap-3 text-white">
-                <FaFileSignature size={32} />
-                <div>
-                  <h1 className="text-3xl font-bold">Deed #{deed.deedNumber}</h1>
-                  <p className="text-emerald-100 mt-1">
-                    {deed.deedType.deedType} • {deed.district}, {deed.division}
-                  </p>
-                </div>
-              </div>
-              <div className="text-white">
-                Fractional tokens: {numberOfFT}
-              </div>
-            </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
+            <DeedHeader deed={deed} numberOfFT={numberOfFT} />
 
             <div className="p-6">
               <div className="grid lg:grid-cols-4 gap-6">
                 <div className="lg:col-span-3 space-y-6">
-                  <section className="rounded-xl border border-gray-200 p-5 bg-white">
-                    <div className="flex items-center gap-2 mb-4">
-                      <FaUserShield className="text-emerald-700" size={20} />
-                      <h2 className="text-lg font-bold text-gray-900">Owner Information</h2>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
-                      <div>
-                        <div className="text-xs text-gray-500 uppercase font-semibold">Full Name</div>
-                        <div className="font-medium text-gray-800 mt-1">{deed.ownerFullName}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 uppercase font-semibold">NIC</div>
-                        <div className="font-medium text-gray-800 mt-1">{deed.ownerNIC}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 uppercase font-semibold">Phone</div>
-                        <div className="font-medium text-gray-800 mt-1">{deed.ownerPhone}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 uppercase font-semibold">Address</div>
-                        <div className="font-medium text-gray-800 mt-1">{deed.ownerAddress}</div>
-                      </div>
-                    </div>
-                  </section>
-
-                  <section className="rounded-xl border border-gray-200 p-5 bg-white">
-                    <div className="flex items-center gap-2 mb-4">
-                      <FaUserShield className="text-emerald-700" size={20} />
-                      <h2 className="text-lg font-bold text-gray-900">Blockchain Owners</h2>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {deed.owners.map((o, idx) => (
-                        <div key={idx} className="px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 border-2 border-emerald-200 font-semibold">
-                          {shortAddress(o.address)} • {o.share}%
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-
-                  <section className="rounded-xl border border-gray-200 p-5 bg-white">
-                    <div className="flex items-center gap-2 mb-4">
-                      <FaMapMarkedAlt className="text-emerald-700" size={20} />
-                      <h2 className="text-lg font-bold text-gray-900">Land Details</h2>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
-                      <div>
-                        <div className="text-xs text-gray-500 uppercase font-semibold">Title Number</div>
-                        <div className="font-medium text-gray-800 mt-1">{deed.landTitleNumber}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 uppercase font-semibold">Land Address</div>
-                        <div className="font-medium text-gray-800 mt-1">{deed.landAddress}</div>
-                      </div>
-                      {deed.surveyPlanNumber && (
-                        <div className="sm:col-span-2">
-                          <div className="text-xs text-gray-500 uppercase font-semibold">Survey Plan Number</div>
-                          <div className="font-medium text-gray-800 mt-1">{deed.surveyPlanNumber}</div>
-                        </div>
-                      )}
-                      {deed.boundaries && (
-                        <div className="sm:col-span-2">
-                          <div className="text-xs text-gray-500 uppercase font-semibold">Boundaries</div>
-                          <div className="font-medium text-gray-800 mt-1">{deed.boundaries}</div>
-                        </div>
-                      )}
-                    </div>
-                  </section>
-
-                  {plan?.sides && Object.keys(plan.sides).length > 0 && (
-                    <section className="rounded-xl border border-gray-200 p-5 bg-white">
-                      <div className="flex items-center gap-2 mb-4">
-                        <FaRoute className="text-emerald-700" size={20} />
-                        <h2 className="text-lg font-bold text-gray-900">Boundary Deeds</h2>
-                      </div>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <ul className="space-y-3">
-                          {Object.entries(plan.sides).map(([direction, deedNum]) => (
-                            <li key={direction} className="flex items-center justify-between border-b border-gray-200 pb-2 last:border-0">
-                              <span className="font-semibold text-gray-800">{direction}</span>
-                              <span className="text-gray-600">{deedNum || 'N/A'}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </section>
-                  )}
+                  <OwnerInformation deed={deed} />
+                  <BlockchainOwners deed={deed} />
+                  <LandDetails deed={deed} />
+                  <BoundaryDeeds plan={plan} />
                   <TitleHistory tnx={tnx} />
                 </div>
 
-                <aside className="space-y-6">
-                  <div className="rounded-xl border border-gray-200 p-5 bg-white">
-                    <div className="text-xs text-gray-600 uppercase font-semibold">Estimated Value</div>
-                    <div className="text-3xl font-bold text-gray-900 mt-2">
-                      {formatCurrency(latestValue, "LKR")}
-                    </div>
-                    
-                    <div className="mt-5 text-xs text-gray-600 uppercase font-semibold">Area</div>
-                    <div className="text-3xl font-bold text-gray-900 mt-2">
-                      {formatNumber(deed.landArea)} {deed.landSizeUnit || "m²"}
-                    </div>
-                    
-                    <div className="mt-5 text-xs text-gray-600 uppercase font-semibold">Land Type</div>
-                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs mt-2 border-2 ${getLandTypeColor(deed.landType)}`}>
-                      <span className="text-xl">{getLandTypeIcon(deed.landType)}</span>
-                      <span className="capitalize">{deed.landType}</span>
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-gray-200 p-5 bg-white">
-                    <div className="flex items-center gap-2 mb-3">
-                      <FaCalendarAlt className="text-emerald-700" />
-                      <h3 className="font-bold text-gray-900">Registered</h3>
-                    </div>
-                    <div className="text-gray-700 font-medium">
-                      {formatDate(deed.registrationDate)}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {timeAgo(deed.timestamp)}
-                    </div>
-                  </div>
-
-                  {signatures && (
-                    <div className="rounded-xl border border-gray-200 p-5 bg-white">
-                      <h3 className="font-bold text-gray-900 mb-4">Signatures</h3>
-                      <div className="space-y-3">
-                        {[
-                          { label: "Surveyor", value: signatures.surveyor, assigned: deed.surveyAssigned },
-                          { label: "Notary", value: signatures.notary, assigned: deed.notaryAssigned },
-                          { label: "IVSL", value: signatures.ivsl, assigned: deed.ivslAssigned },
-                        ].map((sig) => (
-                          <div key={sig.label} className="bg-gray-50 rounded-lg p-3">
-                            <div className="flex items-center justify-between">
-                              <span className="font-semibold text-gray-800">{sig.label}</span>
-                              {sig.value ? (
-                                <FaCheckCircle className="text-emerald-600" size={20} />
-                              ) : (
-                                <FaTimesCircle className="text-gray-400" size={20} />
-                              )}
-                            </div>
-                            {sig.assigned && (
-                              <div className="text-xs text-gray-500 mt-2">{shortAddress(sig.assigned)}</div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {deed.tokenId !== undefined && (
-                    <div className="rounded-xl border border-gray-200 p-5 bg-white">
-                      <div className="text-xs text-gray-600 uppercase font-semibold">Token ID</div>
-                      <div className="text-2xl font-bold text-gray-900 mt-2">#{deed.tokenId}</div>
-                    </div>
-                  )}
-
-                  {((deed.location && deed.location.length > 0) || (plan?.coordinates && plan.coordinates.length > 0)) && (
-                    <section className="rounded-xl border border-gray-200 p-5 bg-white">
-                      <div className="flex items-center gap-2 mb-4">
-                        <FaMapMarkedAlt className="text-emerald-700" size={20} />
-                        <h3 className="font-bold text-gray-900">Map View</h3>
-                      </div>
-                      <div className="relative group h-fit w-full rounded-lg border border-gray-200 overflow-hidden">
-                        <MapPreview points={plan?.coordinates && plan.coordinates.length > 0 ? plan.coordinates : deed.location} />
-                        <button
-                          onClick={() => setIsMapOpen(true)}
-                          className="absolute top-3 right-3 bg-white px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition flex items-center gap-2 border border-gray-200"
-                        >
-                          <FaExpand size={14} className="text-emerald-700" />
-                          <span className="text-sm font-semibold text-emerald-700">Expand</span>
-                        </button>
-                      </div>
-                    </section>
-                  )}
-
-                  {centerLocation && (
-                    <div className="rounded-xl border border-gray-200 p-5 bg-white">
-                      <div className="flex items-center gap-2 mb-3">
-                        <FaMapMarkedAlt className="text-emerald-700" />
-                        <h3 className="font-bold text-gray-900">Center Location</h3>
-                      </div>
-                      <div className="text-gray-700 font-mono text-sm bg-gray-50 rounded-lg p-3">
-                        <div>Lat: {centerLocation.latitude.toFixed(6)}</div>
-                        <div className="mt-1">Lng: {centerLocation.longitude.toFixed(6)}</div>
-                      </div>
-                    </div>
-                  )}
-                </aside>
+                <DeedSidebar deed={deed} plan={plan} signatures={signatures} />
               </div>
             </div>
           </div>
         </div>
-        <div className="hidden lg:block py-14 min-h-full pt-20 max-w-full mx-auto">
-          {renderMarketplaceBanner() || (
+
+        <div className="hidden lg:block py-14 min-h-full pt-20 max-w-full mx-auto lg:sticky lg:top-24 lg:h-fit">
+          <MarketplaceBanner 
+            marketPlaceData={marketPlaceData} 
+            onRemoveListing={handleRemoveMarketListing}
+          />
+          {(!marketPlaceData || marketPlaceData.filter(m => m.status === "open_to_sale").length === 0) && (
             <DeedActionBar
               onFractioning={handleFractioning}
               deedNumber={deed.deedNumber}
               deedId={deed._id}
               tokenId={deed.tokenId}
               actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
-              onTransfer={handleTransfer}
-              onDirectTransfer={handleDirectTransfer}
-              onSaleEscrow={handleSaleEscrow}
+              onTransfer={() => setOpenTransact(true)}
+              onDirectTransfer={() => setOpenDirectTransfer(true)}
+              onSaleEscrow={() => setOpenSaleEscrow(true)}
               onDownload={handleDownload}
               onShare={handleShare}
               onViewBlockchain={handleViewBlockchain}
-              onOpenMarket={handleOpenMarket}
+              onOpenMarket={() => setOpenMarket(true)}
               numberOfFT={numberOfFT}
               onRent={() => setOpenGiveRent(true)}
               onPowerOfAttorney={() => {}}
-              onLastWill={handleLastWill}
+              onLastWill={() => setOpenLastWill(true)}
             />
           )}
         </div>
       </div>
 
-      <MapPopup
-        points={plan?.coordinates && plan.coordinates.length > 0 ? plan.coordinates : deed.location}
-        isOpen={isMapOpen}
-        onClose={() => setIsMapOpen(false)}
+      <DeedModals
+        deed={deed}
+        openTransact={openTransact}
+        openDirectTransfer={openDirectTransfer}
+        openSaleEscrow={openSaleEscrow}
+        openGiveRent={openGiveRent}
+        openGetRent={openGetRent}
+        openMarket={openMarket}
+        openLastWill={openLastWill}
+        onCloseTransact={() => setOpenTransact(false)}
+        onCloseDirectTransfer={() => setOpenDirectTransfer(false)}
+        onCloseSaleEscrow={() => setOpenSaleEscrow(false)}
+        onCloseGiveRent={() => setOpenGiveRent(false)}
+        onCloseGetRent={() => setOpenGetRent(false)}
+        onCloseMarket={handleMarketplaceClose}
+        onCloseLastWill={() => setOpenLastWill(false)}
       />
-
-      {openTransact && deed.tokenId && (
-        <TransactPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openTransact} onClose={() => setOpenTransact(false)}>
-        </TransactPopup>
-      )}
-      {openDirectTransfer && deed.tokenId && (
-        <DirectTransferPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openDirectTransfer} onClose={() => setOpenDirectTransfer(false)}>
-        </DirectTransferPopup>
-      )}
-      {openSaleEscrow && deed.tokenId && (
-        <SaleEscrowPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openSaleEscrow} onClose={() => setOpenSaleEscrow(false)}>
-        </SaleEscrowPopup>
-      )}
-
-      {openGiveRent && deed.tokenId && (
-        <GiveRentPopup
-          isOpen={openGiveRent}
-          tokenId={deed.tokenId}
-          onClose={() => setOpenGiveRent(false)}
-        />
-      )}
-
-      {openGetRent && deed.tokenId && (
-        <GetRentPopup
-          isOpen={openGetRent}
-          tokenId={deed.tokenId}
-          onClose={() => setOpenGetRent(false)}
-        />
-      )}
-
-      {openMarket && deed.tokenId && (
-        <AddToMarketPopup
-          deed={deed}
-          isOpen={openMarket}
-          tokenId={deed.tokenId}
-          onClose={handleMarketplaceClose}
-        />
-      )}
-
-      {openLastWill && deed.tokenId && deed.deedNumber && (
-        <SetLastWillPopup isOpen={openLastWill} onClose={()=>setOpenLastWill(false)} tokenId={deed.tokenId} deedNumber={deed.deedNumber}/>
-      )}
     </div>
   );
 };
