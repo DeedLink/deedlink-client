@@ -113,8 +113,8 @@ const ADeedPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 relative">
-      <div className="flex max-w-boundary mx-auto w-full h-full">
-        <div className="max-w-7xl mx-auto px-4 py-8 h-full w-full">
+      <div className="flex max-w-boundary mx-auto w-full min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 py-8 min-h-full w-full">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium mb-6 transition"
@@ -169,7 +169,7 @@ const ADeedPage = () => {
           </div>
         </div>
 
-        <div className="hidden lg:block py-14 min-h-full pt-20 max-w-full mx-auto">
+        <div className="hidden lg:block py-14 min-h-full pt-20 max-w-full mx-auto lg:sticky lg:top-24 lg:h-fit">
           <MarketplaceBanner 
             marketPlaceData={marketPlaceData} 
             onRemoveListing={handleRemoveMarketListing}

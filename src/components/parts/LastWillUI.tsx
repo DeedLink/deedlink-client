@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Certificate } from "../../types/certificate";
 import { getCertificatesByTokenId } from "../../api/api";
+import { shortAddress } from "../../utils/format";
 
 type Props = {
   tokenId: number;
@@ -47,7 +48,7 @@ const LastWillUI = ({ tokenId }: Props) => {
             <div key={i} className="border p-2 mt-2 rounded">
               <p><strong>Name:</strong> {p.name}</p>
               <p><strong>Role:</strong> {p.role}</p>
-              <p><strong>Contact:</strong> {p.contact}</p>
+              <p><strong>Contact:</strong> {shortAddress(p.contact)}</p>
             </div>
           ))
         ) : (
