@@ -30,8 +30,8 @@ const LastWillUI = ({ tokenId }: Props) => {
   }, [tokenId]);
 
   if (loading) return <div>Loading certificate...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
   if (!certificate) return <div>No certificate found</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
 
   return (
     <div className="p-4 text-black">

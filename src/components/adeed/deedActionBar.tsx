@@ -20,6 +20,7 @@ interface DeedActionBarProps {
   tokenId?: number;
   deedId?: string;
   numberOfFT: number;
+  certificateExists?: boolean;
   actionHappened?: boolean;
 
   onTransfer?: () => void;
@@ -33,6 +34,7 @@ interface DeedActionBarProps {
   onPowerOfAttorney: () => void;
   onOpenMarket: () => void;
   onLastWill: () => void;
+  onCancelCertificate?: () => void;
 }
 
 const DeedActionBar = ({
@@ -52,6 +54,8 @@ const DeedActionBar = ({
   onOpenMarket,
   numberOfFT,
   onLastWill,
+  certificateExists,
+  onCancelCertificate,
 }: DeedActionBarProps) => {
   const [state, setState] = useState<"pending" | "completed" | "failed">("completed");
   const [titles, setTitles] = useState<any[]>([]);
@@ -77,9 +81,7 @@ const DeedActionBar = ({
           isLocked ? "opacity-50 blur-[1px] pointer-events-none" : ""
         }`}
       >
-        <h3 className="font-semibold text-gray-900 mb-6 text-base">
-          Quick Actions
-        </h3>
+        <h3 className="font-semibold text-gray-900 mb-6 text-base">Quick Actions</h3>
 
         <div className="flex flex-col gap-2">
           <ActionButton
@@ -94,128 +96,51 @@ const DeedActionBar = ({
             disabled={numberOfFT !== 0}
           />
 
-          {onTransfer && (
-            <ActionButton
-              icon={<FaExchangeAlt size={16} />}
-              label="Transfer the Deed"
-              onClick={onTransfer}
+          {onTransfer && 
+            <ActionButton 
+              icon={<FaExchangeAlt size={16} />} 
+              label="Transfer the Deed" 
+              onClick={onTransfer} 
               color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
             />
-          )}
-
-          {onDirectTransfer && (
-            <ActionButton
-              icon={<FaExchangeAlt size={16} />}
-              label="Gift Your Deed"
-              onClick={onDirectTransfer}
-              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
+          }
+          {onDirectTransfer && 
+            <ActionButton 
+              icon={<FaExchangeAlt size={16} />} 
+              label="Gift Your Deed" 
+              onClick={onDirectTransfer} 
+              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" 
             />
-          )}
+          }
+          {onSaleEscrow && <ActionButton icon={<FaExchangeAlt size={16} />} label="Sell via Escrow" onClick={onSaleEscrow} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
+          {onRent && <ActionButton icon={<FaHome size={16} />} label="Rent the Deed" onClick={onRent} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
+          {onPowerOfAttorney && <ActionButton icon={<FaKey size={16} />} label="Grant Power of Attorney" onClick={onPowerOfAttorney} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
+          {onOpenMarket && <ActionButton icon={<FaShop size={16} />} label="Add to Open Market" onClick={onOpenMarket} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
 
-          {onSaleEscrow && (
-            <ActionButton
-              icon={<FaExchangeAlt size={16} />}
-              label="Sell via Escrow"
-              onClick={onSaleEscrow}
-              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
-            />
-          )}
+          {certificateExists
+            ? onCancelCertificate && <ActionButton icon={<FaGifts size={16} />} label="Cancel Certificate" onClick={onCancelCertificate} color="bg-red-600 hover:bg-red-700 text-white border-red-600" />
+            : onLastWill && <ActionButton icon={<FaGifts size={16} />} label="Create Last Will" onClick={onLastWill} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />
+          }
 
-          {onRent && (
-            <ActionButton
-              icon={<FaHome size={16} />}
-              label="Rent the Deed"
-              onClick={onRent}
-              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
-            />
-          )}
-
-          {onPowerOfAttorney && (
-            <ActionButton
-              icon={<FaKey size={16} />}
-              label="Grant Power of Attorney"
-              onClick={onPowerOfAttorney}
-              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
-            />
-          )}
-
-          {onOpenMarket && (
-            <ActionButton
-              icon={<FaShop size={16} />}
-              label="Add to Open Market"
-              onClick={onOpenMarket}
-              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
-            />
-          )}
-
-          {onLastWill && (
-            <ActionButton
-              icon={<FaGifts size={16} />}
-              label="Create Last Will"
-              onClick={onLastWill}
-              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
-            />
-          )}
-
-          {onDownload && (
-            <ActionButton
-              icon={<FaFileDownload size={16} />}
-              label="Download PDF"
-              onClick={onDownload}
-              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
-            />
-          )}
-
-          {onShare && (
-            <ActionButton
-              icon={<FaShareAlt size={16} />}
-              label="Share Deed"
-              onClick={onShare}
-              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
-            />
-          )}
-
-          {tokenId !== undefined && onViewBlockchain && (
-            <ActionButton
-              icon={<FaEye size={16} />}
-              label="View on Blockchain"
-              onClick={onViewBlockchain}
-              color="bg-gray-50 hover:bg-gray-100 text-gray-600 border-gray-200"
-            />
-          )}
+          {onDownload && <ActionButton icon={<FaFileDownload size={16} />} label="Download PDF" onClick={onDownload} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
+          {onShare && <ActionButton icon={<FaShareAlt size={16} />} label="Share Deed" onClick={onShare} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
+          {tokenId !== undefined && onViewBlockchain && <ActionButton icon={<FaEye size={16} />} label="View on Blockchain" onClick={onViewBlockchain} color="bg-gray-50 hover:bg-gray-100 text-gray-600 border-gray-200" />}
         </div>
 
-        {tokenId && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <RentUI tokenId={tokenId} />
-          </div>
-        )}
-
-        {tokenId && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <LastWillUI tokenId={tokenId} />
-          </div>
-        )}
+        {tokenId && <div className="mt-6 pt-6 border-t border-gray-200"><RentUI tokenId={tokenId} /></div>}
+        {tokenId && <div className="mt-6 pt-6 border-t border-gray-200"><LastWillUI tokenId={tokenId} /></div>}
 
         <div className="mt-6 pt-6 border-t border-gray-200">
-          <div className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-2">
-            Deed Reference
-          </div>
-          <div className="font-mono text-sm text-gray-700 bg-gray-50 rounded px-3 py-2 break-all border border-gray-200">
-            {deedNumber}
-          </div>
+          <div className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-2">Deed Reference</div>
+          <div className="font-mono text-sm text-gray-700 bg-gray-50 rounded px-3 py-2 break-all border border-gray-200">{deedNumber}</div>
         </div>
       </div>
 
       {isLocked && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-lg z-10">
           <FaLock size={32} className="text-gray-400 mb-3" />
-          <span className="text-gray-600 font-medium text-sm">
-            Actions Locked
-          </span>
-          <span className="text-gray-500 text-xs mt-1">
-            Pending Transaction
-          </span>
+          <span className="text-gray-600 font-medium text-sm">Actions Locked</span>
+          <span className="text-gray-500 text-xs mt-1">Pending Transaction</span>
         </div>
       )}
     </div>

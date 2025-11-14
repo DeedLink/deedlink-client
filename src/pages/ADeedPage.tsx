@@ -6,7 +6,7 @@ import { useLoader } from "../contexts/LoaderContext";
 import { createFractionalToken } from "../web3.0/contractService";
 import DeedActionBar from "../components/adeed/deedActionBar";
 import TitleHistory from "../components/parts/TitleHistory";
-import { deleteMarketPlacesById } from "../api/api";
+import { deleteCertificate, deleteMarketPlacesById, getCertificatesByTokenId } from "../api/api";
 import { useDeedData } from "../hooks/useDeedData";
 import MarketplaceBanner from "../components/adeed/ui/MarketplaceBanner";
 import DeedHeader from "../components/adeed/ui/DeedHeader";
@@ -16,6 +16,7 @@ import LandDetails from "../components/adeed/ui/LandDetails";
 import BoundaryDeeds from "../components/adeed/ui/BoundaryDeeds";
 import DeedSidebar from "../components/adeed/ui/DeedSidebar";
 import DeedModals from "../components/adeed/ui/DeedModals";
+import type { Certificate } from "../types/certificate";
 
 const ADeedPage = () => {
   const { deedNumber } = useParams();
@@ -40,14 +41,28 @@ const ADeedPage = () => {
   const [openGetRent, setOpenGetRent] = useState(false);
   const [openMarket, setOpenMarket] = useState(false);
   const [openLastWill, setOpenLastWill] = useState(false);
+  const [certificate, setCertificate] = useState<Certificate | null>(null);
 
   useEffect(() => {
-    if (openTransact || openDirectTransfer || openSaleEscrow || openGiveRent || openGetRent || openMarket) {
+    const loadCertificate = async () => {
+      if (!deed?.tokenId) return;
+      try {
+        const res = await getCertificatesByTokenId(deed.tokenId);
+        setCertificate(res);
+      } catch {
+        setCertificate(null);
+      }
+    };
+    loadCertificate();
+  }, [deed?.tokenId]);
+
+  useEffect(() => {
+    if (openTransact || openDirectTransfer || openSaleEscrow || openGiveRent || openGetRent || openMarket || openLastWill) {
       document.body.classList.add("no-scroll");
     } else {
       document.body.classList.remove("no-scroll");
     }
-  }, [openTransact, openDirectTransfer, openSaleEscrow, openGiveRent, openGetRent, openMarket]);
+  }, [openTransact, openDirectTransfer, openSaleEscrow, openGiveRent, openGetRent, openMarket, openLastWill]);
 
   const handleFractioning = async () => {
     if (deed?.tokenId) {
@@ -101,6 +116,22 @@ const ADeedPage = () => {
     getMarketPlaceData();
   };
 
+  const handleCancelLastWill = async () => {
+    if (!certificate) return;
+    try {
+      showLoader();
+      await deleteCertificate(certificate._id);
+      setCertificate(null);
+      showToast("Last Will cancelled successfully", "success");
+      setOpenLastWill(false);
+    } catch (error) {
+      console.error("Error cancelling last will:", error);
+      showToast("Failed to cancel last will", "error");
+    } finally {
+      hideLoader();
+    }
+  };
+
   if (!deed) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -145,6 +176,8 @@ const ADeedPage = () => {
                 numberOfFT={numberOfFT}
                 onRent={() => setOpenGiveRent(true)}
                 onPowerOfAttorney={() => {}}
+                certificateExists={!!certificate}
+                onCancelCertificate={handleCancelLastWill}
                 onLastWill={() => setOpenLastWill(true)}
               />
             )}
@@ -191,6 +224,8 @@ const ADeedPage = () => {
               numberOfFT={numberOfFT}
               onRent={() => setOpenGiveRent(true)}
               onPowerOfAttorney={() => {}}
+              certificateExists={!!certificate}
+              onCancelCertificate={handleCancelLastWill}
               onLastWill={() => setOpenLastWill(true)}
             />
           )}
