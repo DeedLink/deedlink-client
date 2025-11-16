@@ -136,12 +136,15 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
     setLoading(true);
     try {
       const result = await finalizeEscrow(escrowAddress);
+      console.log("What you are looking for: ",result);
 
       if (result.success) {
-        await transactionStatus(
+        const res=await transactionStatus(
           escrowAddress,
           "completed"
         );
+
+        console.log("Transaction status updated in DB:", res);
 
         try {
           const updateOwner = await updateFullOwnerAddress(
