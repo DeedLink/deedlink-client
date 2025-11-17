@@ -128,19 +128,118 @@ export async function getNFTOwner(tokenId: number) {
   return await nft.ownerOf(tokenId);
 }
 
-export async function createFractionalToken(nftId: number, name: string, symbol: string, supply: number) {
-  const factory = await getFactoryContract();
-  const propertyNFT = await getPropertyNFTContract();
-  const tx = await factory.createFractionToken(nftId, name, symbol, supply, propertyNFT.getAddress());
-  const receipt = await tx.wait();
+/**
+ * Create fractional tokens for a property NFT
+ * CRITICAL: The NFT must be transferred to the factory contract BEFORE calling this
+ */
+export async function createFractionalToken(
+  nftId: number, 
+  name: string, 
+  symbol: string, 
+  supply: number
+) {
+  try {
+    const factory = await getFactoryContract();
+    const propertyNFT = await getPropertyNFTContract();
+    const signer = await getSigner();
+    const userAddress = await signer.getAddress();
 
-  const event = receipt.events?.find((e: any) => e.event === "FractionTokenCreated");
-  return event?.args?.tokenAddress;
+    console.log("=== Starting Fractionalization Process ===");
+    console.log("NFT ID:", nftId);
+    console.log("User Address:", userAddress);
+    console.log("Factory Address:", FACTORY_ADDRESS);
+    console.log("Property NFT Address:", PROPERTY_NFT_ADDRESS);
+
+    // Step 1: Verify ownership
+    console.log("\n1: Verifying NFT ownership...");
+    const owner = await propertyNFT.ownerOf(nftId);
+    console.log("Current owner:", owner);
+    
+    if (owner.toLowerCase() !== userAddress.toLowerCase()) {
+      throw new Error(`You don't own this NFT. Owner: ${owner}`);
+    }
+
+    // Step 2: Check if already fractionalized
+    console.log("\n2: Checking if already fractionalized...");
+    const existingToken = await factory.propertyToFractionToken(nftId);
+    if (existingToken !== "0x0000000000000000000000000000000000000000") {
+      throw new Error(`Property ${nftId} is already fractionalized at ${existingToken}`);
+    }
+
+    // Step 3: Approve factory to transfer the NFT
+    console.log("\n3: Approving factory to transfer NFT...");
+    const currentApproval = await propertyNFT.getApproved(nftId);
+    console.log("Current approval:", currentApproval);
+    
+    if (currentApproval.toLowerCase() !== FACTORY_ADDRESS.toLowerCase()) {
+      console.log("Setting approval for factory...");
+      const approveTx = await propertyNFT.approve(FACTORY_ADDRESS, nftId);
+      const approveReceipt = await approveTx.wait();
+      console.log("Approval granted:", approveReceipt.hash);
+    } else {
+      console.log("Factory already approved");
+    }
+
+    // Step 4: Create fractional tokens (this will transfer the NFT)
+    console.log("\n4: Creating fractional tokens...");
+    console.log("Parameters:", { nftId, name, symbol, supply });
+    
+    const tx = await factory.createFractionToken(
+      nftId, 
+      name, 
+      symbol, 
+      supply, 
+      PROPERTY_NFT_ADDRESS
+    );
+    
+    console.log("Transaction submitted:", tx.hash);
+    const receipt = await tx.wait();
+    console.log("Transaction confirmed:", receipt.hash);
+
+    // Step 5: Get the created token address
+    console.log("\n5: Getting fractional token address...");
+    const tokenAddress = await factory.propertyToFractionToken(nftId);
+    console.log("Fractional token created at:", tokenAddress);
+
+    // Step 6: Verify NFT transfer
+    console.log("\n6: Verifying NFT transfer to factory...");
+    const newOwner = await propertyNFT.ownerOf(nftId);
+    console.log("New NFT owner:", newOwner);
+    console.log("Factory address:", FACTORY_ADDRESS);
+    
+    if (newOwner.toLowerCase() !== FACTORY_ADDRESS.toLowerCase()) {
+      console.warn("Warning: NFT was not transferred to factory!");
+    } else {
+      console.log("NFT successfully transferred to factory");
+    }
+
+    console.log("\n=== Fractionalization Complete ===");
+    
+    return {
+      success: true,
+      tokenAddress,
+      txHash: receipt.hash ?? receipt.transactionHash,
+      message: `Property fractionalized successfully. Token address: ${tokenAddress}`
+    };
+
+  } catch (error: any) {
+    console.error("\nFractionalization failed:", error);
+    
+    // Later I added this specific error handling for NFT transfer failure
+    if (error.message.includes("0x177e802f")) {
+      throw new Error(
+        "NFT transfer to factory failed. The factory contract doesn't own the NFT. " +
+        "This usually means the approval wasn't successful or the contract has insufficient permissions."
+      );
+    }
+    
+    throw error;
+  }
 }
 
 export async function getFTBalance(tokenAddress: string, account: string) {
   const fft = await getFactoryContract();
-  return await fft.getFractionBalance(tokenAddress,account);
+  return await fft.getFractionBalance(tokenAddress, account);
 }
 
 export async function getFractionalTokenAddress(nftId: number) {
