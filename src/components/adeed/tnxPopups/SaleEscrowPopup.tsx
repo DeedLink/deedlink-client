@@ -98,7 +98,7 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
         setEscrowAddress(result.escrowAddress);
     
         alert(
-          `✅ Escrow Created!\n\n` +
+          `Escrow Created!\n\n` +
           `Escrow Address: ${result.escrowAddress}\n\n` +
           `Next Steps:\n` +
           `1. You deposit NFT to escrow\n` +
@@ -146,7 +146,7 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
       }
     } catch (error: any) {
       console.error("Sale creation failed:", error);
-      alert(`❌ Failed to create sale: ${error.message}`);
+      alert(`Failed to create sale: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -161,7 +161,7 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
       
       if (result.success) {
         alert(
-          `✅ NFT Deposited to Escrow!\n\n` +
+          `NFT Deposited to Escrow!\n\n` +
           `Transaction: ${result.txHash}\n\n` +
           `Waiting for buyer to deposit payment and finalize.`
         );
@@ -171,7 +171,7 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
       }
     } catch (error: any) {
       console.error("NFT deposit failed:", error);
-      alert(`❌ Failed to deposit NFT: ${error.message}`);
+      alert(`Failed to deposit NFT: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -211,7 +211,7 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
             <>
               <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                 <p className="text-sm text-green-800">
-                  💰 Secure sale with escrow protection. Stamp fees are automatically collected.
+                  Secure sale with escrow protection. Stamp fees are automatically collected.
                 </p>
               </div>
 
