@@ -6,7 +6,9 @@ import { useToast } from "../../contexts/ToastContext";
 import { useLoader } from "../../contexts/LoaderContext";
 import { useWallet } from "../../contexts/WalletContext";
 import { buyNFT, buyFractionalTokens, getListingDetails } from "../../web3.0/marketService";
-import { updateMarketPlace } from "../../api/api";
+import { createTransaction, updateMarketPlace, updateFullOwnerAddress } from "../../api/api";
+import { getNFTOwner } from "../../web3.0/contractService";
+import { useAlert } from "../../contexts/AlertContext";
 
 interface BuyMarketplacePopupProps {
   marketplace: Marketplace;
@@ -26,6 +28,7 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
   const { showToast } = useToast();
   const { showLoader, hideLoader } = useLoader();
   const { account } = useWallet();
+  const { showAlert } = useAlert();
   const [agreed, setAgreed] = useState(false);
   const [listingType, setListingType] = useState<"NFT" | "FRACTIONAL" | null>(null);
   const [loading, setLoading] = useState(true);
@@ -109,11 +112,52 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
       }
 
       if (result.success) {
+        try {
+          await createTransaction({
+            deedId: deed._id,
+            from: marketplace.from,
+            to: account as string,
+            amount: marketplace.amount,
+            share: marketplace.share,
+            type: listingType === "NFT" ? "sale_transfer" : "direct_transfer",
+            hash: result.txHash,
+            description: listingType === "NFT" 
+              ? `Purchased full property NFT #${marketplace.tokenId}` 
+              : `Purchased ${marketplace.share}% fractional tokens`,
+            status: "completed"
+          });
+          console.log("Transaction logged successfully");
+        } catch (txError) {
+          console.error("Failed to log transaction:", txError);
+        }
+
         if (marketplace._id) {
           await updateMarketPlace(marketplace._id, {
             to: account,
             status: "sale_completed"
           });
+        }
+
+        if (listingType === "NFT") {
+          try {
+            await updateFullOwnerAddress(
+              Number(marketplace.tokenId),
+              account.toLowerCase()
+            );
+            console.log("Owner address updated in database");
+
+            const newOwner = await getNFTOwner(Number(marketplace.tokenId));
+            if (newOwner.toLowerCase() !== account?.toLowerCase()) {
+              showAlert({
+                type: "warning",
+                title: "Transfer May Have Failed",
+                message: "Payment was received but NFT ownership may not have transferred. Please check blockchain explorer.",
+                confirmText: "OK"
+              });
+            }
+          } catch (ownerError) {
+            console.error("Failed to update/verify owner:", ownerError);
+          }
         }
 
         showToast("Purchase successful!", "success");
