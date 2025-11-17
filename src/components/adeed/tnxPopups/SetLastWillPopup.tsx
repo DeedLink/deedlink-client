@@ -6,7 +6,7 @@ import { createCertificate, getDeedByDeedNumber, getUsers } from "../../../api/a
 import { useWallet } from "../../../contexts/WalletContext";
 import { shortAddress } from "../../../utils/format";
 import { IoCheckmarkCircle, IoSearchOutline } from "react-icons/io5";
-import { setLastWill } from "../../../web3.0/lastWillIntegration";
+//import { setLastWill } from "../../../web3.0/lastWillIntegration";
 
 interface SetLastWillPopupProps {
   isOpen: boolean;
@@ -114,14 +114,14 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
 
     setIsSubmitting(true);
     try {
-      const res = await setLastWill(
-        tokenId,
-        beneficiaryAddress,
-        notaryAddress,
-        estimatedValue
-      );
+      // const res = await setLastWill(
+      //   tokenId,
+      //   beneficiaryAddress,
+      //   notaryAddress,
+      //   estimatedValue
+      // );
 
-      console.log("Last Will set on blockchain:", res);
+      //console.log("Last Will set on blockchain:", res);
 
       const payload = {
         type: "last_will",
