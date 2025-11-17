@@ -103,8 +103,8 @@ const DeedActionBar = ({
             onClick={onFractioning}
             color={
               numberOfFT !== 0
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
-                : "bg-gray-800 hover:bg-gray-900 text-white border-gray-800"
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200 hidden"
+                : "bg-gray-800 hover:bg-gray-900 text-white border-gray-800 hidden"
             }
             disabled={numberOfFT !== 0}
           />
@@ -114,7 +114,7 @@ const DeedActionBar = ({
               icon={<FaExchangeAlt size={16} />} 
               label="Transfer the Deed" 
               onClick={onTransfer} 
-              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
+              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hidden"
             />
           }
           {onDirectTransfer && 
@@ -127,7 +127,7 @@ const DeedActionBar = ({
           }
           {onSaleEscrow && <ActionButton icon={<FaExchangeAlt size={16} />} label="Sell via Escrow" onClick={onSaleEscrow} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
           {onRent && <ActionButton icon={<FaHome size={16} />} label="Rent the Deed" onClick={onRent} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
-          {onPowerOfAttorney && <ActionButton icon={<FaKey size={16} />} label="Grant Power of Attorney" onClick={onPowerOfAttorney} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
+          {onPowerOfAttorney && <ActionButton icon={<FaKey size={16} />} label="Grant Power of Attorney" onClick={onPowerOfAttorney} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hidden" />}
           {onOpenMarket && <ActionButton icon={<FaShop size={16} />} label="Add to Open Market" onClick={onOpenMarket} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
 
           {certificateExists
@@ -136,8 +136,8 @@ const DeedActionBar = ({
           }
 
           {onDownload && <ActionButton icon={<FaFileDownload size={16} />} label="Download PDF" onClick={onDownload} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
-          {onShare && <ActionButton icon={<FaShareAlt size={16} />} label="Share Deed" onClick={onShare} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
-          {tokenId !== undefined && onViewBlockchain && <ActionButton icon={<FaEye size={16} />} label="View on Blockchain" onClick={onViewBlockchain} color="bg-gray-50 hover:bg-gray-100 text-gray-600 border-gray-200" />}
+          {onShare && <ActionButton icon={<FaShareAlt size={16} />} label="Share Deed" onClick={onShare} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hidden" />}
+          {tokenId !== undefined && onViewBlockchain && <ActionButton icon={<FaEye size={16} />} label="View on Blockchain" onClick={onViewBlockchain} color="bg-gray-50 hover:bg-gray-100 text-gray-600 border-gray-200 hidden" />}
         </div>
 
         {tokenId && <div className="mt-6 pt-6 border-t border-gray-200"><RentUI tokenId={tokenId} /></div>}
