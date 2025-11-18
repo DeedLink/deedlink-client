@@ -6,6 +6,7 @@ import { FaStore } from "react-icons/fa";
 import { completeFullOwnershipTransfer, sellerDepositNFT, getPaymentBreakdown } from "../../../web3.0/escrowIntegration";
 import { useWallet } from "../../../contexts/WalletContext";
 import { useQR } from "../../../contexts/QRContext";
+import { useAlert } from "../../../contexts/AlertContext";
 import { Encryting } from "../../../utils/encryption";
 
 interface SaleEscrowPopupProps {
@@ -29,6 +30,7 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
   const [loading, setLoading] = useState(false);
   const [escrowAddress, setEscrowAddress] = useState<string | null>(null);
   const { account } = useWallet();
+  const { showAlert } = useAlert();
   const [txHash, setTxHash] = useState("");
   const { showQRPopup } = useQR();
 
@@ -70,86 +72,115 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
   const breakdown = salePrice && parseFloat(salePrice) > 0 ? getPaymentBreakdown(salePrice) : null;
 
   const handleCreateSale = async () => {
-    if (!selectedWallet) return alert("Please select a buyer!");
-    if (!salePrice || parseFloat(salePrice) <= 0) return alert("Please enter a valid sale price!");
-
-    const confirmed = confirm(
-      `Create sale for property #${tokenId}?\n\n` +
-      `Buyer: ${selectedWallet}\n` +
-      `Total Price: ${breakdown?.totalPrice} ETH\n\n` +
-      `Payment Breakdown:\n` +
-      `- Stamp Fee (${breakdown?.stampFeePercentage}%): ${breakdown?.stampFee} ETH → Admin\n` +
-      `- You Receive: ${breakdown?.sellerAmount} ETH\n\n` +
-      `This will create an escrow. You'll need to deposit the NFT next.`
-    );
-    if (!confirmed) return;
-
-    setLoading(true);
-    try {
-      const result = await completeFullOwnershipTransfer(
-        tokenId,
-        account as string,
-        selectedWallet,
-        salePrice,
-        account as string
-      );
-
-      if (result.success && result.escrowAddress) {
-        setEscrowAddress(result.escrowAddress);
-    
-        alert(
-          `Escrow Created!\n\n` +
-          `Escrow Address: ${result.escrowAddress}\n\n` +
-          `Next Steps:\n` +
-          `1. You deposit NFT to escrow\n` +
-          `2. Buyer deposits ${breakdown?.sellerAmount} ETH\n` +
-          `3. Buyer finalizes transfer\n\n` +
-          `Click "Deposit NFT" button to continue.`
-        );
-        if (result.success && result.escrowAddress) {
-        setEscrowAddress(result.escrowAddress);
-        setTxHash(result.stampFeeTxHash || "");
-
-        // sendNotification(
-        //   Encryting({
-        //     deedId: deedId,
-        //     escrowAddress: escrowAddress || "",
-        //     seller: account || "",
-        //     hash: txHash,
-        //   })
-        // );
-
-        if(result.escrowAddress && breakdown?.sellerAmount){
-          //const init_tnx = await createTransaction()
-          await createTransaction({
-            deedId,
-            from: account as string,
-            to: selectedWallet,
-            amount: parseFloat(salePrice),
-            share: 100,
-            type: "escrow_sale",
-            blockchain_identification: result.escrowAddress,
-            hash: result.stampFeeTxHash,
-            description: `Escrow Sale - ${result.stampFeeTxHash || "no_hash"}`
-          })
-          
-          console.log("Escrow: ",Encryting({
-            deedId: deedId,
-            escrowAddress: result.escrowAddress,
-            seller: account || "",
-            hash: txHash,
-          }))
-        }
-      }
-      } else {
-        throw new Error(result.error || "Failed to create escrow");
-      }
-    } catch (error: any) {
-      console.error("Sale creation failed:", error);
-      alert(`Failed to create sale: ${error.message}`);
-    } finally {
-      setLoading(false);
+    if (!selectedWallet) {
+      showAlert({
+        type: "warning",
+        title: "Please select a buyer",
+        message: "Choose a buyer wallet from the list above"
+      });
+      return;
     }
+    if (!salePrice || parseFloat(salePrice) <= 0) {
+      showAlert({
+        type: "warning",
+        title: "Invalid sale price",
+        message: "Please enter a valid sale price greater than zero"
+      });
+      return;
+    }
+
+    showAlert({
+      type: "warning",
+      title: "Create Sale Escrow",
+      htmlContent: (
+        <div className="space-y-3">
+          <p><strong>Property #:</strong> {tokenId}</p>
+          <p><strong>Buyer:</strong> <span className="font-mono text-sm">{selectedWallet}</span></p>
+          <p><strong>Total Price:</strong> {breakdown?.totalPrice} ETH</p>
+          <div className="bg-gray-50 p-3 rounded space-y-2 mt-2">
+            <p className="font-semibold text-sm">Payment Breakdown:</p>
+            <ul className="space-y-1 text-sm">
+              <li>• Stamp Fee ({breakdown?.stampFeePercentage}%): {breakdown?.stampFee} ETH → Admin</li>
+              <li>• You Receive: {breakdown?.sellerAmount} ETH</li>
+            </ul>
+          </div>
+          <p className="text-sm text-gray-600 mt-2">This will create an escrow. You'll need to deposit the NFT next.</p>
+        </div>
+      ),
+      confirmText: "Create Sale",
+      cancelText: "Cancel",
+      onConfirm: async () => {
+        setLoading(true);
+        try {
+          const result = await completeFullOwnershipTransfer(
+            tokenId,
+            account as string,
+            selectedWallet,
+            salePrice,
+            account as string
+          );
+
+          if (result.success && result.escrowAddress) {
+            setEscrowAddress(result.escrowAddress);
+            setTxHash(result.stampFeeTxHash || "");
+
+            showAlert({
+              type: "success",
+              title: "Escrow Created!",
+              htmlContent: (
+                <div className="space-y-2">
+                  <p className="text-gray-700">Escrow successfully created!</p>
+                  <p className="text-sm"><strong>Address:</strong> <span className="font-mono">{result.escrowAddress}</span></p>
+                  <div className="bg-blue-50 p-3 rounded text-sm space-y-1 mt-2">
+                    <p className="font-semibold">Next Steps:</p>
+                    <ol className="list-decimal list-inside space-y-1">
+                      <li>You deposit NFT to escrow</li>
+                      <li>Buyer deposits {breakdown?.sellerAmount} ETH</li>
+                      <li>Buyer finalizes transfer</li>
+                    </ol>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-2">Click "Deposit NFT" button to continue.</p>
+                </div>
+              ),
+              confirmText: "OK"
+            });
+
+            if(result.escrowAddress && breakdown?.sellerAmount){
+              await createTransaction({
+                deedId,
+                from: account as string,
+                to: selectedWallet,
+                amount: parseFloat(salePrice),
+                share: 100,
+                type: "escrow_sale",
+                blockchain_identification: result.escrowAddress,
+                hash: result.stampFeeTxHash,
+                description: `Escrow Sale - ${result.stampFeeTxHash || "no_hash"}`
+              })
+              
+              console.log("Escrow: ",Encryting({
+                deedId: deedId,
+                escrowAddress: result.escrowAddress,
+                seller: account || "",
+                hash: result.stampFeeTxHash,
+              }))
+            }
+          } else {
+            throw new Error(result.error || "Failed to create escrow");
+          }
+        } catch (error: any) {
+          console.error("Sale creation failed:", error);
+          showAlert({
+            type: "error",
+            title: "Failed to Create Sale",
+            message: error.message || "An error occurred while creating the sale",
+            confirmText: "OK"
+          });
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
 
   const handleDepositNFT = async () => {
@@ -160,18 +191,30 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
       const result = await sellerDepositNFT(escrowAddress, tokenId);
       
       if (result.success) {
-        alert(
-          `NFT Deposited to Escrow!\n\n` +
-          `Transaction: ${result.txHash}\n\n` +
-          `Waiting for buyer to deposit payment and finalize.`
-        );
-        onClose();
+        showAlert({
+          type: "success",
+          title: "NFT Deposited to Escrow",
+          htmlContent: (
+            <div className="space-y-2">
+              <p className="text-gray-700">NFT has been successfully deposited to escrow.</p>
+              <p className="text-sm text-gray-600">Waiting for buyer to deposit payment and finalize.</p>
+              <p className="text-xs text-gray-600"><strong>Transaction:</strong> {result.txHash}</p>
+            </div>
+          ),
+          confirmText: "OK",
+          onConfirm: onClose
+        });
       } else {
         throw new Error(result.error);
       }
     } catch (error: any) {
       console.error("NFT deposit failed:", error);
-      alert(`Failed to deposit NFT: ${error.message}`);
+      showAlert({
+        type: "error",
+        title: "Failed to Deposit NFT",
+        message: error.message || "An error occurred while depositing the NFT",
+        confirmText: "OK"
+      });
     } finally {
       setLoading(false);
     }

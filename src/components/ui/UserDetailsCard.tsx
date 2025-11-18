@@ -56,7 +56,12 @@ const UserDetailsCard = ({ user }: any) => {
       });
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.message || "Upload failed");
+      showAlert({
+        type: "error",
+        title: "Upload Failed",
+        message: err.response?.data?.message || "Failed to upload profile picture",
+        confirmText: "OK"
+      });
     } finally {
       setIsUploading(false);
     }
