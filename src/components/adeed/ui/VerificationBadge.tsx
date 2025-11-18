@@ -29,11 +29,22 @@ const VerificationBadge: React.FC<VerificationBadgeProps> = ({
       return;
     }
 
+    if (Array.isArray(onChainData) && Array.isArray(offChainData)) {
+      if (onChainData.length === 0 && offChainData.length === 0) {
+        setStatus("verified");
+        return;
+      }
+    }
+
     try {
+      console.log(`[VERIFICATION] ${label}: Comparing on-chain vs off-chain data...`);
+      console.log(`[VERIFICATION] ${label}: On-chain data:`, onChainData);
+      console.log(`[VERIFICATION] ${label}: Off-chain data:`, offChainData);
       const matches = compareFn(onChainData, offChainData);
+      console.log(`[VERIFICATION] ${label}: Comparison result: ${matches ? "VERIFIED ✓" : "MISMATCH ✗"}`);
       setStatus(matches ? "verified" : "mismatch");
     } catch (error) {
-      console.error("Verification error:", error);
+      console.error(`[VERIFICATION] ${label}: Verification error:`, error);
       setStatus("error");
     }
   }, [onChainData, offChainData, compareFn]);
@@ -54,13 +65,13 @@ const VerificationBadge: React.FC<VerificationBadgeProps> = ({
   const getText = () => {
     switch (status) {
       case "loading":
-        return "Verifying...";
+        return "Checking...";
       case "verified":
         return "Verified";
       case "mismatch":
         return "Mismatch";
       case "error":
-        return "Error";
+        return "Unable to Verify";
     }
   };
 
