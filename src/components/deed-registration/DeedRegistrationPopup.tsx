@@ -5,6 +5,7 @@ import { type User } from "../../types/types";
 import { LandUnitSelectItems } from "../ui/LandUnitSelectItems";
 import { searchUsers } from "../../api/api";
 import { reg_mintNFT } from "../../offonchaincalls/calls";
+import { LAND_TYPES } from "../../constants/const";
 
 const LandRegistrationPopup = ({
   isOpen,
@@ -27,7 +28,7 @@ const LandRegistrationPopup = ({
     landAddress: "",
     landArea: "",
     landSizeUnit: "Perches",
-    landType: "",
+    landType: "Residential",
     surveyPlanNumber: "",
     propertyValue: 0,
     boundaries: "",
@@ -249,13 +250,18 @@ const LandRegistrationPopup = ({
                     formData={formData}
                     handleChange={handleChange}
                   />
-                  <input
+                  <select
                     name="landType"
-                    placeholder="Land Type (e.g. Residential)"
                     value={formData.landType}
                     onChange={handleChange}
-                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 sm:col-span-2"
-                  />
+                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 sm:col-span-2 bg-white"
+                  >
+                    {LAND_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
                   <input
                     name="surveyPlanNumber"
                     placeholder="Survey Plan Number"

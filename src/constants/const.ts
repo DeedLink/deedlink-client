@@ -1,5 +1,50 @@
 import type { Deed, RequestRegisteringDeed, Token } from "../types/types";
 
+export const LAND_TYPES = [
+  "Paddy land",
+  "Chena",
+  "Highland",
+  "Residential",
+  "Commercial",
+  "Industrial",
+  "Tea plantation",
+  "Rubber plantation",
+  "Coconut plantation",
+  "Garden/Plantation",
+  "Forest/Reserve",
+  "Wetland/Marsh",
+  "State land",
+  "Mixed use",
+  "Other"
+];
+
+export const DEED_TYPES = [
+  "Power of Attorney",
+  "Gift",
+  "Sale",
+  "Exchange",
+  "Lease",
+  "Mortgage",
+  "Partition Deed",
+  "Last Will",
+  "Trust Deed",
+  "Settlement Deed",
+  "Declaration of Trust",
+  "Agreement to Sell",
+  "Conditional Transfer",
+  "Transfer Deed",
+  "Deed of Assignment",
+  "Deed of Disclaimer",
+  "Deed of Rectification",
+  "Deed of Cancellation",
+  "Deed of Surrender",
+  "Deed of Release",
+  "Deed of Nomination",
+  "Affidavit",
+  "Court Order / Judgment",
+  "Other"
+];
+
 export const contact = {
   location: {
     line1: "Registrar Department",

@@ -59,7 +59,7 @@ export interface RegisterDeedRequest {
   location: LocationPoint[];
   sides?: Sides;
   deedNumber: string;
-  landType: "Paddy land" | "Highland";
+  landType: "Paddy land" | "Chena" | "Highland" | "Residential" | "Commercial" | "Industrial" | "Tea plantation" | "Rubber plantation" | "Coconut plantation" | "Garden/Plantation" | "Forest/Reserve" | "Wetland/Marsh" | "State land" | "Mixed use" | "Other";
   timestamp: number;
 
   ownerFullName: string;
