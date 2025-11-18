@@ -15,6 +15,8 @@ import ActionButton from "./actionButton";
 import RentUI from "../parts/RentUI";
 import LastWillUI from "../parts/LastWillUI";
 import { getTransactionsByDeedId } from "../../api/api";
+import { useWallet } from "../../contexts/WalletContext";
+import { hasFullOwnership, isPropertyFractionalized } from "../../web3.0/contractService";
 
 interface DeedActionBarProps {
   deedNumber: string;
@@ -60,6 +62,9 @@ const DeedActionBar = ({
 }: DeedActionBarProps) => {
   const [state, setState] = useState<"pending" | "completed" | "failed">("completed");
   const [titles, setTitles] = useState<any[]>([]);
+  const [canSetRent, setCanSetRent] = useState(true);
+  const [canSetPoA, setCanSetPoA] = useState(true);
+  const { account } = useWallet();
 
   const getTransactions = async () => {
     if (deedId) {
@@ -84,6 +89,34 @@ const DeedActionBar = ({
       setState(titles[0].status);
     }
   }, [titles, actionHappened]);
+
+  useEffect(() => {
+    const checkOwnership = async () => {
+      if (!tokenId || !account) {
+        setCanSetRent(true);
+        setCanSetPoA(true);
+        return;
+      }
+
+      try {
+        const isFractionalized = await isPropertyFractionalized(tokenId);
+        if (isFractionalized) {
+          const hasFull = await hasFullOwnership(tokenId, account);
+          setCanSetRent(hasFull);
+          setCanSetPoA(hasFull);
+        } else {
+          setCanSetRent(true);
+          setCanSetPoA(true);
+        }
+      } catch (error) {
+        console.error("Error checking ownership:", error);
+        setCanSetRent(false);
+        setCanSetPoA(false);
+      }
+    };
+
+    checkOwnership();
+  }, [tokenId, account]);
 
   const isLocked = state === "pending";
 
@@ -126,8 +159,24 @@ const DeedActionBar = ({
             />
           }
           {onSaleEscrow && <ActionButton icon={<FaExchangeAlt size={16} />} label="Sell via Escrow" onClick={onSaleEscrow} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
-          {onRent && <ActionButton icon={<FaHome size={16} />} label="Rent the Deed" onClick={onRent} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
-          {onPowerOfAttorney && <ActionButton icon={<FaKey size={16} />} label="Grant Power of Attorney" onClick={onPowerOfAttorney} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hidden" />}
+          {onRent && (
+            <ActionButton 
+              icon={<FaHome size={16} />} 
+              label="Rent the Deed" 
+              onClick={onRent} 
+              color={canSetRent ? "bg-white hover:bg-gray-50 text-gray-700 border-gray-300" : "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"}
+              disabled={!canSetRent}
+            />
+          )}
+          {onPowerOfAttorney && (
+            <ActionButton 
+              icon={<FaKey size={16} />} 
+              label="Grant Power of Attorney" 
+              onClick={onPowerOfAttorney} 
+              color={canSetPoA ? "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hidden" : "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200 hidden"}
+              disabled={!canSetPoA}
+            />
+          )}
           {onOpenMarket && <ActionButton icon={<FaShop size={16} />} label="Add to Open Market" onClick={onOpenMarket} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
 
           {certificateExists

@@ -274,3 +274,110 @@ export async function nftOwnershipVerification(tokenId: number, userAddress: str
   const owner = await nft.ownerOf(tokenId);
   return owner.toLowerCase() === userAddress.toLowerCase();
 }
+
+export async function isPropertyFractionalized(nftId: number): Promise<boolean> {
+  try {
+    const factory = await getFactoryContract();
+    const tokenAddress = await factory.propertyToFractionToken(nftId);
+    return tokenAddress !== "0x0000000000000000000000000000000000000000";
+  } catch (error) {
+    console.error("Error checking fractionalization:", error);
+    return false;
+  }
+}
+
+export async function hasFullOwnership(nftId: number, userAddress: string): Promise<boolean> {
+  try {
+    const factory = await getFactoryContract();
+    const hasFull = await factory.hasFullOwnership(nftId, userAddress);
+    return hasFull;
+  } catch (error) {
+    console.error("Error checking full ownership:", error);
+    return false;
+  }
+}
+
+export async function getTotalSupply(nftId: number): Promise<number> {
+  try {
+    const factory = await getFactoryContract();
+    const supply = await factory.propertyToTotalSupply(nftId);
+    return Number(supply);
+  } catch (error) {
+    console.error("Error getting total supply:", error);
+    return 0;
+  }
+}
+
+export async function getFractionalTokenInfo(nftId: number) {
+  try {
+    const factory = await getFactoryContract();
+    const tokenAddress = await factory.propertyToFractionToken(nftId);
+    const isFractionalized = tokenAddress !== "0x0000000000000000000000000000000000000000";
+    
+    if (!isFractionalized) {
+      return {
+        isFractionalized: false,
+        tokenAddress: null,
+        totalSupply: 0,
+        userBalance: 0,
+        userPercentage: 0
+      };
+    }
+
+    const signer = await getSigner();
+    const userAddress = await signer.getAddress();
+    const totalSupply = await factory.propertyToTotalSupply(nftId);
+    const userBalance = await getFTBalance(tokenAddress, userAddress);
+    const totalSupplyNum = Number(totalSupply);
+    const userBalanceNum = Number(userBalance);
+    const userPercentage = totalSupplyNum > 0 ? (userBalanceNum / totalSupplyNum) * 100 : 0;
+
+    return {
+      isFractionalized: true,
+      tokenAddress,
+      totalSupply: totalSupplyNum,
+      userBalance: userBalanceNum,
+      userPercentage
+    };
+  } catch (error) {
+    console.error("Error getting fractional token info:", error);
+    return {
+      isFractionalized: false,
+      tokenAddress: null,
+      totalSupply: 0,
+      userBalance: 0,
+      userPercentage: 0
+    };
+  }
+}
+
+export async function transferFractionalTokens(tokenAddress: string, to: string, amount: number) {
+  try {
+    const ft = await getFractionalTokenContract(tokenAddress);
+    const tx = await ft.transfer(to, amount);
+    const receipt = await tx.wait();
+    return {
+      success: true,
+      txHash: receipt.hash ?? receipt.transactionHash
+    };
+  } catch (error: any) {
+    console.error("Error transferring fractional tokens:", error);
+    throw new Error(error.message || "Failed to transfer fractional tokens");
+  }
+}
+
+export async function defractionalizeProperty(nftId: number) {
+  try {
+    const factory = await getFactoryContract();
+    const PROPERTY_NFT_ADDRESS = import.meta.env.VITE_PROPERTY_NFT_ADDRESS as string;
+    const tx = await factory.defractionalizeProperty(nftId, PROPERTY_NFT_ADDRESS);
+    const receipt = await tx.wait();
+    return {
+      success: true,
+      txHash: receipt.hash ?? receipt.transactionHash
+    };
+  } catch (error: any) {
+    console.error("Error defractionalizing property:", error);
+    throw new Error(error.message || "Failed to defractionalize property");
+  }
+}

@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import { connectWallet } from "./wallet";
 import PropertyNFTABI from "./abis/PropertyNFT.json";
+import { hasFullOwnership, isPropertyFractionalized } from "./contractService";
 
 const PROPERTY_NFT_ADDRESS = import.meta.env.VITE_PROPERTY_NFT_ADDRESS as string;
 
@@ -15,13 +16,24 @@ async function getPropertyNFTContract() {
   return new ethers.Contract(PROPERTY_NFT_ADDRESS, PropertyNFTABI.abi, signer);
 }
 
-// Set rent details (called by property owner)
 export async function setRent(
   tokenId: number,
   rentAmountInEth: string,
   rentPeriodInDays: number,
   receiverAddress: string
 ) {
+  const signer = await getSigner();
+  const userAddress = await signer.getAddress();
+  
+  const isFractionalized = await isPropertyFractionalized(tokenId);
+  
+  if (isFractionalized) {
+    const hasFull = await hasFullOwnership(tokenId, userAddress);
+    if (!hasFull) {
+      throw new Error("You must own 100% of the fractional tokens to set rent");
+    }
+  }
+
   const nft = await getPropertyNFTContract();
   const rentAmountWei = ethers.parseEther(rentAmountInEth);
 

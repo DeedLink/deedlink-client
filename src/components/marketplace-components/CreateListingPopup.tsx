@@ -4,7 +4,7 @@ import { useToast } from "../../contexts/ToastContext";
 import { useLoader } from "../../contexts/LoaderContext";
 import { useWallet } from "../../contexts/WalletContext";
 import { listFractionalTokensForSale, listNFTForSale } from "../../web3.0/marketService";
-import { createMarketPlace } from "../../api/api";
+import { createMarketPlace, createTransaction } from "../../api/api";
 import { getFractionalTokenAddress, getFTBalance } from "../../web3.0/contractService";
 
 interface CreateListingPopupProps {
@@ -164,6 +164,25 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
 
         console.log("Creating marketplace DB entry:", marketplaceData);
         await createMarketPlace(marketplaceData);
+
+        try {
+          await createTransaction({
+            deedId,
+            from: account,
+            to: "",
+            amount: amountNum,
+            share: finalShare,
+            type: "open_market",
+            blockchain_identification: result.txHash,
+            hash: result.txHash,
+            description: blockchainListingType === "NFT"
+              ? `Listed full property NFT #${tokenId} for sale at ${amountNum} ETH`
+              : `Listed ${finalShare}% fractional tokens for sale at ${amountNum} ETH per token`,
+            status: "completed"
+          });
+        } catch (txError) {
+          console.error("Failed to record listing transaction:", txError);
+        }
 
         showToast("Listing created successfully!", "success");
         onSuccess();

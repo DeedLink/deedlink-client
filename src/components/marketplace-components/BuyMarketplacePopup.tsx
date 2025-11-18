@@ -6,8 +6,9 @@ import { useToast } from "../../contexts/ToastContext";
 import { useLoader } from "../../contexts/LoaderContext";
 import { useWallet } from "../../contexts/WalletContext";
 import { buyNFT, buyFractionalTokens, getListingDetails } from "../../web3.0/marketService";
-import { createTransaction, updateMarketPlace, updateFullOwnerAddress } from "../../api/api";
-import { getNFTOwner } from "../../web3.0/contractService";
+import { createTransaction, updateMarketPlace, updateFullOwnerAddress, updateDeedOwners } from "../../api/api";
+import { getNFTOwner, getTotalSupply } from "../../web3.0/contractService";
+import { calculateOwnershipFromEvents } from "../../web3.0/eventService";
 import { useAlert } from "../../contexts/AlertContext";
 
 interface BuyMarketplacePopupProps {
@@ -119,11 +120,12 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
             to: account as string,
             amount: marketplace.amount,
             share: marketplace.share,
-            type: listingType === "NFT" ? "sale_transfer" : "direct_transfer",
+            type: "sale_transfer",
             hash: result.txHash,
+            blockchain_identification: result.txHash,
             description: listingType === "NFT" 
               ? `Purchased full property NFT #${marketplace.tokenId}` 
-              : `Purchased ${marketplace.share}% fractional tokens`,
+              : `Purchased ${marketplace.share}% fractional tokens from marketplace`,
             status: "completed"
           });
           console.log("Transaction logged successfully");
@@ -154,9 +156,20 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
                 message: "Payment was received but NFT ownership may not have transferred. Please check blockchain explorer.",
                 confirmText: "OK"
               });
+            } else {
+              const owners = await calculateOwnershipFromEvents(Number(marketplace.tokenId));
+              await updateDeedOwners(deed._id, owners);
             }
           } catch (ownerError) {
             console.error("Failed to update/verify owner:", ownerError);
+          }
+        } else {
+          try {
+            const totalSupply = await getTotalSupply(Number(marketplace.tokenId));
+            const owners = await calculateOwnershipFromEvents(Number(marketplace.tokenId), totalSupply);
+            await updateDeedOwners(deed._id, owners);
+          } catch (ownerError) {
+            console.error("Failed to update fractional owners:", ownerError);
           }
         }
 
