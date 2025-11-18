@@ -7,7 +7,7 @@ import {
   getEscrowDetails, 
   getEscrowStatus 
 } from "../../../web3.0/escrowIntegration";
-import { transactionStatus, updateFullOwnerAddress, updateDeedOwners, getTransactionsByDeedId } from "../../../api/api";
+import { transactionStatus, updateFullOwnerAddress, updateDeedOwners } from "../../../api/api";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
 import { useLogin } from "../../../contexts/LoginContext";
 import { useAlert } from "../../../contexts/AlertContext";
@@ -159,8 +159,17 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
           try {
             const owners = await calculateOwnershipFromEvents(Number(details.tokenId));
             console.log("Calculated owners from events:", owners);
+            
+            // Update off-chain ownership record
+            // Find the deed ID by tokenId - try to get it from updateOwner response or search
+            if (updateOwner?._id) {
+              await updateDeedOwners(updateOwner._id, owners);
+              console.log("Off-chain owners updated in DB:", owners);
+            } else {
+              console.warn("Could not find deed ID to update off-chain ownership");
+            }
           } catch (updateError) {
-            console.error("Failed to calculate ownership from events:", updateError);
+            console.error("Failed to calculate or update ownership from events:", updateError);
           }
         } catch (err) {
           console.error("Failed to update owner address in DB:", err);
