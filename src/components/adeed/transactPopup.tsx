@@ -5,6 +5,7 @@ import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle } from "re
 import { FaExchangeAlt } from "react-icons/fa";
 import { transferNFT } from "../../web3.0/contractService";
 import { useWallet } from "../../contexts/WalletContext";
+import { useAlert } from "../../contexts/AlertContext";
 
 interface TransactPopupProps {
   isOpen: boolean;
@@ -19,7 +20,8 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, deedId, onClos
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedWallet, setSelectedWallet] = useState("");
   const [loading, setLoading] = useState(false);
-  const { account } =useWallet();
+  const { account } = useWallet();
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -50,16 +52,21 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, deedId, onClos
   }, [search, users]);
 
   const handleFullOwnerTransfer = async () => {
-    if (!selectedWallet) return alert("Please enter or select a wallet address!");
+    if (!selectedWallet) {
+      showAlert({
+        type: "warning",
+        title: "Please enter a wallet address",
+        message: "Select or enter a wallet address to transfer to"
+      });
+      return;
+    }
     setLoading(true);
     try {
-      // 🔹 Step 1: Transfer NFT on blockchain
       const res = await transferNFT(account as string, selectedWallet, tokenId);
       console.log(res);
 
       if (res.txHash) {
         try {
-          // 🔹 Step 2: Record transaction in DB
           const update_db = await createTransaction(
             {
               deedId,
@@ -75,7 +82,6 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, deedId, onClos
           )
           console.log("Transaction recorded in DB:", update_db);
 
-          // 🔹 Step 3: Update owner address in deed DB
           try {
             const updateOwner = await updateFullOwnerAddress(
               tokenId,
@@ -94,7 +100,12 @@ const TransactPopup: FC<TransactPopupProps> = ({ isOpen, tokenId, deedId, onClos
 
       onClose();
     } catch {
-      alert("Transfer failed. Try again.");
+      showAlert({
+        type: "error",
+        title: "Transfer Failed",
+        message: "Failed to transfer ownership. Please try again.",
+        confirmText: "OK"
+      });
     } finally {
       setLoading(false);
     }

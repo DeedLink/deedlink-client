@@ -3,6 +3,7 @@ import type { IDeed } from "../../../types/responseDeed";
 import type { Marketplace } from "../../../types/marketplace";
 import { createMarketPlace } from "../../../api/api";
 import { useWallet } from "../../../contexts/WalletContext";
+import { useAlert } from "../../../contexts/AlertContext";
 
 interface AddToMarketPopupProps {
   deed: IDeed;
@@ -29,6 +30,7 @@ const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const { account } = useWallet();
+  const { showAlert } = useAlert();
 
   if(!account) return;
 
@@ -64,7 +66,12 @@ const AddToMarketPopup: React.FC<AddToMarketPopupProps> = ({
       onClose();
     } catch (error) {
       console.error("Error adding to marketplace:", error);
-      alert("Failed to list property on marketplace.");
+      showAlert({
+        type: "error",
+        title: "Listing Failed",
+        message: "Failed to list property on marketplace. Please try again.",
+        confirmText: "OK"
+      });
     } finally {
       setLoading(false);
     }

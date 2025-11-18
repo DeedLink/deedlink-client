@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import BuyerEscrowPopup from "../adeed/tnxPopups/BuyerEscrowPopup";
 import { useQR } from "../../contexts/QRContext";
+import { useAlert } from "../../contexts/AlertContext";
 import { IoQrCodeOutline } from "react-icons/io5";
 import type { QRData } from "../qr/QRscanner";
 import { validateEscrowString } from "../../utils/helpers";
@@ -11,6 +12,7 @@ function PurchancePanel() {
   const [scannedData, setScannedData] = useState<QRData | null>(null);
   const [typed, setTyped] = useState<string>("");
   const { showQRScanner } = useQR();
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     if (selectedEscrow) {
@@ -28,7 +30,12 @@ function PurchancePanel() {
         setSelectedEscrow(data.escrowAddress);
         setDeedId(data.deedId);
       } else {
-        alert("Invalid or incomplete QR data!");
+        showAlert({
+          type: "error",
+          title: "Invalid QR Data",
+          message: "The QR code is invalid or incomplete. Please try again.",
+          confirmText: "OK"
+        });
       }
     });
   };

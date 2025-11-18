@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useWallet } from "../../../contexts/WalletContext";
 import { getFractionalTokenInfo, isPropertyFractionalized } from "../../../web3.0/contractService";
 import { FaCoins, FaPercentage, FaInfoCircle } from "react-icons/fa";
-import VerificationBadge from "./VerificationBadge";
 
 interface FractionalOwnershipCardProps {
   tokenId: number;

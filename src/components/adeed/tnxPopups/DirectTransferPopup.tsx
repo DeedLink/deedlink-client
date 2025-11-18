@@ -6,6 +6,7 @@ import { FaGift } from "react-icons/fa";
 import { transferNFT } from "../../../web3.0/contractService";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
 import { useWallet } from "../../../contexts/WalletContext";
+import { useAlert } from "../../../contexts/AlertContext";
 
 interface DirectTransferPopupProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
   const [selectedWallet, setSelectedWallet] = useState("");
   const [loading, setLoading] = useState(false);
   const { account } = useWallet();
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -63,48 +65,82 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
   }, [search, users]);
 
   const handleDirectTransfer = async () => {
-    if (!selectedWallet) return alert("Please select a recipient!");
-
-    const confirmed = confirm(
-      `Transfer property #${tokenId} to:\n${selectedWallet}\n\nThis is a direct transfer with no payment.`
-    );
-    if (!confirmed) return;
-
-    setLoading(true);
-    try {
-      const res = await transferNFT(account as string, selectedWallet, tokenId);
-
-      if (res.txHash) {
-        await createTransaction({
-          deedId,
-          from: account as string,
-          to: selectedWallet,
-          amount: 0,
-          share: 100,
-          type: "gift",
-          hash: res.txHash,
-          description: "Direct Transfer (Gift/No Payment)",
-          status: "completed",
-        });
-
-        await updateFullOwnerAddress(tokenId, selectedWallet.toLowerCase());
-
-        try {
-          const owners = await calculateOwnershipFromEvents(tokenId);
-          await updateDeedOwners(deedId, owners);
-        } catch (updateError) {
-          console.error("Failed to update deed owners:", updateError);
-        }
-
-        alert(`✅ Property transferred successfully!\n\nTransaction: ${res.txHash}`);
-        onClose();
-      }
-    } catch (error) {
-      console.error("Transfer failed:", error);
-      alert("❌ Transfer failed. Please try again.");
-    } finally {
-      setLoading(false);
+    if (!selectedWallet) {
+      showAlert({
+        type: "warning",
+        title: "Please select a recipient",
+        message: "Choose a recipient wallet from the list above"
+      });
+      return;
     }
+
+    showAlert({
+      type: "warning",
+      title: "Confirm Direct Transfer",
+      htmlContent: (
+        <div className="space-y-2">
+          <p>Transfer property #{tokenId} to:</p>
+          <p className="font-mono bg-gray-100 p-2 rounded text-sm break-all">
+            {selectedWallet}
+          </p>
+          <p className="text-sm text-gray-600">This is a direct transfer with no payment.</p>
+        </div>
+      ),
+      confirmText: "Transfer",
+      cancelText: "Cancel",
+      onConfirm: async () => {
+        setLoading(true);
+        try {
+          const res = await transferNFT(account as string, selectedWallet, tokenId);
+
+          if (res.txHash) {
+            await createTransaction({
+              deedId,
+              from: account as string,
+              to: selectedWallet,
+              amount: 0,
+              share: 100,
+              type: "gift",
+              hash: res.txHash,
+              description: "Direct Transfer (Gift/No Payment)",
+              status: "completed",
+            });
+
+            await updateFullOwnerAddress(tokenId, selectedWallet.toLowerCase());
+
+            try {
+              const owners = await calculateOwnershipFromEvents(tokenId);
+              await updateDeedOwners(deedId, owners);
+            } catch (updateError) {
+              console.error("Failed to update deed owners:", updateError);
+            }
+
+            showAlert({
+              type: "success",
+              title: "Transfer Successful",
+              htmlContent: (
+                <div className="space-y-2">
+                  <p className="text-gray-700">Property transferred successfully!</p>
+                  <p className="text-sm text-gray-600"><strong>Transaction:</strong> {res.txHash}</p>
+                </div>
+              ),
+              confirmText: "OK",
+              onConfirm: onClose
+            });
+          }
+        } catch (error) {
+          console.error("Transfer failed:", error);
+          showAlert({
+            type: "error",
+            title: "Transfer Failed",
+            message: "Failed to transfer property. Please try again.",
+            confirmText: "OK"
+          });
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
 
   const shortAddress = (addr: string) =>
