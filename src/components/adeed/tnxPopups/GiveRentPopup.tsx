@@ -7,6 +7,7 @@ import { getUsers } from "../../../api/api";
 import { useWallet } from "../../../contexts/WalletContext";
 import { shortAddress } from "../../../utils/format";
 import { IoCheckmarkCircle, IoSearchOutline } from "react-icons/io5";
+import { hasFullOwnership, isPropertyFractionalized, getFractionalTokenInfo } from "../../../web3.0/contractService";
 
 interface GiveRentPopupProps {
   isOpen: boolean;
@@ -23,7 +24,40 @@ const GiveRentPopup: React.FC<GiveRentPopupProps> = ({ isOpen, onClose, tokenId 
   const [duration, setDuration] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [canSetRent, setCanSetRent] = useState(true);
+  const [ownershipInfo, setOwnershipInfo] = useState<{ percentage: number; isFractionalized: boolean } | null>(null);
   const { account } = useWallet();
+
+  useEffect(() => {
+    const checkOwnership = async () => {
+      if (!isOpen || !account || !tokenId) return;
+      
+      try {
+        const isFractionalized = await isPropertyFractionalized(tokenId);
+        
+        if (isFractionalized) {
+          const hasFull = await hasFullOwnership(tokenId, account);
+          const info = await getFractionalTokenInfo(tokenId);
+          setCanSetRent(hasFull);
+          setOwnershipInfo({
+            percentage: info.userPercentage,
+            isFractionalized: true
+          });
+        } else {
+          setCanSetRent(true);
+          setOwnershipInfo({
+            percentage: 100,
+            isFractionalized: false
+          });
+        }
+      } catch (error) {
+        console.error("Error checking ownership:", error);
+        setCanSetRent(false);
+      }
+    };
+    
+    checkOwnership();
+  }, [isOpen, account, tokenId]);
 
   if (!isOpen) return null;
 
@@ -103,6 +137,19 @@ const GiveRentPopup: React.FC<GiveRentPopupProps> = ({ isOpen, onClose, tokenId 
         <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
           Set Rent for Property
         </h2>
+
+        {!canSetRent && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-800 font-semibold">
+              ⚠️ Cannot Set Rent
+            </p>
+            <p className="text-xs text-red-600 mt-1">
+              {ownershipInfo?.isFractionalized 
+                ? `You own ${ownershipInfo.percentage.toFixed(2)}% of this property. You must own 100% to set rent.`
+                : "You do not have permission to set rent for this property."}
+            </p>
+          </div>
+        )}
 
         <div className="space-y-4">
           <div>
@@ -204,13 +251,15 @@ const GiveRentPopup: React.FC<GiveRentPopupProps> = ({ isOpen, onClose, tokenId 
           </div>
 
           <button
-            disabled={isSubmitting}
+            disabled={isSubmitting || !canSetRent}
             onClick={handleSetRent}
             className={`w-full mt-4 py-2 rounded-lg text-white font-semibold transition ${
-              isSubmitting ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
+              isSubmitting || !canSetRent
+                ? "bg-gray-400 cursor-not-allowed" 
+                : "bg-green-600 hover:bg-green-700"
             }`}
           >
-            {isSubmitting ? "Setting..." : "Set Rent"}
+            {isSubmitting ? "Setting..." : !canSetRent ? "Cannot Set Rent" : "Set Rent"}
           </button>
         </div>
       </div>

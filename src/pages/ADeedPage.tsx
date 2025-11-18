@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useToast } from "../contexts/ToastContext";
 import { useLoader } from "../contexts/LoaderContext";
+import { useWallet } from "../contexts/WalletContext";
 import { createFractionalToken } from "../web3.0/contractService";
 import DeedActionBar from "../components/adeed/deedActionBar";
 import TitleHistory from "../components/parts/TitleHistory";
@@ -17,8 +18,11 @@ import BoundaryDeeds from "../components/adeed/ui/BoundaryDeeds";
 import DeedSidebar from "../components/adeed/ui/DeedSidebar";
 import DeedModals from "../components/adeed/ui/DeedModals";
 import CreateListingPopup from "../components/marketplace-components/CreateListingPopup";
+import FractionalOwnershipCard from "../components/adeed/ui/FractionalOwnershipCard";
+import TransferFractionalTokensPopup from "../components/adeed/tnxPopups/TransferFractionalTokensPopup";
 import type { Certificate } from "../types/certificate";
 import { cancelListing } from "../web3.0/marketService";
+import { createTransaction } from "../api/api";
 
 const PROPERTY_NFT_ADDRESS = import.meta.env.VITE_PROPERTY_NFT_ADDRESS as string;
 
@@ -27,6 +31,7 @@ const ADeedPage = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { showLoader, hideLoader } = useLoader();
+  const { account } = useWallet();
 
   const {
     deed,
@@ -46,6 +51,7 @@ const ADeedPage = () => {
   const [openMarket, setOpenMarket] = useState(false);
   const [openLastWill, setOpenLastWill] = useState(false);
   const [showCreateListing, setShowCreateListing] = useState(false);
+  const [openTransferFractional, setOpenTransferFractional] = useState(false);
   const [certificate, setCertificate] = useState<Certificate | null>(null);
 
   useEffect(() => {
@@ -70,15 +76,35 @@ const ADeedPage = () => {
   }, [openTransact, openDirectTransfer, openSaleEscrow, openGiveRent, openGetRent, openMarket, openLastWill, showCreateListing]);
 
   const handleFractioning = async () => {
-    if (deed?.tokenId) {
+    if (deed?.tokenId && deed?._id) {
       try {
         showLoader();
         const res = await createFractionalToken(deed?.tokenId, deed?.deedNumber, deed?.deedNumber, 1000000);
         console.log("Fractioning result:", res);
+        
+        if (res.success && res.txHash) {
+          try {
+            await createTransaction({
+              deedId: deed._id,
+              from: account || "",
+              to: account || "",
+              amount: 0,
+              share: 100,
+              type: "init",
+              blockchain_identification: res.txHash,
+              hash: res.txHash,
+              description: `Property fractionalized into 1,000,000 tokens. Token address: ${res.tokenAddress}`,
+              status: "completed"
+            });
+          } catch (txError) {
+            console.error("Failed to record fractionalization transaction:", txError);
+          }
+        }
+        
         showToast("Fractioning success", "success");
-      } catch (error) {
+      } catch (error: any) {
         console.error("Fractioning error:", error);
-        showToast("Fractioning failed!", "error");
+        showToast(error.message || "Fractioning failed!", "error");
       } finally {
         hideLoader();
       }
@@ -222,6 +248,12 @@ const ADeedPage = () => {
               <div className="grid lg:grid-cols-4 gap-6">
                 <div className="lg:col-span-3 space-y-6">
                   <OwnerInformation deed={deed} />
+                  {deed.tokenId && (
+                    <FractionalOwnershipCard
+                      tokenId={deed.tokenId}
+                      onTransfer={() => setOpenTransferFractional(true)}
+                    />
+                  )}
                   <BlockchainOwners deed={deed} />
                   <LandDetails deed={deed} />
                   <BoundaryDeeds plan={plan} />
@@ -283,14 +315,25 @@ const ADeedPage = () => {
       />
 
       {deed.tokenId && (
-        <CreateListingPopup
-          isOpen={showCreateListing}
-          onClose={() => setShowCreateListing(false)}
-          onSuccess={handleCreateListingSuccess}
-          deedId={deed._id}
-          tokenId={deed.tokenId}
-          nftAddress={PROPERTY_NFT_ADDRESS}
-        />
+        <>
+          <CreateListingPopup
+            isOpen={showCreateListing}
+            onClose={() => setShowCreateListing(false)}
+            onSuccess={handleCreateListingSuccess}
+            deedId={deed._id}
+            tokenId={deed.tokenId}
+            nftAddress={PROPERTY_NFT_ADDRESS}
+          />
+          <TransferFractionalTokensPopup
+            isOpen={openTransferFractional}
+            onClose={() => setOpenTransferFractional(false)}
+            tokenId={deed.tokenId}
+            deedId={deed._id}
+            onSuccess={() => {
+              setOpenTransferFractional(false);
+            }}
+          />
+        </>
       )}
     </div>
   );

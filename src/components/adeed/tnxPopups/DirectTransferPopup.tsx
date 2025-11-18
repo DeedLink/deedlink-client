@@ -1,9 +1,10 @@
 import { type FC, useState, useEffect } from "react";
-import { createTransaction, getUsers, updateFullOwnerAddress } from "../../../api/api";
+import { createTransaction, getUsers, updateFullOwnerAddress, updateDeedOwners } from "../../../api/api";
 import type { User } from "../../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle } from "react-icons/io5";
 import { FaGift } from "react-icons/fa";
 import { transferNFT } from "../../../web3.0/contractService";
+import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
 import { useWallet } from "../../../contexts/WalletContext";
 
 interface DirectTransferPopupProps {
@@ -87,6 +88,13 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
         });
 
         await updateFullOwnerAddress(tokenId, selectedWallet.toLowerCase());
+
+        try {
+          const owners = await calculateOwnershipFromEvents(tokenId);
+          await updateDeedOwners(deedId, owners);
+        } catch (updateError) {
+          console.error("Failed to update deed owners:", updateError);
+        }
 
         alert(`✅ Property transferred successfully!\n\nTransaction: ${res.txHash}`);
         onClose();

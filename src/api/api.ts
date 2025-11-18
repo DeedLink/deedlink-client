@@ -395,6 +395,15 @@ export const updateFullOwnerAddress = async (
   return res.data;
 };
 
+// Update deed owners array (protected)
+export const updateDeedOwners = async (
+  deedId: string,
+  owners: Array<{ address: string; share: number }>
+): Promise<any> => {
+  const res: AxiosResponse<any> = await deedApi.put(`/${deedId}/owners`, { owners });
+  return res.data;
+};
+
 //Notification API
 
 // const notificationApi = axios.create({

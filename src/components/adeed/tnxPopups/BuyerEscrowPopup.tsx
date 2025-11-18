@@ -7,7 +7,8 @@ import {
   getEscrowDetails, 
   getEscrowStatus 
 } from "../../../web3.0/escrowIntegration";
-import { transactionStatus, updateFullOwnerAddress } from "../../../api/api";
+import { transactionStatus, updateFullOwnerAddress, updateDeedOwners, getTransactionsByDeedId } from "../../../api/api";
+import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
 import { useLogin } from "../../../contexts/LoginContext";
 import { useAlert } from "../../../contexts/AlertContext";
 
@@ -154,6 +155,13 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
               user?.nic || ""
             );
           console.log("Owner address updated in DB:", updateOwner);
+
+          try {
+            const owners = await calculateOwnershipFromEvents(Number(details.tokenId));
+            console.log("Calculated owners from events:", owners);
+          } catch (updateError) {
+            console.error("Failed to calculate ownership from events:", updateError);
+          }
         } catch (err) {
           console.error("Failed to update owner address in DB:", err);
         }
