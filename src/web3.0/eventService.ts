@@ -42,12 +42,13 @@ export async function getNFTTransferEvents(tokenId: number, fromBlock?: number):
     const transferEvents: TransferEvent[] = [];
     
     for (const event of events) {
-      if (event.args) {
+      if ('args' in event && event.args) {
         const block = await event.getBlock();
+        const args = event.args as any;
         transferEvents.push({
-          from: event.args.from?.toLowerCase() || "",
-          to: event.args.to?.toLowerCase() || "",
-          tokenId: Number(event.args.tokenId),
+          from: args.from?.toLowerCase() || "",
+          to: args.to?.toLowerCase() || "",
+          tokenId: Number(args.tokenId),
           blockNumber: event.blockNumber,
           transactionHash: event.transactionHash,
           timestamp: block?.timestamp ? Number(block.timestamp) : undefined
@@ -83,12 +84,13 @@ export async function getFractionalTokenTransferEvents(
     const transferEvents: TransferEvent[] = [];
     
     for (const event of events) {
-      if (event.args) {
+      if ('args' in event && event.args) {
         const block = await event.getBlock();
+        const args = event.args as any;
         transferEvents.push({
-          from: event.args.from?.toLowerCase() || "",
-          to: event.args.to?.toLowerCase() || "",
-          amount: Number(event.args.value),
+          from: args.from?.toLowerCase() || "",
+          to: args.to?.toLowerCase() || "",
+          amount: Number(args.value),
           blockNumber: event.blockNumber,
           transactionHash: event.transactionHash,
           timestamp: block?.timestamp ? Number(block.timestamp) : undefined
@@ -142,7 +144,6 @@ export async function calculateOwnershipFromEvents(
     const ftEvents = await getFractionalTokenTransferEvents(tokenId);
     if (ftEvents.length === 0) {
       const factoryAddress = import.meta.env.VITE_FACTORY_ADDRESS as string;
-      const provider = await getProvider();
       const nft = await getPropertyNFTContract();
       const nftOwner = (await nft.ownerOf(tokenId)).toLowerCase();
       
