@@ -101,8 +101,9 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
               ? deed.valuation.slice().sort((a: any, b: any) => b.timestamp - a.timestamp)[0]?.estimatedValue || 0
               : deed?.propertyValue || 0;
 
-            const pct = getStampPercentage("Gift");
-            const stampFee = Number(latestVal) * (pct / 100);
+            const valueInEth = Number(latestVal);
+            const pct = getStampPercentage(valueInEth, "Gift");
+            const stampFee = valueInEth * (pct / 100);
 
             if (stampFee > 0) {
               const sendRes = await sendStampFee(String(stampFee));

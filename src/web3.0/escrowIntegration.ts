@@ -10,8 +10,6 @@ import { getStampPercentage } from "../constants/stampfee";
 const ESCROW_FACTORY_ADDRESS = import.meta.env.VITE_ESCROW_FACTORY_ADDRESS as string;
 const PROPERTY_NFT_ADDRESS = import.meta.env.VITE_PROPERTY_NFT_ADDRESS as string;
 const ADMIN_WALLET = import.meta.env.VITE_ADMIN_WALLET as string;
-// Stamp percentage for sales is retrieved from centralized mapping
-const STAMP_FEE_PERCENTAGE = getStampPercentage("Sale");
 
 // ============================================
 // Helper Functions
@@ -35,7 +33,7 @@ async function getEscrowContract(escrowAddress: string) {
 
 function calculatePaymentBreakdown(priceInEth: string) {
   const price = parseFloat(priceInEth);
-  const percent = STAMP_FEE_PERCENTAGE;
+  const percent = getStampPercentage(price, "Sale");
   const stampFee = price * (percent / 100);
   const sellerAmount = price - stampFee;
   
@@ -400,11 +398,7 @@ export function getPaymentBreakdown(priceInEth: string): {
   sellerAmount: string;
   stampFeePercentage: number;
 } {
-  const breakdown = calculatePaymentBreakdown(priceInEth);
-  return {
-    ...breakdown,
-    stampFeePercentage: STAMP_FEE_PERCENTAGE
-  };
+  return calculatePaymentBreakdown(priceInEth);
 }
 
 // ============================================

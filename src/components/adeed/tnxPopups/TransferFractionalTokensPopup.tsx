@@ -127,8 +127,8 @@ const TransferFractionalTokensPopup: React.FC<TransferFractionalTokensPopupProps
           const latestVal = deed?.valuation && deed.valuation.length > 0
             ? deed.valuation.slice().sort((a: any, b: any) => b.timestamp - a.timestamp)[0]?.estimatedValue || 0
             : deed?.propertyValue || 0;
-          const pct = getStampPercentage("Transfer");
           const transferValue = Number(latestVal) * (percentage / 100);
+          const pct = getStampPercentage(transferValue, "Transfer");
           const stampFee = transferValue * (pct / 100);
 
           if (stampFee > 0) {
