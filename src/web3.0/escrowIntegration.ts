@@ -4,12 +4,14 @@ import { connectWallet } from "./wallet";
 import EscrowFactoryABI from "./abis/EscrowFactory.json";
 import HybridEscrowABI from "./abis/HybridEscrow.json";
 import { approveNFT, nftOwnershipVerification } from "./contractService";
+import { getStampPercentage } from "../constants/stampfee";
 
 // Environment variables
 const ESCROW_FACTORY_ADDRESS = import.meta.env.VITE_ESCROW_FACTORY_ADDRESS as string;
 const PROPERTY_NFT_ADDRESS = import.meta.env.VITE_PROPERTY_NFT_ADDRESS as string;
 const ADMIN_WALLET = import.meta.env.VITE_ADMIN_WALLET as string;
-const STAMP_FEE_PERCENTAGE = 2; // 2%
+// Stamp percentage for sales is retrieved from centralized mapping
+const STAMP_FEE_PERCENTAGE = getStampPercentage("Sale");
 
 // ============================================
 // Helper Functions
@@ -33,12 +35,14 @@ async function getEscrowContract(escrowAddress: string) {
 
 function calculatePaymentBreakdown(priceInEth: string) {
   const price = parseFloat(priceInEth);
-  const stampFee = price * (STAMP_FEE_PERCENTAGE / 100);
+  const percent = STAMP_FEE_PERCENTAGE;
+  const stampFee = price * (percent / 100);
   const sellerAmount = price - stampFee;
   
   return {
     totalPrice: priceInEth,
     stampFee: stampFee.toFixed(4),
+    stampFeePercentage: percent,
     sellerAmount: sellerAmount.toFixed(4)
   };
 }

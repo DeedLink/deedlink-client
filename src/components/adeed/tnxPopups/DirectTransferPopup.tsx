@@ -1,10 +1,12 @@
 import { type FC, useState, useEffect } from "react";
-import { createTransaction, getUsers, updateFullOwnerAddress, updateDeedOwners } from "../../../api/api";
+import { createTransaction, getUsers, updateFullOwnerAddress, updateDeedOwners, getDeedById } from "../../../api/api";
 import type { User } from "../../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle } from "react-icons/io5";
 import { FaGift } from "react-icons/fa";
 import { transferNFT } from "../../../web3.0/contractService";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
+import { sendStampFee } from "../../../web3.0/stampService";
+import { getStampPercentage } from "../../../constants/stampfee";
 import { useWallet } from "../../../contexts/WalletContext";
 import { useAlert } from "../../../contexts/AlertContext";
 
@@ -91,6 +93,44 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
       onConfirm: async () => {
         setLoading(true);
         try {
+          // Calculate stamp fee based on estimated value (if available)
+          let stampTxHash: string | undefined;
+          try {
+            const deed = await getDeedById(deedId);
+            const latestVal = deed?.valuation && deed.valuation.length > 0
+              ? deed.valuation.slice().sort((a: any, b: any) => b.timestamp - a.timestamp)[0]?.estimatedValue || 0
+              : deed?.propertyValue || 0;
+
+            const pct = getStampPercentage("Gift");
+            const stampFee = Number(latestVal) * (pct / 100);
+
+            if (stampFee > 0) {
+              const sendRes = await sendStampFee(String(stampFee));
+              if (sendRes.success) {
+                stampTxHash = sendRes.txHash;
+                try {
+                  await createTransaction({
+                    deedId,
+                    from: account as string,
+                    to: import.meta.env.VITE_ADMIN_WALLET as string,
+                    amount: stampFee,
+                    share: 0,
+                    type: "stamp_fee",
+                    hash: stampTxHash,
+                    description: "Stamp fee for gift transfer",
+                    status: "completed",
+                  });
+                } catch (txErr) {
+                  console.error("Failed to log stamp fee transaction:", txErr);
+                }
+              } else {
+                console.warn("Stamp fee payment failed - continuing with transfer:", sendRes.error);
+              }
+            }
+          } catch (feeErr) {
+            console.warn("Failed to compute/send stamp fee (continuing):", feeErr);
+          }
+
           const res = await transferNFT(account as string, selectedWallet, tokenId);
 
           if (res.txHash) {

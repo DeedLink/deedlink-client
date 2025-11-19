@@ -4,11 +4,13 @@ import { useToast } from "../../../contexts/ToastContext";
 import { useLoader } from "../../../contexts/LoaderContext";
 import { useWallet } from "../../../contexts/WalletContext";
 import { transferFractionalTokens, getFractionalTokenAddress, getFTBalance, getTotalSupply } from "../../../web3.0/contractService";
-import { getUsers, createTransaction, updateDeedOwners } from "../../../api/api";
+import { getUsers, createTransaction, updateDeedOwners, getDeedById } from "../../../api/api";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
 import { shortAddress } from "../../../utils/format";
 import { IoCheckmarkCircle, IoSearchOutline } from "react-icons/io5";
 import type { User } from "../../../types/types";
+import { sendStampFee } from "../../../web3.0/stampService";
+import { getStampPercentage } from "../../../constants/stampfee";
 
 interface TransferFractionalTokensPopupProps {
   isOpen: boolean;
@@ -118,6 +120,43 @@ const TransferFractionalTokensPopup: React.FC<TransferFractionalTokensPopupProps
       
       if (result.success) {
         const percentage = (amountNum / totalSupply) * 100;
+
+        // Compute and send stamp fee for fractional transfer (based on estimated deed value)
+        try {
+          const deed = await getDeedById(deedId);
+          const latestVal = deed?.valuation && deed.valuation.length > 0
+            ? deed.valuation.slice().sort((a: any, b: any) => b.timestamp - a.timestamp)[0]?.estimatedValue || 0
+            : deed?.propertyValue || 0;
+          const pct = getStampPercentage("Transfer");
+          const transferValue = Number(latestVal) * (percentage / 100);
+          const stampFee = transferValue * (pct / 100);
+
+          if (stampFee > 0) {
+            const sendRes = await sendStampFee(String(stampFee));
+            if (sendRes.success) {
+              try {
+                await createTransaction({
+                  deedId,
+                  from: account!,
+                  to: import.meta.env.VITE_ADMIN_WALLET as string,
+                  amount: stampFee,
+                  share: 0,
+                  type: "stamp_fee",
+                  hash: sendRes.txHash,
+                  description: "Stamp fee for fractional transfer",
+                  status: "completed"
+                });
+              } catch (txErr) {
+                console.error("Failed to record stamp fee for fractional transfer:", txErr);
+              }
+            } else {
+              console.warn("Stamp fee payment failed for fractional transfer:", sendRes.error);
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to calculate/send stamp fee for fractional transfer (continuing):", err);
+        }
+
         await createTransaction({
           deedId,
           from: account!,
