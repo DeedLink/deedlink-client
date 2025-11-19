@@ -404,6 +404,91 @@ export const updateDeedOwners = async (
   return res.data;
 };
 
+// Safe wrapper: if the deed service returns 404 for the owners update endpoint
+// we queue the update locally so it can be retried later. This avoids leaving
+// the frontend in an inconsistent state when the backend route is missing or
+// temporarily unavailable.
+export const updateDeedOwnersSafe = async (
+  deedId: string,
+  owners: Array<{ address: string; share: number }>
+): Promise<any> => {
+  try {
+    return await updateDeedOwners(deedId, owners);
+  } catch (err: any) {
+    const status = err?.response?.status;
+    const requestUrl = deedApi.getUri({ url: `/${deedId}/owners` });
+    console.error("updateDeedOwners failed", { status, requestUrl, err });
+
+    // If it's a 404, the backend route may not exist. Queue the update locally
+    // so it can be retried by the client or an operator later.
+    if (status === 404) {
+      try {
+        const pendingKey = "pendingOwnerUpdates" as any;
+        const existing = getItem<any[]>("local", pendingKey) || [];
+        existing.push({ deedId, owners, timestamp: Date.now(), requestUrl });
+        setItem("local", pendingKey, existing);
+
+        // Log a transaction record so this situation is visible in the tnx service
+        try {
+          await createTransaction({
+            deedId,
+            from: "",
+            to: "",
+            amount: 0,
+            share: 0,
+            type: "owner_update_failed",
+            hash: "",
+            description: "Owner update queued in client due to 404 response",
+            status: "failed",
+          } as any);
+        } catch (logErr) {
+          console.warn("Failed to log pending owner update transaction:", logErr);
+        }
+
+        return { queued: true };
+      } catch (queueErr) {
+        console.error("Failed to queue owner update:", queueErr);
+        throw err;
+      }
+    }
+
+    // For other errors, rethrow so callers can handle them as before.
+    throw err;
+  }
+};
+
+// Retry pending owner updates stored in localStorage. This can be called on app
+// startup or manually from a diagnostics screen. Successful retries are removed
+// from the queue.
+export const processPendingOwnerUpdates = async (): Promise<{ success: number; failed: number }> => {
+  const pendingKey = "pendingOwnerUpdates" as any;
+  const list = getItem<any[]>("local", pendingKey) || [];
+  if (!Array.isArray(list) || list.length === 0) return { success: 0, failed: 0 };
+
+  const remaining: any[] = [];
+  let success = 0;
+  let failed = 0;
+
+  for (const item of list) {
+    try {
+      await updateDeedOwners(item.deedId, item.owners);
+      success++;
+    } catch (e) {
+      console.warn("Retry owner update failed for", item.deedId, e);
+      remaining.push(item);
+      failed++;
+    }
+  }
+
+  try {
+    setItem("local", pendingKey, remaining);
+  } catch (e) {
+    console.error("Failed to persist pending owner updates:", e);
+  }
+
+  return { success, failed };
+};
+
 //Notification API
 
 // const notificationApi = axios.create({
