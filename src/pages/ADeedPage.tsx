@@ -120,7 +120,7 @@ const ADeedPage = () => {
       return;
     }
     try {
-      generateDeedPDF(deed, plan, signatures);
+      generateDeedPDF(deed, plan, signatures, tnx);
       showToast("PDF downloaded successfully", "success");
     } catch (error) {
       console.error("Error generating PDF:", error);
