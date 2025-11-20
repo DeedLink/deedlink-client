@@ -30,17 +30,17 @@ const LastWillUI = ({ tokenId }: Props) => {
   }, [tokenId]);
 
   if (loading) return <div>Loading certificate...</div>;
-  if (!certificate) return <div>No certificate found</div>;
   if (error) return <div className="text-red-500">{error}</div>;
+  if (!certificate) return <div className="text-gray-500">No Last Will certificate</div>;
 
   return (
     <div className="p-4 text-black">
       <h2 className="text-xl font-bold">Last Will Certificate</h2>
 
       <div className="mt-4">
-        <p><strong>Title:</strong> {certificate.title}</p>
-        <p><strong>Description:</strong> {certificate.description}</p>
-        <p><strong>Type:</strong> {certificate.type}</p>
+        {certificate.title ? <p><strong>Title:</strong> {certificate.title}</p> : null}
+        {certificate.description ? <p><strong>Description:</strong> {certificate.description}</p> : null}
+        {certificate.type ? <p><strong>Type:</strong> {certificate.type}</p> : null}
 
         <h3 className="text-lg font-semibold mt-4">Parties</h3>
         {certificate.parties?.length ? (
@@ -52,13 +52,17 @@ const LastWillUI = ({ tokenId }: Props) => {
             </div>
           ))
         ) : (
-          <p>No parties listed</p>
+          <p className="text-gray-500">No parties listed</p>
         )}
 
         <h3 className="text-lg font-semibold mt-4">Data</h3>
-        <pre className="bg-gray-100 p-2 rounded mt-1">
-          {JSON.stringify(certificate.data, null, 2)}
-        </pre>
+        {certificate.data && typeof certificate.data === 'object' && Object.keys(certificate.data).length > 0 ? (
+          <pre className="bg-gray-100 p-2 rounded mt-1">
+            {JSON.stringify(certificate.data, null, 2)}
+          </pre>
+        ) : (
+          <p className="text-gray-500">No additional data</p>
+        )}
       </div>
     </div>
   );

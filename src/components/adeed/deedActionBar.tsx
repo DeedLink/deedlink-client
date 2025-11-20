@@ -33,6 +33,7 @@ interface DeedActionBarProps {
   onFractioning: () => void;
   onDirectTransfer: () => void;
   onSaleEscrow: () => void;
+  isOwner?: boolean;
   onRent: () => void;
   onPowerOfAttorney: () => void;
   onOpenMarket: () => void;
@@ -55,6 +56,7 @@ const DeedActionBar = ({
   onRent,
   onPowerOfAttorney,
   onOpenMarket,
+  isOwner,
   numberOfFT,
   onLastWill,
   certificateExists,
@@ -166,7 +168,9 @@ const DeedActionBar = ({
               color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" 
             />
           }
-          {onSaleEscrow && <ActionButton icon={<FaExchangeAlt size={16} />} label="Sell via Escrow" onClick={onSaleEscrow} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
+          {onSaleEscrow && isOwner && (
+            <ActionButton icon={<FaExchangeAlt size={16} />} label="Sell via Escrow" onClick={onSaleEscrow} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />
+          )}
           {onRent && (
             <ActionButton 
               icon={<FaHome size={16} />} 

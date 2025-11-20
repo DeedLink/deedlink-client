@@ -43,6 +43,8 @@ const ADeedPage = () => {
     getMarketPlaceData
   } = useDeedData(deedNumber);
 
+  const isOwner = deed?.owners?.some((o: any) => o.address?.toLowerCase() === (account || "").toLowerCase());
+
   const [openTransact, setOpenTransact] = useState(false);
   const [openDirectTransfer, setOpenDirectTransfer] = useState(false);
   const [openSaleEscrow, setOpenSaleEscrow] = useState(false);
@@ -237,6 +239,7 @@ const ADeedPage = () => {
                 certificateExists={!!certificate}
                 onCancelCertificate={handleCancelLastWill}
                 onLastWill={() => setOpenLastWill(true)}
+                isOwner={isOwner}
               />
             )}
           </div>
@@ -291,6 +294,7 @@ const ADeedPage = () => {
               certificateExists={!!certificate}
               onCancelCertificate={handleCancelLastWill}
               onLastWill={() => setOpenLastWill(true)}
+              isOwner={isOwner}
             />
           )}
         </div>

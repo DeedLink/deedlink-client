@@ -38,6 +38,7 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
   // the escrow state when the popup is reopened. Look for a prior 'escrow_sale'
   // transaction for this deed created by the current account and restore the
   // escrow address / sale price so the seller can continue (deposit NFT).
+  // Only recover PENDING escrows, not completed ones.
   useEffect(() => {
     const recoverEscrowState = async () => {
       if (!isOpen || !deedId || !account) return;
@@ -46,8 +47,14 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
         if (!Array.isArray(txs)) return;
 
         // find the most recent escrow_sale by this seller that contains an escrow address
+        // Only recover if the transaction status is "pending" (not completed)
         const escrowTx = txs
-          .filter((t: any) => t.type === "escrow_sale" && (t.from || "").toLowerCase() === (account || "").toLowerCase() && t.blockchain_identification)
+          .filter((t: any) => 
+            t.type === "escrow_sale" && 
+            (t.from || "").toLowerCase() === (account || "").toLowerCase() && 
+            t.blockchain_identification &&
+            t.status !== "completed"  // Only recover pending escrows
+          )
           .sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0))[0];
 
         if (escrowTx) {
