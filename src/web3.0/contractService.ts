@@ -238,8 +238,15 @@ export async function createFractionalToken(
 }
 
 export async function getFTBalance(tokenAddress: string, account: string) {
-  const fft = await getFactoryContract();
-  return await fft.getFractionBalance(tokenAddress, account);
+  if (
+    !tokenAddress ||
+    tokenAddress === "0x0000000000000000000000000000000000000000"
+  ) {
+    return 0;
+  }
+  const tokenContract = await getFractionalTokenContract(tokenAddress);
+  const balance = await tokenContract.balanceOf(account);
+  return Number(balance);
 }
 
 export async function getFractionalTokenAddress(nftId: number) {
