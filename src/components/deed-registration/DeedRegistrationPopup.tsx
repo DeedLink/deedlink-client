@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useWallet } from "../../contexts/WalletContext";
+import { useLoader } from "../../contexts/LoaderContext";
+import { useAlert } from "../../contexts/AlertContext";
 import { getItem } from "../../storage/storage";
 import { type User } from "../../types/types";
 import { LandUnitSelectItems } from "../ui/LandUnitSelectItems";
@@ -17,6 +19,8 @@ const LandRegistrationPopup = ({
   if (!isOpen) return null;
 
   const { account } = useWallet();
+  const { showLoader, hideLoader } = useLoader();
+  const { showAlert } = useAlert();
   const [user] = useState<User | null>(getItem("session", "user"));
   const [formData, setFormData] = useState({
     ownerWalletAddress: account,
@@ -102,11 +106,80 @@ const LandRegistrationPopup = ({
       setActiveField(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Land Registration Data:", formData);
-    reg_mintNFT(account || "", formData);
-    //onClose();
+    
+    showLoader();
+    try {
+      await reg_mintNFT(account || "", formData);
+      
+      // Success: show alert, clear form, refresh page
+      showAlert({
+        type: "success",
+        title: "Registration Successful",
+        htmlContent: (
+          <div className="space-y-2">
+            <p>Your deed has been registered successfully!</p>
+            <p className="text-sm text-gray-600">The page will refresh now.</p>
+          </div>
+        ),
+        confirmText: "OK",
+        onConfirm: () => {
+          // Clear form
+          setFormData({
+            ownerWalletAddress: account,
+            ownerFullName: user?.name,
+            ownerNIC: user?.nic,
+            ownerAddress: "",
+            ownerPhone: "",
+            landTitleNumber: "",
+            landAddress: "",
+            landArea: "",
+            landSizeUnit: "Perches",
+            landType: "Residential",
+            surveyPlanNumber: "",
+            propertyValue: 0,
+            boundaries: "",
+            district: "",
+            division: "",
+            deedNumber: "",
+            notary: "",
+            notaryName: "",
+            IVSL: "",
+            IVSLName: "",
+            surveyor: "",
+            surveyorName: "",
+            registrationDate: "",
+            deedDocument: null,
+            titleDocument: null,
+          });
+          
+          // Close popup and refresh
+          onClose();
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        }
+      });
+    } catch (error: any) {
+      console.error("Registration failed:", error);
+      showAlert({
+        type: "error",
+        title: "Registration Failed",
+        htmlContent: (
+          <div className="space-y-2">
+            <p>Failed to register deed. Please try again.</p>
+            <p className="text-sm text-gray-600 font-mono break-words">
+              {error?.message || "Unknown error"}
+            </p>
+          </div>
+        ),
+        confirmText: "OK"
+      });
+    } finally {
+      hideLoader();
+    }
   };
 
   const renderAutocompleteInput = (
