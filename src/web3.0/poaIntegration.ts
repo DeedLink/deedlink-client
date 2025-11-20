@@ -16,19 +16,17 @@ async function getPropertyNFTContract() {
   return new ethers.Contract(PROPERTY_NFT_ADDRESS, PropertyNFTABI.abi, signer);
 }
 
-export const PoARights = {
-  SIGN: 0,
-  TRANSFER: 1,
-  FRACTIONALIZE: 2,
-  PAY_RENT: 3
-} as const;
-
-export type PoARightsType = typeof PoARights[keyof typeof PoARights];
+export enum PoARights {
+  SIGN = 0,
+  TRANSFER = 1,
+  FRACTIONALIZE = 2,
+  PAY_RENT = 3
+}
 
 export async function assignPoA(
   tokenId: number,
   agent: string,
-  right: PoARightsType,
+  right: PoARights,
   allowed: boolean,
   start: number,
   end: number
@@ -56,7 +54,7 @@ export async function assignPoA(
   };
 }
 
-export async function getPoAInfo(tokenId: number, agent: string, right: PoARightsType) {
+export async function getPoAInfo(tokenId: number, agent: string, right: PoARights) {
   const nft = await getPropertyNFTContract();
   const poaInfo = await nft.poa(tokenId, agent, right);
   return {

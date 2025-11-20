@@ -1,12 +1,13 @@
 import { type FC, useState, useEffect } from "react";
-import { IoClose, IoInformationCircle, IoCart } from "react-icons/io5";
+import { IoClose, IoInformationCircle } from "react-icons/io5";
+import { FaShoppingCart } from "react-icons/fa";
 import { 
   buyerDepositPayment, 
   finalizeEscrow, 
   getEscrowDetails, 
   getEscrowStatus 
 } from "../../../web3.0/escrowIntegration";
-import { transactionStatus, updateFullOwnerAddress, updateDeedOwners } from "../../../api/api";
+import { transactionStatus, updateFullOwnerAddress, updateDeedOwners, getTransactionsByDeedId } from "../../../api/api";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
 import { useLogin } from "../../../contexts/LoginContext";
 import { useAlert } from "../../../contexts/AlertContext";
@@ -79,14 +80,7 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
 }
 
   const handleDepositPayment = async () => {
-    if (!details) {
-      showAlert({
-        type: "warning",
-        title: "Loading",
-        message: "Escrow details are still loading..."
-      });
-      return;
-    }
+    if (!details) return alert("Loading escrow details...");
 
     const confirmed = confirmDeposit(details);
     if (!confirmed) return;
@@ -130,94 +124,76 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
     }
   };
 
-  const handleFinalize = () => {
-    showAlert({
-      type: "warning",
-      title: "Finalize Purchase",
-      htmlContent: (
-        <div className="space-y-2">
-          <p>Confirm finalization of this purchase?</p>
-          <div className="text-sm text-gray-600 space-y-1">
-            <p>This will:</p>
-            <ul className="list-disc list-inside">
-              <li>Transfer {details?.price} ETH to seller</li>
-              <li>Transfer NFT to you</li>
-            </ul>
-          </div>
-        </div>
-      ),
-      confirmText: "Finalize",
-      cancelText: "Cancel",
-      onConfirm: async () => {
-        setLoading(true);
+  const handleFinalize = async () => {
+    const confirmed = confirm(
+      `Finalize this purchase?\n\n` +
+      `This will:\n` +
+      `- Transfer ${details?.price} ETH to seller\n` +
+      `- Transfer NFT to you\n\n` +
+      `Continue?`
+    );
+    if (!confirmed) return;
+
+    setLoading(true);
+    try {
+      const result = await finalizeEscrow(escrowAddress);
+      console.log("What you are looking for: ",result);
+
+      if (result.success) {
+        const res=await transactionStatus(
+          escrowAddress,
+          "completed"
+        );
+
+        console.log("Transaction status updated in DB:", res);
+
         try {
-          const result = await finalizeEscrow(escrowAddress);
-          console.log("What you are looking for: ",result);
-
-          if (result.success) {
-            const res = await transactionStatus(
-              escrowAddress,
-              "completed"
+          const updateOwner = await updateFullOwnerAddress(
+              details.tokenId,
+              details.buyer.toLowerCase(),
+              user?.name || "",
+              user?.nic || ""
             );
+          console.log("Owner address updated in DB:", updateOwner);
 
-            console.log("Transaction status updated in DB:", res);
-
-            try {
-              const updateOwner = await updateFullOwnerAddress(
-                details.tokenId,
-                details.buyer.toLowerCase(),
-                user?.name || "",
-                user?.nic || ""
-              );
-              console.log("Owner address updated in DB:", updateOwner);
-
-              try {
-                const owners = await calculateOwnershipFromEvents(Number(details.tokenId));
-                console.log("Calculated owners from events:", owners);
-                
-                if (updateOwner?._id) {
-                  await updateDeedOwners(updateOwner._id, owners);
-                  console.log("Off-chain owners updated in DB:", owners);
-                } else {
-                  console.warn("Could not find deed ID to update off-chain ownership");
-                }
-              } catch (updateError) {
-                console.error("Failed to calculate or update ownership from events:", updateError);
-              }
-            } catch (err) {
-              console.error("Failed to update owner address in DB:", err);
-            }
-
-            showAlert({
-              type: "success",
-              title: "Purchase Complete!",
-              htmlContent: (
-                <div className="text-white space-y-2">
-                  <p>
-                    <strong>Transaction:</strong> {result.txHash}
-                  </p>
-                  <p>You now own the property!</p>
-                </div>
-              ),
-              confirmText: "OK",
-            });
-            onClose();
-          } else {
-            throw new Error(result.error);
+          try {
+            const owners = await calculateOwnershipFromEvents(Number(details.tokenId));
+            console.log("Calculated owners from events:", owners);
+          } catch (updateError) {
+            console.error("Failed to calculate ownership from events:", updateError);
           }
-        } catch (error: any) {
-          console.error("Finalization failed:", error);
-          showAlert({
-            type: "error",
-            title: "Failed to Finalize",
-            message: error.message,
-            confirmText: "OK",
-          });
-        } finally {
-          setLoading(false);
+        } catch (err) {
+          console.error("Failed to update owner address in DB:", err);
         }
-      },
-    });
+
+        showAlert({
+          type: "success",
+          title: "Purchase Complete!",
+          htmlContent: (
+            <div className="text-white space-y-2">
+              <p>
+                <strong>Transaction:</strong> {result.txHash}
+              </p>
+              <p>You now own the property!</p>
+            </div>
+          ),
+          confirmText: "OK",
+        });
+        onClose();
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error: any) {
+      console.error("Finalization failed:", error);
+      showAlert({
+        type: "error",
+        title: "Failed to Finalize",
+        message: error.message,
+        confirmText: "OK",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const shortAddress = (addr: string) =>
@@ -237,7 +213,7 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
         <div className="border-b border-gray-100 flex items-center justify-between p-5">
           <div className="flex items-center gap-3">
             <div className="bg-blue-100 p-2 rounded-full">
-              <IoCart className="text-blue-700" size={18} />
+              <FaShoppingCart className="text-blue-700" size={18} />
             </div>
             <h2 className="text-xl font-bold text-[#00420A]">Purchase Property</h2>
           </div>

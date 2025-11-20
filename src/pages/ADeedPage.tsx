@@ -40,13 +40,8 @@ const ADeedPage = () => {
     numberOfFT,
     tnx,
     marketPlaceData,
-    getMarketPlaceData,
-    getNumberOfFT,
-    fractionalInfo,
-    getFractionalInfo
+    getMarketPlaceData
   } = useDeedData(deedNumber);
-
-  const isOwner = deed?.owners?.some((o: any) => o.address?.toLowerCase() === (account || "").toLowerCase());
 
   const [openTransact, setOpenTransact] = useState(false);
   const [openDirectTransfer, setOpenDirectTransfer] = useState(false);
@@ -58,7 +53,6 @@ const ADeedPage = () => {
   const [showCreateListing, setShowCreateListing] = useState(false);
   const [openTransferFractional, setOpenTransferFractional] = useState(false);
   const [certificate, setCertificate] = useState<Certificate | null>(null);
-  const [ftRefreshKey, setFtRefreshKey] = useState<number>(0);
 
   useEffect(() => {
     const loadCertificate = async () => {
@@ -82,99 +76,40 @@ const ADeedPage = () => {
   }, [openTransact, openDirectTransfer, openSaleEscrow, openGiveRent, openGetRent, openMarket, openLastWill, showCreateListing]);
 
   const handleFractioning = async () => {
-    // Gate: Only owner can fractionate
-    if (!isOwner) {
-      showToast("Only the owner can create fractions", "error");
-      return;
-    }
-
-    if (!deed?.tokenId || !deed?._id) {
-      showToast("Fractioning failed! No token ID or deed ID", "error");
-      return;
-    }
-
-    // Confirmation dialog
-    const userConfirmed = window.confirm(
-      "This will fractionalize the entire property into 1,000,000 tokens.\n\n" +
-      "This action cannot be undone. Continue?"
-    );
-
-    if (!userConfirmed) {
-      showToast("Fractioning cancelled", "info");
-      return;
-    }
-
-    try {
-      showLoader();
-      const res = await createFractionalToken(
-        deed.tokenId,
-        deed.deedNumber,
-        deed.deedNumber,
-        1000000
-      );
-      console.log("Fractioning result:", res);
-      
-      if (res.success && res.txHash) {
-        try {
-          // Record transaction as completed
-          await createTransaction({
-            deedId: deed._id,
-            from: account || "",
-            to: account || "",
-            amount: 0,
-            share: 100,
-            type: "init",
-            blockchain_identification: res.txHash,
-            hash: res.txHash,
-            description: `Property fractionalized into 1,000,000 tokens. Token address: ${res.tokenAddress}`,
-            status: "completed"
-          });
-        } catch (txError) {
-          console.error("Failed to record fractionalization transaction:", txError);
-        }
-
-          // Show success with details
-          showToast(
-            `✓ Property fractionalized!\n1,000,000 tokens created\nAddress: ${res.tokenAddress?.substring(0, 10)}...`,
-            "success"
-          );
-
-          // Refresh fractional info and FT balance and force a remount of the
-          // FractionalOwnershipCard so it re-queries on-chain state. Retry a few
-          // times to allow on-chain mapping to propagate.
+    if (deed?.tokenId && deed?._id) {
+      try {
+        showLoader();
+        const res = await createFractionalToken(deed?.tokenId, deed?.deedNumber, deed?.deedNumber, 1000000);
+        console.log("Fractioning result:", res);
+        
+        if (res.success && res.txHash) {
           try {
-            // immediate remount trigger
-            setFtRefreshKey(Date.now());
-
-            const runRefresh = async () => {
-              try {
-                if (typeof getFractionalInfo === "function") await getFractionalInfo();
-              } catch (e) {
-                /* ignore */
-              }
-              try {
-                if (typeof getNumberOfFT === "function") await getNumberOfFT();
-              } catch (e) {
-                /* ignore */
-              }
-            };
-
-            setTimeout(runRefresh, 1500);
-            setTimeout(runRefresh, 4000);
-            setTimeout(runRefresh, 8000);
-            // also bump the remount key again after propagation
-            setTimeout(() => setFtRefreshKey(Date.now()), 3000);
-          } catch (e) {
-            console.warn("Failed to refresh fractional token balance:", e);
+            await createTransaction({
+              deedId: deed._id,
+              from: account || "",
+              to: account || "",
+              amount: 0,
+              share: 100,
+              type: "init",
+              blockchain_identification: res.txHash,
+              hash: res.txHash,
+              description: `Property fractionalized into 1,000,000 tokens. Token address: ${res.tokenAddress}`,
+              status: "completed"
+            });
+          } catch (txError) {
+            console.error("Failed to record fractionalization transaction:", txError);
           }
-      } else {
-        throw new Error("Fractionalization returned no success flag");
+        }
+        
+        showToast("Fractioning success", "success");
+      } catch (error: any) {
+        console.error("Fractioning error:", error);
+        showToast(error.message || "Fractioning failed!", "error");
+      } finally {
+        hideLoader();
       }
-    } catch (error: any) {
-      console.error("Fractioning error:", error);
-      showToast(error.message || "Fractioning failed!", "error");
-    } finally {
-      hideLoader();
+    } else {
+      showToast("Fractioning failed! No token ID", "error");
     }
   };
 
@@ -302,7 +237,6 @@ const ADeedPage = () => {
                 certificateExists={!!certificate}
                 onCancelCertificate={handleCancelLastWill}
                 onLastWill={() => setOpenLastWill(true)}
-                isOwner={isOwner}
               />
             )}
           </div>
@@ -316,10 +250,8 @@ const ADeedPage = () => {
                   <OwnerInformation deed={deed} />
                   {deed.tokenId && (
                     <FractionalOwnershipCard
-                      key={`fractional-${deed.tokenId}-${numberOfFT}-${ftRefreshKey}`}
                       tokenId={deed.tokenId}
                       onTransfer={() => setOpenTransferFractional(true)}
-                      ownershipInfoFromHook={fractionalInfo}
                     />
                   )}
                   <BlockchainOwners deed={deed} />
@@ -359,7 +291,6 @@ const ADeedPage = () => {
               certificateExists={!!certificate}
               onCancelCertificate={handleCancelLastWill}
               onLastWill={() => setOpenLastWill(true)}
-              isOwner={isOwner}
             />
           )}
         </div>

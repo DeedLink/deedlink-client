@@ -62,6 +62,32 @@ export const useDeedData = (deedNumber: string | undefined) => {
     }
   };
 
+  const pollForFractionalization = async (opts?: { attempts?: number; intervalMs?: number }) => {
+    const attempts = opts?.attempts ?? 8;
+    const intervalMs = opts?.intervalMs ?? 1500;
+
+    if (!deed?.tokenId || !account) return null;
+
+    for (let i = 0; i < attempts; i++) {
+      try {
+        const tokenAddress = await (await import("../web3.0/contractService")).getFractionalTokenAddress(deed.tokenId);
+        if (tokenAddress && tokenAddress !== "0x0000000000000000000000000000000000000000") {
+          // fractionalized, fetch info and balance
+          const info = await getFractionalInfo();
+          await getNumberOfFT();
+          return info;
+        }
+      } catch (err) {
+        console.error("pollForFractionalization attempt failed:", err);
+      }
+
+      // wait
+      await new Promise((res) => setTimeout(res, intervalMs));
+    }
+
+    return null;
+  };
+
   const getMarketPlaceData = async () => {
     try {
       if (!deed?._id) return;
@@ -150,6 +176,7 @@ export const useDeedData = (deedNumber: string | undefined) => {
     marketPlaceData,
     getNumberOfFT,
     getFractionalInfo,
+    pollForFractionalization,
     getMarketPlaceData,
     fetchDeed
   };

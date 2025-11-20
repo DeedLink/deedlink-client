@@ -8,6 +8,10 @@ import { LandUnitSelectItems } from "../ui/LandUnitSelectItems";
 import { searchUsers } from "../../api/api";
 import { reg_mintNFT } from "../../offonchaincalls/calls";
 import { LAND_TYPES } from "../../constants/const";
+import {
+  SRI_LANKA_DISTRICTS,
+  SRI_LANKA_DIVISIONS_BY_DISTRICT
+} from "../../constants/sriLankaLocations";
 
 const LandRegistrationPopup = ({
   isOpen,
@@ -56,6 +60,9 @@ const LandRegistrationPopup = ({
   const [ivslSuggestions, setIvslSuggestions] = useState<User[]>([]);
 
   const [activeField, setActiveField] = useState<string | null>(null);
+  const divisionOptions = formData.district
+    ? SRI_LANKA_DIVISIONS_BY_DISTRICT[formData.district] ?? []
+    : [];
 
   const toggleSection = (section: string) => {
     setActiveSection(activeSection === section ? null : section);
@@ -67,6 +74,10 @@ const LandRegistrationPopup = ({
     >
   ) => {
     const { name, value } = e.target;
+    if (name === "district") {
+      setFormData({ ...formData, district: value, division: "" });
+      return;
+    }
     setFormData({ ...formData, [name]: value });
 
     if (["surveyorName", "notaryName", "IVSLName"].includes(name)) {
@@ -356,20 +367,39 @@ const LandRegistrationPopup = ({
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 sm:col-span-2"
                   />
-                  <input
+                  <select
                     name="district"
-                    placeholder="District"
                     value={formData.district}
                     onChange={handleChange}
-                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
-                  />
-                  <input
+                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 bg-white"
+                    required
+                  >
+                    <option value="">Select District</option>
+                    {SRI_LANKA_DISTRICTS.map((district) => (
+                      <option key={district} value={district}>
+                        {district}
+                      </option>
+                    ))}
+                  </select>
+                  <select
                     name="division"
-                    placeholder="Division / DS Division"
                     value={formData.division}
                     onChange={handleChange}
-                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
-                  />
+                    disabled={!formData.district}
+                    className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 bg-white disabled:bg-gray-100 disabled:text-gray-400"
+                    required
+                  >
+                    <option value="">
+                      {formData.district
+                        ? "Select Division"
+                        : "Select a district first"}
+                    </option>
+                    {divisionOptions.map((division) => (
+                      <option key={division} value={division}>
+                        {division}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
             </div>
