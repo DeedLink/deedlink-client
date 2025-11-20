@@ -120,6 +120,14 @@ const DeedActionBar = ({
 
   const isLocked = state === "pending";
 
+  // Find a pending escrow_sale transaction created by the current account
+  const pendingEscrowTx = titles.find(
+    (t: any) =>
+      t.type === "escrow_sale" &&
+      t.status === "pending" &&
+      (t.from || "").toLowerCase() === (account || "").toLowerCase()
+  );
+
   return (
     <div className="relative w-full max-w-[460px] md:max-w-full">
       <div
@@ -199,11 +207,27 @@ const DeedActionBar = ({
       </div>
 
       {isLocked && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-lg z-10">
-          <FaLock size={32} className="text-gray-400 mb-3" />
-          <span className="text-gray-600 font-medium text-sm">Actions Locked</span>
-          <span className="text-gray-500 text-xs mt-1">Pending Transaction</span>
-        </div>
+        <>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-lg z-10">
+            <FaLock size={32} className="text-gray-400 mb-3" />
+            <span className="text-gray-600 font-medium text-sm">Actions Locked</span>
+            <span className="text-gray-500 text-xs mt-1">Pending Transaction</span>
+          </div>
+
+          {/* If there's a pending escrow_sale created by this seller, show a small
+              "Resume Sale" button above the lock overlay so they can reopen the
+              Sale popup and continue (e.g. deposit NFT). */}
+          {pendingEscrowTx && onSaleEscrow && (
+            <div className="absolute top-3 right-3 z-20">
+              <button
+                onClick={onSaleEscrow}
+                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-md shadow-sm"
+              >
+                Resume Sale
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

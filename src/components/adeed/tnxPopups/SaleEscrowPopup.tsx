@@ -1,5 +1,5 @@
 import { type FC, useState, useEffect } from "react";
-import { createTransaction, getUsers } from "../../../api/api";
+import { createTransaction, getUsers, getTransactionsByDeedId } from "../../../api/api";
 import type { User } from "../../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle, IoCashOutline } from "react-icons/io5";
 import { FaStore } from "react-icons/fa";
@@ -33,6 +33,36 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
   const { showAlert } = useAlert();
   const [txHash, setTxHash] = useState("");
   const { showQRPopup } = useQR();
+
+  // If the seller created an escrow then closed the popup, we should recover
+  // the escrow state when the popup is reopened. Look for a prior 'escrow_sale'
+  // transaction for this deed created by the current account and restore the
+  // escrow address / sale price so the seller can continue (deposit NFT).
+  useEffect(() => {
+    const recoverEscrowState = async () => {
+      if (!isOpen || !deedId || !account) return;
+      try {
+        const txs = await getTransactionsByDeedId(deedId);
+        if (!Array.isArray(txs)) return;
+
+        // find the most recent escrow_sale by this seller that contains an escrow address
+        const escrowTx = txs
+          .filter((t: any) => t.type === "escrow_sale" && (t.from || "").toLowerCase() === (account || "").toLowerCase() && t.blockchain_identification)
+          .sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0))[0];
+
+        if (escrowTx) {
+          setEscrowAddress(escrowTx.blockchain_identification);
+          setTxHash(escrowTx.hash || "");
+          setSalePrice(String(escrowTx.amount || ""));
+          setSelectedWallet(escrowTx.to || "");
+        }
+      } catch (e) {
+        console.warn("Failed to recover escrow state:", e);
+      }
+    };
+
+    recoverEscrowState();
+  }, [isOpen, deedId, account]);
 
 
   useEffect(() => {

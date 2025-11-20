@@ -85,7 +85,8 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 backdrop-blur-sm"
+            // Ensure alert overlays always appear above any other popup or loader
+            className="fixed inset-0 z-[99999] flex items-start justify-center bg-black/50 backdrop-blur-sm"
           >
             <motion.div
               initial={{ y: -50, opacity: 0 }}
