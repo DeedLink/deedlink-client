@@ -5,6 +5,7 @@ import type { RegisterDeedRequest } from "../types/regitseringdeedtype";
 import type { IDeed } from "../types/responseDeed";
 import type { TransactionPayload } from "../types/transaction";
 import type { Marketplace } from "../types/marketplace";
+import type { Certificate } from "../types/certificate";
 
 // Later added when vercel testing
 const isVercelTest = import.meta.env.VITE_VERCEL_TEST === true || import.meta.env.VITE_VERCEL_TEST === "true";
@@ -621,7 +622,16 @@ export const deleteCertificate = async (id: string) => {
 };
 
 // Get certificates by token ID
-export const getCertificatesByTokenId = async (tokenId: number) => {
+export const getCertificatesByTokenId = async (tokenId: number): Promise<Certificate | null> => {
   const res = await certificateApi.get(`/token/${tokenId}`);
-  return res.data;
+  const data = res.data;
+  // The certificate endpoint may return an array (possibly empty) or a single object.
+  // Normalize to return a single Certificate or null so callers can rely on a consistent shape.
+  if (Array.isArray(data)) {
+    return data.length > 0 ? (data[0] as Certificate) : null;
+  }
+  if (data && typeof data === "object") {
+    return data as Certificate;
+  }
+  return null;
 };
