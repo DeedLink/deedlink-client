@@ -157,7 +157,7 @@ const DeedsPage = () => {
       </main>
 
       <DeedViewerPopup 
-        currency="LKR" 
+        currency="ETH" 
         deed={viewer} 
         onClose={() => setViewer(null)}
         signatures={viewer ? deedSignatures.get(viewer._id) : undefined}

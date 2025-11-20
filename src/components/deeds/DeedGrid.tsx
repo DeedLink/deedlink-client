@@ -32,7 +32,7 @@ const DeedGrid = ({ deeds, currentUser, onOpen, deedSignatures }: Props) => {
           key={d._id} 
           deed={d} 
           currentUser={currentUser} 
-          currency="LKR" 
+          currency="ETH" 
           onOpen={onOpen}
           signatures={deedSignatures.get(d._id)}
         />

@@ -7,8 +7,15 @@ export const shortAddress = (addr: string, left = 6, right = 4) =>
 export const formatNumber = (n: number) =>
   Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(n);
 
-export const formatCurrency = (n: number, currency: string = "USD") =>
-  Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+export const formatCurrency = (n: number, currency: string = "USD") => {
+  // Handle ETH as a special case because Intl may not support it as a currency code.
+  if (currency === "ETH") {
+    // Show up to 4 decimal places for ETH amounts.
+    return `${Intl.NumberFormat(undefined, { maximumFractionDigits: 4 }).format(n)} ETH`;
+  }
+
+  return Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+};
 
 export const timeAgo = (ts: number) => {
   const s = Math.floor((Date.now() - ts) / 1000);

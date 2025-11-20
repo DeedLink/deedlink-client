@@ -30,7 +30,7 @@ const DeedStats = ({ deed }: DeedStatsProps) => {
     <div className="rounded-xl border border-gray-200 p-5 bg-white">
       <div className="text-xs text-gray-600 uppercase font-semibold">Estimated Value</div>
       <div className="text-3xl font-bold text-gray-900 mt-2">
-        {formatCurrency(latestValue, "LKR")}
+        {formatCurrency(latestValue, "ETH")}
       </div>
       
       <div className="mt-5 text-xs text-gray-600 uppercase font-semibold">Area</div>

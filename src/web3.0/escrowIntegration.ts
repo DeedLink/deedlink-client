@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { connectWallet } from "./wallet";
 import EscrowFactoryABI from "./abis/EscrowFactory.json";
 import HybridEscrowABI from "./abis/HybridEscrow.json";
-import { approveNFT, nftOwnershipVerification } from "./contractService";
+import { approveNFT, nftOwnershipVerification, getNFTOwner } from "./contractService";
 import { getStampPercentage } from "../constants/stampfee";
 
 // Environment variables
@@ -165,9 +165,16 @@ export async function sellerDepositNFT(
     const sellerAddress = await signer.getAddress();
     const ownsNFT = await nftOwnershipVerification(tokenId, sellerAddress);
     if (!ownsNFT) {
-      throw new Error("Seller does not own the specified NFT");
-    }
-    else{
+      // fetch current owner for diagnostic clarity
+      let currentOwner = "unknown";
+      try {
+        currentOwner = await getNFTOwner(tokenId);
+      } catch (e) {
+        console.warn("Failed to fetch current NFT owner for diagnostics:", e);
+      }
+      console.error(`Ownership mismatch: connected=${sellerAddress}, nftOwner=${currentOwner}`);
+      throw new Error(`Seller does not own the specified NFT. Current owner: ${currentOwner}`);
+    } else {
       console.log("✅ Seller owns the NFT");
     }
 

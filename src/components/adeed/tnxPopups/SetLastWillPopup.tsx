@@ -295,10 +295,10 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-600">Property Valuation (LKR)</label>
+            <label className="text-sm font-semibold text-gray-600">Property Valuation (ETH)</label>
             <div className="mt-1 p-4 bg-gray-50 border border-gray-200 rounded-xl text-center">
               <div className="text-2xl font-bold text-emerald-700">
-                LKR {estimatedValue.toLocaleString()}
+                ETH {estimatedValue.toLocaleString()}
               </div>
               <div className="text-xs text-gray-500 mt-1">Latest valuation from deed</div>
             </div>
@@ -308,15 +308,15 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
             <h3 className="text-sm font-semibold text-emerald-800">Government Fees (Stamp Duty)</h3>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Stamp Duty (3%):</span>
-              <span className="font-medium text-emerald-700">LKR {stampDuty}</span>
+              <span className="font-medium text-emerald-700">ETH {stampDuty}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Fixed Fee:</span>
-              <span className="font-medium text-emerald-700">LKR {GOV_FEE_FIXED.toLocaleString()}</span>
+              <span className="font-medium text-emerald-700">ETH {GOV_FEE_FIXED.toLocaleString()}</span>
             </div>
             <div className="border-t border-emerald-200 pt-2 flex justify-between font-bold text-emerald-900">
               <span>Total Payable:</span>
-              <span>LKR {totalGovFee}</span>
+              <span>ETH {totalGovFee}</span>
             </div>
           </div>
 

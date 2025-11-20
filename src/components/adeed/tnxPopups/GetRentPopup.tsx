@@ -68,7 +68,7 @@ const GetRentPopup: React.FC<GetRentPopupProps> = ({ isOpen, onClose, tokenId })
               <strong>Tenant:</strong> {rentDetails.tenant}
             </div>
             <div className="text-sm text-gray-700">
-              <strong>Amount:</strong> {ethers.formatEther(rentDetails.amount)} LKR
+              <strong>Amount:</strong> {ethers.formatEther(rentDetails.amount)} ETH
             </div>
             <div className="text-sm text-gray-700">
               <strong>Duration:</strong> {rentDetails.duration} months
