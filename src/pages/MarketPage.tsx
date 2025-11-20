@@ -17,7 +17,8 @@ const MarketPage: React.FC = () => {
     showLoader();
     try {
       const data = await getMarketPlaces();
-      setMarketplaces(data || []);
+      // Defensive: ensure marketplaces is always an array before using .filter in render
+      setMarketplaces(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch marketplaces:", error);
       showAlert({

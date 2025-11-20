@@ -515,7 +515,8 @@ const marketplaceApi = axios.create({
 // Get all marketplaces
 export const getMarketPlaces = async (): Promise<Marketplace[]> => {
   const res: AxiosResponse<Marketplace[]> = await marketplaceApi.get("/");
-  return res.data;
+  // Normalize response: ensure callers always receive an array
+  return Array.isArray(res.data) ? res.data : [];
 };
 
 // Get marketplace by ID
@@ -545,13 +546,13 @@ export const deleteMarketPlace = async (id: string): Promise<{ message: string }
 // Get marketplace by Deed ID
 export const getMarketPlaceByDeedId = async (deedId: string): Promise<Marketplace[]> => {
   const res: AxiosResponse<Marketplace[]> = await marketplaceApi.get(`/deed/${deedId}`);
-  return res.data;
+  return Array.isArray(res.data) ? res.data : [];
 };
 
 // Get marketplace by Token ID
 export const getMarketPlaceByTokenId = async (tokenId: string): Promise<Marketplace[]> => {
   const res: AxiosResponse<Marketplace[]> = await marketplaceApi.get(`/token/${tokenId}`);
-  return res.data;
+  return Array.isArray(res.data) ? res.data : [];
 };
 
 // Delete marketplaces by Deed ID
