@@ -6,11 +6,18 @@ import { FaCoins, FaPercentage, FaInfoCircle } from "react-icons/fa";
 interface FractionalOwnershipCardProps {
   tokenId: number;
   onTransfer?: () => void;
+  ownershipInfoFromHook?: {
+    isFractionalized: boolean;
+    userBalance: number;
+    totalSupply: number;
+    userPercentage: number;
+  } | null;
 }
 
 const FractionalOwnershipCard: React.FC<FractionalOwnershipCardProps> = ({
   tokenId,
-  onTransfer
+  onTransfer,
+  ownershipInfoFromHook
 }) => {
   const { account } = useWallet();
   const [ownershipInfo, setOwnershipInfo] = useState<{
@@ -23,7 +30,19 @@ const FractionalOwnershipCard: React.FC<FractionalOwnershipCardProps> = ({
 
   useEffect(() => {
     const loadOwnership = async () => {
-      if (!account || !tokenId) {
+      if (!account || tokenId == null) {
+        setLoading(false);
+        return;
+      }
+
+      // If ownership info is provided by the parent hook, use it directly
+      if (ownershipInfoFromHook && typeof ownershipInfoFromHook.isFractionalized !== "undefined") {
+        setOwnershipInfo({
+          isFractionalized: ownershipInfoFromHook.isFractionalized,
+          userBalance: ownershipInfoFromHook.userBalance || 0,
+          totalSupply: ownershipInfoFromHook.totalSupply || 0,
+          userPercentage: ownershipInfoFromHook.userPercentage || 0
+        });
         setLoading(false);
         return;
       }
@@ -57,7 +76,7 @@ const FractionalOwnershipCard: React.FC<FractionalOwnershipCardProps> = ({
     };
 
     loadOwnership();
-  }, [account, tokenId]);
+  }, [account, tokenId, ownershipInfoFromHook]);
 
   if (loading) {
     return (

@@ -21,6 +21,7 @@ export const useDeedData = (deedNumber: string | undefined) => {
   const [plan, setPlan] = useState<Plan>(defaultPlan);
   const [signatures, setSignatures] = useState<ISignatures | null>(null);
   const [numberOfFT, setNumberOfFT] = useState(0);
+  const [fractionalInfo, setFractionalInfo] = useState<any | null>(null);
   const [tnx, setTnx] = useState<any[]>([]);
   const [marketPlaceData, setMarketPlaceData] = useState<Marketplace[]>();
   
@@ -33,16 +34,31 @@ export const useDeedData = (deedNumber: string | undefined) => {
       if (!deed?.tokenId || !account) return;
 
       const tokenAddress = await getFractionalTokenAddress(deed.tokenId);
+      console.log("getNumberOfFT: tokenAddress=", tokenAddress, "tokenId=", deed.tokenId, "account=", account);
       if (!ethers.isAddress(tokenAddress)) {
         console.error("Invalid token address:", tokenAddress);
         return;
       }
 
       const balance = await getFTBalance(tokenAddress, account);
+      console.log("getNumberOfFT: raw balance=", balance);
       const formattedBalance = ethers.formatUnits(balance, 0);
+      console.log("getNumberOfFT: formattedBalance=", formattedBalance);
       setNumberOfFT(parseInt(formattedBalance));
     } catch (err) {
       console.error("Failed to get fractional token balance:", err);
+    }
+  };
+
+  const getFractionalInfo = async () => {
+    try {
+      if (!deed?.tokenId || !account) return null;
+      const info = await (await import("../web3.0/contractService")).getFractionalTokenInfo(deed.tokenId);
+      setFractionalInfo(info);
+      return info;
+    } catch (err) {
+      console.error("Failed to get fractional token info:", err);
+      return null;
     }
   };
 
@@ -129,9 +145,11 @@ export const useDeedData = (deedNumber: string | undefined) => {
     plan,
     signatures,
     numberOfFT,
+    fractionalInfo,
     tnx,
     marketPlaceData,
     getNumberOfFT,
+    getFractionalInfo,
     getMarketPlaceData,
     fetchDeed
   };
