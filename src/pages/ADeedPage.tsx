@@ -23,6 +23,7 @@ import TransferFractionalTokensPopup from "../components/adeed/tnxPopups/Transfe
 import type { Certificate } from "../types/certificate";
 import { cancelListing } from "../web3.0/marketService";
 import { createTransaction } from "../api/api";
+import { generateDeedPDF } from "../utils/generateDeedPDF";
 
 const PROPERTY_NFT_ADDRESS = import.meta.env.VITE_PROPERTY_NFT_ADDRESS as string;
 
@@ -114,7 +115,17 @@ const ADeedPage = () => {
   };
 
   const handleDownload = () => {
-    showToast("Download functionality coming soon", "info");
+    if (!deed) {
+      showToast("Deed information not available", "error");
+      return;
+    }
+    try {
+      generateDeedPDF(deed, plan, signatures);
+      showToast("PDF downloaded successfully", "success");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      showToast("Failed to generate PDF", "error");
+    }
   };
 
   const handleShare = () => {
