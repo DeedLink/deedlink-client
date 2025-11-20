@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { ethers } from "ethers";
 import { FaTimes, FaEthereum, FaPercentage, FaExclamationTriangle } from "react-icons/fa";
 import type { Marketplace } from "../../types/marketplace";
 import type { IDeed } from "../../types/responseDeed";
@@ -19,6 +20,8 @@ interface BuyMarketplacePopupProps {
   onSuccess: () => void;
 }
 
+const WEI_PER_ETHER = BigInt("1000000000000000000");
+
 const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
   marketplace,
   deed,
@@ -33,41 +36,61 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
   const [agreed, setAgreed] = useState(false);
   const [listingType, setListingType] = useState<"NFT" | "FRACTIONAL" | null>(null);
   const [loading, setLoading] = useState(true);
+  const [onChainListing, setOnChainListing] = useState<{
+    price: string;
+    priceRaw: string;
+    amount: string;
+    listingType: "NFT" | "FRACTIONAL";
+    isActive: boolean;
+  } | null>(null);
+  const [fractionalTotalPriceEth, setFractionalTotalPriceEth] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchListingDetails = async () => {
       if (!isOpen) return;
-      
+
       try {
         setLoading(true);
-        
-        if (marketplace.listingTypeOnChain) {
-          setListingType(marketplace.listingTypeOnChain);
-          console.log("Using stored listing type:", marketplace.listingTypeOnChain);
-        } else if (marketplace.share === 100) {
-          setListingType("NFT");
-          console.log("Assuming NFT type based on share=100");
+        const details = await getListingDetails(Number(marketplace.marketPlaceId));
+        setListingType(details.listingType as "NFT" | "FRACTIONAL");
+        setOnChainListing({
+          price: details.price,
+          priceRaw: details.priceRaw,
+          amount: details.amount,
+          listingType: details.listingType as "NFT" | "FRACTIONAL",
+          isActive: details.isActive
+        });
+
+        if (details.listingType === "FRACTIONAL") {
+          const priceRaw = BigInt(details.priceRaw);
+          const amountRaw = BigInt(details.amount);
+          const totalPriceWei = (priceRaw * amountRaw) / WEI_PER_ETHER;
+          setFractionalTotalPriceEth(
+            totalPriceWei > 0 ? ethers.formatEther(totalPriceWei) : "0"
+          );
         } else {
-          const details = await getListingDetails(Number(marketplace.marketPlaceId));
-          setListingType(details.listingType as "NFT" | "FRACTIONAL");
-          console.log("Fetched listing type from blockchain:", details.listingType);
+          setFractionalTotalPriceEth(details.price);
         }
       } catch (error) {
-        console.error("Failed to determine listing type:", error);
-        try {
-          const details = await getListingDetails(Number(marketplace.marketPlaceId));
-          setListingType(details.listingType as "NFT" | "FRACTIONAL");
-        } catch (e) {
-          console.error("All methods failed:", e);
-          showToast("Failed to load listing details", "error");
+        console.error("Failed to load listing details:", error);
+        setOnChainListing(null);
+
+        if (marketplace.listingTypeOnChain) {
+          setListingType(marketplace.listingTypeOnChain);
+        } else if (marketplace.share === 100) {
+          setListingType("NFT");
+        } else {
+          setListingType("FRACTIONAL");
         }
+
+        showToast("Failed to load on-chain listing data", "error");
       } finally {
         setLoading(false);
       }
     };
 
     fetchListingDetails();
-  }, [isOpen, marketplace]);
+  }, [isOpen, marketplace, showToast]);
 
   if (!isOpen) return null;
 
@@ -104,11 +127,25 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
         console.log("Buying full NFT...");
         result = await buyNFT(Number(marketplace.marketPlaceId), priceInEth);
       } else {
+        if (!onChainListing) {
+          showToast("Unable to process fractional listing without on-chain data", "error");
+          return;
+        }
+
+        const amountRaw = BigInt(onChainListing.amount);
+        const priceRaw = BigInt(onChainListing.priceRaw);
+        const totalPriceWei = (priceRaw * amountRaw) / WEI_PER_ETHER;
+
+        if (amountRaw === BigInt(0) || totalPriceWei === BigInt(0)) {
+          showToast("Listing data invalid or sold out", "error");
+          return;
+        }
+
         console.log("Buying fractional tokens...");
         result = await buyFractionalTokens(
           Number(marketplace.marketPlaceId),
-          marketplace.share,
-          priceInEth
+          amountRaw,
+          totalPriceWei
         );
       }
 
@@ -202,6 +239,9 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
 
   const isFullNFT = listingType === "NFT";
   const isFractional = listingType === "FRACTIONAL";
+  const displayedFractionalPrice = isFractional
+    ? fractionalTotalPriceEth || marketplace.amount.toString()
+    : marketplace.amount.toString();
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -264,11 +304,13 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
                 )}
 
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-700">
+                <div className="flex items-center gap-2 text-gray-700">
                     <FaEthereum className="text-green-600" />
-                    <span>{isFullNFT ? "Total Price" : "Price"}</span>
+                    <span>{isFullNFT ? "Total Price" : "Payable Amount"}</span>
                   </div>
-                  <span className="font-bold text-2xl text-green-900">{marketplace.amount} ETH</span>
+                  <span className="font-bold text-2xl text-green-900">
+                    {isFullNFT ? marketplace.amount : displayedFractionalPrice} ETH
+                  </span>
                 </div>
 
                 {isFullNFT && (

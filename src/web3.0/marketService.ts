@@ -177,17 +177,15 @@ export async function buyNFT(listingId: number, priceInEth: string) {
 
 export async function buyFractionalTokens(
   listingId: number,
-  amount: number,
-  totalPriceInEth: string
+  amount: bigint,
+  totalPriceWei: bigint
 ) {
   try {
-    console.log("Buying fractional tokens:", { listingId, amount, totalPriceInEth });
+    console.log("Buying fractional tokens:", { listingId, amount: amount.toString(), totalPriceWei: totalPriceWei.toString() });
     
     const marketplace = await getMarketplaceContract();
-    const priceInWei = ethers.parseEther(totalPriceInEth);
-
     const tx = await marketplace.buyFractionalTokens(listingId, amount, {
-      value: priceInWei
+      value: totalPriceWei
     });
     const receipt = await tx.wait();
 
