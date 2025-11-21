@@ -78,9 +78,6 @@ const MarketPage: React.FC = () => {
 
   const availableCount = marketplaces.filter(m => m.status === "open_to_sale").length;
   const soldCount = marketplaces.filter(m => m.status === "sale_completed").length;
-  const totalValue = marketplaces
-    .filter(m => m.status === "open_to_sale")
-    .reduce((sum, m) => sum + (m.amount || 0), 0);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
