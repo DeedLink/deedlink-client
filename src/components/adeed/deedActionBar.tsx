@@ -136,8 +136,8 @@ const DeedActionBar = ({
             onClick={onFractioning}
             color={
               numberOfFT !== 0
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200 hidden"
-                : "bg-gray-800 hover:bg-gray-900 text-white border-gray-800 hidden"
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                : "bg-gray-800 hover:bg-gray-900 text-white border-gray-800"
             }
             disabled={numberOfFT !== 0}
           />
