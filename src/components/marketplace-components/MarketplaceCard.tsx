@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { Marketplace } from "../../types/marketplace";
-import { FaMapMarkerAlt, FaPercentage, FaEthereum, FaClock } from "react-icons/fa";
+import { FaMapMarkerAlt, FaClock } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getDeedById } from "../../api/api";
 import type { IDeed } from "../../types/responseDeed";
@@ -61,10 +61,9 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 animate-pulse">
+      <div className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
         <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
         <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-        <div className="h-32 bg-gray-200 rounded mb-4"></div>
         <div className="h-10 bg-gray-200 rounded"></div>
       </div>
     );
@@ -78,15 +77,26 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
 
   return (
     <>
-      <div className={`bg-white rounded-2xl shadow-lg border transition-all hover:shadow-xl ${
-        isOwnListing ? 'border-blue-200' : isAvailable ? 'border-green-200' : 'border-gray-200 opacity-75'
+      <div className={`bg-white rounded-lg border transition hover:shadow-md ${
+        isOwnListing 
+          ? 'border-blue-300' 
+          : isAvailable 
+            ? 'border-green-300' 
+            : 'border-gray-300 opacity-75'
       }`}>
-        <div className={`p-6 rounded-t-2xl ${
-          isOwnListing ? 'bg-blue-600' : isAvailable ? 'bg-green-600' : 'bg-gray-500'
+        <div className={`p-4 rounded-t-lg ${
+          isOwnListing 
+            ? 'bg-blue-600' 
+            : isAvailable 
+              ? 'bg-green-600' 
+              : 'bg-gray-500'
         }`}>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-bold text-white">Deed #{deed.deedNumber}</h3>
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-white">Deed #{deed.deedNumber}</h3>
+              <p className="text-white/90 text-sm">{deed.deedType.deedType}</p>
+            </div>
+            <span className={`px-2 py-1 rounded text-xs font-medium ${
               isOwnListing 
                 ? 'bg-white text-blue-700'
                 : isAvailable 
@@ -96,73 +106,70 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
               {isOwnListing ? 'Your Listing' : isAvailable ? 'Available' : 'Sold'}
             </span>
           </div>
-          <p className={`text-sm ${isOwnListing ? 'text-blue-100' : 'text-green-100'}`}>
-            {deed.deedType.deedType}
-          </p>
         </div>
 
-        <div className="p-6">
-          <div className="space-y-3 mb-6">
-            <div className="flex items-center gap-2 text-gray-700">
-              <FaMapMarkerAlt className={isOwnListing ? "text-blue-600" : "text-green-600"} />
-              <span className="text-sm">{deed.district}, {deed.division}</span>
-            </div>
+        <div className="p-4">
+          <div className="flex items-center gap-2 text-gray-600 mb-4">
+            <FaMapMarkerAlt className="text-gray-400" />
+            <span className="text-sm">{deed.district}, {deed.division}</span>
+          </div>
 
-            <div className="flex items-center gap-2 text-gray-700">
-              <FaPercentage className={isOwnListing ? "text-blue-600" : "text-green-600"} />
-              <span className="text-sm font-semibold">Share: {marketplace.share}%</span>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div className="text-xs text-gray-500 mb-1">Share</div>
+              <div className="text-lg font-bold text-gray-900">{marketplace.share}%</div>
             </div>
-
-            <div className="flex items-center gap-2 text-gray-700">
-              <FaEthereum className={isOwnListing ? "text-blue-600" : "text-green-600"} />
-              <span className="text-lg font-bold text-gray-900">{marketplace.amount} ETH</span>
-            </div>
-
-            <div className="flex items-center gap-2 text-gray-500">
-              <FaClock />
-              <span className="text-xs">Listed on {marketplace.timestamp ? new Date(marketplace.timestamp).toLocaleString() : "N/A"}</span>
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div className="text-xs text-gray-500 mb-1">Price</div>
+              <div className="text-lg font-bold text-gray-900">{marketplace.amount} ETH</div>
             </div>
           </div>
 
+          <div className="flex items-center gap-2 text-gray-500 text-xs mb-4">
+            <FaClock />
+            <span>{marketplace.timestamp ? new Date(marketplace.timestamp).toLocaleDateString() : "N/A"}</span>
+          </div>
+
           {marketplace.description && (
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
               <p className="text-sm text-gray-700">{marketplace.description}</p>
             </div>
           )}
 
-          <div className="flex gap-3">
+          <div className="space-y-2">
             <button
               onClick={handleViewDeed}
-              className={`flex-1 px-4 py-2 rounded-lg border-2 font-semibold transition cursor-pointer ${
-                isOwnListing
-                  ? 'border-blue-600 text-blue-600 hover:bg-blue-50'
-                  : 'border-green-600 text-green-600 hover:bg-green-50'
-              }`}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition"
             >
-              View Deed
+              View Details
             </button>
+            
             {isAvailable && !isOwnListing && (
               <button
                 onClick={handleBuy}
-                className="flex-1 px-4 py-2 rounded-lg bg-green-600 text-white font-semibold hover:shadow-lg transition cursor-pointer"
+                className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition"
               >
                 Buy Now
               </button>
             )}
+            
             {isOwnListing && (
-              <button
-                disabled
-                className="flex-1 px-4 py-2 rounded-lg bg-gray-300 text-gray-500 font-semibold cursor-not-allowed"
-              >
+              <div className="w-full px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-center font-medium">
                 Your Listing
-              </button>
+              </div>
+            )}
+
+            {!isAvailable && !isOwnListing && (
+              <div className="w-full px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-center font-medium">
+                Sold
+              </div>
             )}
           </div>
 
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="text-xs text-gray-500">
-              <p><span className="font-semibold">Token ID:</span> {marketplace.tokenId}</p>
-              <p><span className="font-semibold">Market ID:</span> {marketplace.marketPlaceId}</p>
+            <div className="flex justify-between text-xs text-gray-500">
+              <span>Token: {marketplace.tokenId}</span>
+              <span>Market: {marketplace.marketPlaceId}</span>
             </div>
           </div>
         </div>

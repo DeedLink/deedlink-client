@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { ethers } from "ethers";
 import { FaTimes, FaEthereum, FaPercentage, FaExclamationTriangle } from "react-icons/fa";
 import type { Marketplace } from "../../types/marketplace";
 import type { IDeed } from "../../types/responseDeed";
@@ -33,6 +34,11 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
   const [agreed, setAgreed] = useState(false);
   const [listingType, setListingType] = useState<"NFT" | "FRACTIONAL" | null>(null);
   const [loading, setLoading] = useState(true);
+  const [listingDetails, setListingDetails] = useState<{
+    amount: string;
+    price: string;
+    priceRaw: string;
+  } | null>(null);
 
   useEffect(() => {
     const fetchListingDetails = async () => {
@@ -50,13 +56,24 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
         } else {
           const details = await getListingDetails(Number(marketplace.marketPlaceId));
           setListingType(details.listingType as "NFT" | "FRACTIONAL");
+          setListingDetails({
+            amount: details.amount,
+            price: details.price,
+            priceRaw: details.priceRaw
+          });
           console.log("Fetched listing type from blockchain:", details.listingType);
+          console.log("Listing details:", details);
         }
       } catch (error) {
         console.error("Failed to determine listing type:", error);
         try {
           const details = await getListingDetails(Number(marketplace.marketPlaceId));
           setListingType(details.listingType as "NFT" | "FRACTIONAL");
+          setListingDetails({
+            amount: details.amount,
+            price: details.price,
+            priceRaw: details.priceRaw
+          });
         } catch (e) {
           console.error("All methods failed:", e);
           showToast("Failed to load listing details", "error");
@@ -99,16 +116,55 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
       });
 
       let result;
+      let sharePercentage = marketplace.share;
+      let tokenAmount = 0;
+      let transactionTotalPrice = priceInEth;
 
       if (listingType === "NFT") {
         console.log("Buying full NFT...");
         result = await buyNFT(Number(marketplace.marketPlaceId), priceInEth);
       } else {
-        console.log("Buying fractional tokens...");
+        if (!listingDetails) {
+          const details = await getListingDetails(Number(marketplace.marketPlaceId));
+          setListingDetails({
+            amount: details.amount,
+            price: details.price,
+            priceRaw: details.priceRaw
+          });
+        }
+
+        const currentListingDetails = listingDetails || await getListingDetails(Number(marketplace.marketPlaceId));
+        tokenAmount = Number(currentListingDetails.amount);
+        const pricePerTokenInWei = currentListingDetails.priceRaw;
+        
+        if (tokenAmount === 0) {
+          showToast("Invalid listing: token amount is zero", "error");
+          hideLoader();
+          return;
+        }
+
+        const totalSupply = await getTotalSupply(Number(marketplace.tokenId));
+        sharePercentage = totalSupply > 0 ? (tokenAmount / totalSupply) * 100 : 0;
+        
+        const pricePerTokenWei = BigInt(pricePerTokenInWei);
+        const totalPriceWei = pricePerTokenWei * BigInt(tokenAmount);
+        transactionTotalPrice = ethers.formatEther(totalPriceWei.toString());
+        
+        console.log("Buying fractional tokens:", {
+          listingId: marketplace.marketPlaceId,
+          tokenAmount,
+          pricePerTokenInWei,
+          pricePerTokenEth: currentListingDetails.price,
+          totalPriceWei: totalPriceWei.toString(),
+          totalPriceEth: transactionTotalPrice,
+          totalSupply,
+          sharePercentage
+        });
+        
         result = await buyFractionalTokens(
           Number(marketplace.marketPlaceId),
-          marketplace.share,
-          priceInEth
+          tokenAmount,
+          transactionTotalPrice
         );
       }
 
@@ -118,14 +174,14 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
             deedId: deed._id,
             from: marketplace.from,
             to: account as string,
-            amount: marketplace.amount,
-            share: marketplace.share,
+            amount: listingType === "NFT" ? marketplace.amount : Number(transactionTotalPrice),
+            share: listingType === "NFT" ? 100 : sharePercentage,
             type: "sale_transfer",
             hash: result.txHash,
             blockchain_identification: result.txHash,
             description: listingType === "NFT" 
               ? `Purchased full property NFT #${marketplace.tokenId}` 
-              : `Purchased ${marketplace.share}% fractional tokens from marketplace`,
+              : `Purchased ${tokenAmount > 0 ? tokenAmount.toLocaleString() : marketplace.share} FT tokens (${sharePercentage.toFixed(4)}%) from marketplace`,
             status: "completed"
           });
           console.log("Transaction logged successfully");
@@ -173,9 +229,16 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
           }
         }
 
-        showToast("Purchase successful!", "success");
+        showToast("Purchase successful! Your ownership will be updated shortly.", "success");
+        
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
         onSuccess();
         onClose();
+        
+        if (window.location.pathname.includes('/deed/')) {
+          window.location.reload();
+        }
       } else {
         showToast("Purchase failed. Please try again.", "error");
       }
@@ -281,8 +344,11 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
 
                 {isFractional && (
                   <div className="mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
-                    <p className="text-sm text-purple-800">
-                      💡 You will receive {marketplace.share}% fractional tokens representing partial ownership.
+                    <p className="text-sm text-purple-800 font-semibold mb-1">
+                      💡 You will receive {marketplace.share}% fractional tokens
+                    </p>
+                    <p className="text-xs text-purple-700">
+                      This represents {marketplace.share}% ownership of the property. After purchase, you will own {marketplace.share}% of the fractional tokens.
                     </p>
                   </div>
                 )}

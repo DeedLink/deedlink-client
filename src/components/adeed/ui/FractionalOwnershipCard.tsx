@@ -2,16 +2,17 @@ import { useState, useEffect } from "react";
 import { useWallet } from "../../../contexts/WalletContext";
 import { getFractionalTokenInfo, isPropertyFractionalized } from "../../../web3.0/contractService";
 import { FaCoins, FaPercentage, FaInfoCircle } from "react-icons/fa";
-import VerificationBadge from "./VerificationBadge";
 
 interface FractionalOwnershipCardProps {
   tokenId: number;
   onTransfer?: () => void;
+  refreshTrigger?: number;
 }
 
 const FractionalOwnershipCard: React.FC<FractionalOwnershipCardProps> = ({
   tokenId,
-  onTransfer
+  onTransfer,
+  refreshTrigger
 }) => {
   const { account } = useWallet();
   const [ownershipInfo, setOwnershipInfo] = useState<{
@@ -58,7 +59,7 @@ const FractionalOwnershipCard: React.FC<FractionalOwnershipCardProps> = ({
     };
 
     loadOwnership();
-  }, [account, tokenId]);
+  }, [account, tokenId, refreshTrigger]);
 
   if (loading) {
     return (
@@ -75,8 +76,11 @@ const FractionalOwnershipCard: React.FC<FractionalOwnershipCardProps> = ({
     return null;
   }
 
-  const hasFullOwnership = ownershipInfo.userPercentage >= 100;
-  const hasPartialOwnership = ownershipInfo.userPercentage > 0 && ownershipInfo.userPercentage < 100;
+  const actualPercentage = ownershipInfo.userPercentage;
+  const displayedPercentage = parseFloat(actualPercentage.toFixed(2));
+  const tolerance = 0.1;
+  const hasFullOwnership = actualPercentage >= (100 - tolerance);
+  const hasPartialOwnership = actualPercentage > 0 && actualPercentage < (100 - tolerance);
 
   return (
     <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg border border-purple-200 p-6">
@@ -100,13 +104,13 @@ const FractionalOwnershipCard: React.FC<FractionalOwnershipCardProps> = ({
               Your Ownership
             </span>
             <span className="text-2xl font-bold text-purple-700">
-              {ownershipInfo.userPercentage.toFixed(2)}%
+              {displayedPercentage.toFixed(2)}%
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2.5">
             <div
               className="bg-gradient-to-r from-purple-600 to-blue-600 h-2.5 rounded-full transition-all"
-              style={{ width: `${Math.min(ownershipInfo.userPercentage, 100)}%` }}
+              style={{ width: `${Math.min(actualPercentage, 100)}%` }}
             ></div>
           </div>
           <div className="flex justify-between text-xs text-gray-500 mt-2">
@@ -122,7 +126,7 @@ const FractionalOwnershipCard: React.FC<FractionalOwnershipCardProps> = ({
               <div className="text-xs text-yellow-800">
                 <p className="font-semibold mb-1">Partial Ownership Notice</p>
                 <p>
-                  You own {ownershipInfo.userPercentage.toFixed(2)}% of this property. 
+                  You own {displayedPercentage.toFixed(2)}% of this property. 
                   Some actions like setting rent or granting Power of Attorney require 100% ownership.
                 </p>
               </div>

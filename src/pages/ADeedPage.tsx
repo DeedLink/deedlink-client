@@ -23,6 +23,7 @@ import TransferFractionalTokensPopup from "../components/adeed/tnxPopups/Transfe
 import type { Certificate } from "../types/certificate";
 import { cancelListing } from "../web3.0/marketService";
 import { createTransaction } from "../api/api";
+import { generateDeedPDF } from "../utils/generateDeedPDF";
 
 const PROPERTY_NFT_ADDRESS = import.meta.env.VITE_PROPERTY_NFT_ADDRESS as string;
 
@@ -53,6 +54,7 @@ const ADeedPage = () => {
   const [showCreateListing, setShowCreateListing] = useState(false);
   const [openTransferFractional, setOpenTransferFractional] = useState(false);
   const [certificate, setCertificate] = useState<Certificate | null>(null);
+  const [ownershipRefreshTrigger, setOwnershipRefreshTrigger] = useState(0);
 
   useEffect(() => {
     const loadCertificate = async () => {
@@ -113,8 +115,21 @@ const ADeedPage = () => {
     }
   };
 
-  const handleDownload = () => {
-    showToast("Download functionality coming soon", "info");
+  const handleDownload = async () => {
+    if (!deed) {
+      showToast("Deed information not available", "error");
+      return;
+    }
+    try {
+      showLoader();
+      await generateDeedPDF(deed, plan, signatures, tnx);
+      showToast("PDF downloaded successfully", "success");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      showToast("Failed to generate PDF", "error");
+    } finally {
+      hideLoader();
+    }
   };
 
   const handleShare = () => {
@@ -172,6 +187,7 @@ const ADeedPage = () => {
 
   const handleCreateListingSuccess = () => {
     getMarketPlaceData();
+    setOwnershipRefreshTrigger(prev => prev + 1);
   };
 
   const handleCancelLastWill = async () => {
@@ -252,6 +268,7 @@ const ADeedPage = () => {
                     <FractionalOwnershipCard
                       tokenId={deed.tokenId}
                       onTransfer={() => setOpenTransferFractional(true)}
+                      refreshTrigger={ownershipRefreshTrigger}
                     />
                   )}
                   <BlockchainOwners deed={deed} />
@@ -331,6 +348,7 @@ const ADeedPage = () => {
             deedId={deed._id}
             onSuccess={() => {
               setOpenTransferFractional(false);
+              setOwnershipRefreshTrigger(prev => prev + 1);
             }}
           />
         </>

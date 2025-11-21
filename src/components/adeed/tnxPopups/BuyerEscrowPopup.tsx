@@ -7,7 +7,7 @@ import {
   getEscrowDetails, 
   getEscrowStatus 
 } from "../../../web3.0/escrowIntegration";
-import { transactionStatus, updateFullOwnerAddress, updateDeedOwners, getTransactionsByDeedId } from "../../../api/api";
+import { transactionStatus, updateFullOwnerAddress } from "../../../api/api";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
 import { useLogin } from "../../../contexts/LoginContext";
 import { useAlert } from "../../../contexts/AlertContext";

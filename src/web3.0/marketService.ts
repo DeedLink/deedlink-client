@@ -184,7 +184,34 @@ export async function buyFractionalTokens(
     console.log("Buying fractional tokens:", { listingId, amount, totalPriceInEth });
     
     const marketplace = await getMarketplaceContract();
+    
+    const listing = await marketplace.getListing(listingId);
+    
+    if (!listing.isActive) {
+      throw new Error("Listing is no longer active");
+    }
+    
+    const listedAmount = Number(listing.amount.toString());
+    if (amount > listedAmount) {
+      throw new Error(`Cannot buy ${amount} tokens. Only ${listedAmount} tokens are listed.`);
+    }
+    
+    const listedPricePerToken = listing.price;
+    const expectedTotalPrice = listedPricePerToken * BigInt(amount);
     const priceInWei = ethers.parseEther(totalPriceInEth);
+    
+    console.log("Price validation:", {
+      listedPricePerToken: listedPricePerToken.toString(),
+      amount,
+      expectedTotalPrice: expectedTotalPrice.toString(),
+      providedPrice: priceInWei.toString(),
+      match: expectedTotalPrice === priceInWei
+    });
+    
+    if (expectedTotalPrice !== priceInWei) {
+      const expectedEth = ethers.formatEther(expectedTotalPrice);
+      throw new Error(`Price mismatch. Expected ${expectedEth} ETH but provided ${totalPriceInEth} ETH`);
+    }
 
     const tx = await marketplace.buyFractionalTokens(listingId, amount, {
       value: priceInWei
@@ -199,7 +226,17 @@ export async function buyFractionalTokens(
     };
   } catch (error: any) {
     console.error("Failed to buy fractional tokens:", error);
-    throw new Error(error.message || "Failed to purchase fractional tokens");
+    
+    let errorMessage = "Failed to purchase fractional tokens";
+    if (error.reason) {
+      errorMessage = error.reason;
+    } else if (error.message) {
+      errorMessage = error.message;
+    } else if (error.data) {
+      errorMessage = `Transaction failed: ${JSON.stringify(error.data)}`;
+    }
+    
+    throw new Error(errorMessage);
   }
 }
 

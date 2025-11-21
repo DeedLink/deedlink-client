@@ -5,7 +5,7 @@ import { useLoader } from "../../contexts/LoaderContext";
 import { useWallet } from "../../contexts/WalletContext";
 import { listFractionalTokensForSale, listNFTForSale } from "../../web3.0/marketService";
 import { createMarketPlace, createTransaction } from "../../api/api";
-import { getFractionalTokenAddress, getFTBalance } from "../../web3.0/contractService";
+import { getFractionalTokenAddress, getFTBalance, getTotalSupply } from "../../web3.0/contractService";
 
 interface CreateListingPopupProps {
   isOpen: boolean;
@@ -28,12 +28,13 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
   const { showLoader, hideLoader } = useLoader();
   const { account } = useWallet();
   
-  const [share, setShare] = useState("");
+  const [ftTokenAmount, setFtTokenAmount] = useState("");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [listingType, setListingType] = useState<"FULL_NFT" | "FRACTIONAL">("FRACTIONAL");
   const [fractionalTokenAddress, setFractionalTokenAddress] = useState<string>("");
   const [userFTBalance, setUserFTBalance] = useState<number>(0);
+  const [totalSupply, setTotalSupply] = useState<number>(0);
   const [hasFractionalTokens, setHasFractionalTokens] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
@@ -50,7 +51,9 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
           setHasFractionalTokens(true);
           
           const balance = await getFTBalance(ftAddress, account);
+          const supply = await getTotalSupply(tokenId);
           setUserFTBalance(Number(balance));
+          setTotalSupply(Number(supply));
           
           if (Number(balance) > 0) {
             setListingType("FRACTIONAL");
@@ -96,15 +99,20 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
     }
 
     if (listingType === "FRACTIONAL") {
-      if (!share) {
-        showToast("Please enter share percentage", "error");
+      if (!ftTokenAmount) {
+        showToast("Please enter number of FT tokens to sell", "error");
         return;
       }
 
-      const shareNum = Number(share);
+      const tokenAmountNum = Number(ftTokenAmount);
 
-      if (shareNum <= 0 || shareNum > 100) {
-        showToast("Share must be between 1 and 100", "error");
+      if (tokenAmountNum <= 0 || !Number.isInteger(tokenAmountNum)) {
+        showToast("Token amount must be a positive whole number", "error");
+        return;
+      }
+
+      if (tokenAmountNum > userFTBalance) {
+        showToast(`You only have ${userFTBalance.toLocaleString()} FT tokens. Cannot sell more than you own.`, "error");
         return;
       }
 
@@ -136,17 +144,18 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
         finalShare = 100;
         blockchainListingType = "NFT";
       } else {
-        const shareNum = Number(share);
+        const tokenAmountNum = Number(ftTokenAmount);
+        const sharePercentage = totalSupply > 0 ? (tokenAmountNum / totalSupply) * 100 : 0;
         console.log("Creating fractional listing...");
         
         result = await listFractionalTokensForSale(
           nftAddress,
           tokenId,
           fractionalTokenAddress,
-          shareNum,
+          tokenAmountNum,
           amount
         );
-        finalShare = shareNum;
+        finalShare = sharePercentage;
         blockchainListingType = "FRACTIONAL";
       }
 
@@ -177,7 +186,7 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
             hash: result.txHash,
             description: blockchainListingType === "NFT"
               ? `Listed full property NFT #${tokenId} for sale at ${amountNum} ETH`
-              : `Listed ${finalShare}% fractional tokens for sale at ${amountNum} ETH per token`,
+              : `Listed ${Number(ftTokenAmount).toLocaleString()} FT tokens (${finalShare.toFixed(4)}%) for sale at ${amountNum} ETH per token`,
             status: "completed"
           });
         } catch (txError) {
@@ -188,7 +197,7 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
         onSuccess();
         onClose();
         
-        setShare("");
+        setFtTokenAmount("");
         setAmount("");
         setDescription("");
       } else {
@@ -238,7 +247,7 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
                 type="button"
                 onClick={() => {
                   setListingType("FULL_NFT");
-                  setShare("");
+                  setFtTokenAmount("");
                 }}
                 className={`px-4 py-3 rounded-lg font-semibold transition ${
                   listingType === "FULL_NFT"
@@ -278,21 +287,37 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
           {listingType === "FRACTIONAL" && (
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Share Percentage (%)
+                Number of FT Tokens to Sell
               </label>
               <input
                 type="number"
-                value={share}
-                onChange={(e) => setShare(e.target.value)}
+                value={ftTokenAmount}
+                onChange={(e) => setFtTokenAmount(e.target.value)}
                 min="1"
-                max={Math.min(100, userFTBalance)}
+                max={userFTBalance}
+                step="1"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
-                placeholder={`Enter share (max: ${Math.min(100, userFTBalance)}%)`}
+                placeholder={`Enter token amount (max: ${userFTBalance.toLocaleString()})`}
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">
-                You own {userFTBalance}% of fractional tokens
-              </p>
+              <div className="mt-2 space-y-1">
+                <p className="text-xs text-gray-500">
+                  Your available FT tokens: <span className="font-semibold text-gray-700">{userFTBalance.toLocaleString()}</span> / <span className="font-semibold text-gray-700">{totalSupply.toLocaleString()}</span> total
+                </p>
+                <p className="text-xs text-gray-500">
+                  Your current ownership: <span className="font-semibold text-gray-700">{totalSupply > 0 ? ((userFTBalance / totalSupply) * 100).toFixed(4) : 0}%</span>
+                </p>
+                {ftTokenAmount && Number(ftTokenAmount) > 0 && totalSupply > 0 && (
+                  <>
+                    <p className="text-xs text-blue-600">
+                      Selling: <span className="font-semibold">{Number(ftTokenAmount).toLocaleString()} tokens</span> ({(Number(ftTokenAmount) / totalSupply * 100).toFixed(4)}%)
+                    </p>
+                    <p className="text-xs text-green-600">
+                      After listing: <span className="font-semibold">{(userFTBalance - Number(ftTokenAmount)).toLocaleString()} tokens</span> ({((userFTBalance - Number(ftTokenAmount)) / totalSupply * 100).toFixed(4)}%) remaining
+                    </p>
+                  </>
+                )}
+              </div>
             </div>
           )}
 
@@ -328,17 +353,22 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <h3 className="font-semibold text-green-900 mb-2">Listing Summary</h3>
             <div className="space-y-1 text-sm text-gray-700">
-              <p><span className="font-medium">Type:</span> {listingType === "FULL_NFT" ? "Full Property (100%)" : `Fractional Share (${share || 0}%)`}</p>
+              <p><span className="font-medium">Type:</span> {listingType === "FULL_NFT" ? "Full Property (100%)" : `Fractional Share (${ftTokenAmount ? Number(ftTokenAmount).toLocaleString() : 0} FT tokens)`}</p>
               <p><span className="font-medium">Price:</span> {amount || "0"} ETH {listingType === "FRACTIONAL" && "(per token)"}</p>
-              {listingType === "FRACTIONAL" && share && amount && (
-                <p className="text-xs text-gray-600 mt-1">
-                  Total value: {(Number(share) * Number(amount)).toFixed(4)} ETH for {share}% ownership
-                </p>
+              {listingType === "FRACTIONAL" && ftTokenAmount && amount && totalSupply > 0 && (
+                <>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Total value: {(Number(ftTokenAmount) * Number(amount)).toFixed(4)} ETH for {Number(ftTokenAmount).toLocaleString()} tokens ({(Number(ftTokenAmount) / totalSupply * 100).toFixed(4)}%)
+                  </p>
+                  <p className="text-xs text-blue-700 mt-1 font-semibold">
+                    Your remaining ownership after sale: {(userFTBalance - Number(ftTokenAmount)).toLocaleString()} tokens ({(userFTBalance - Number(ftTokenAmount)) / totalSupply * 100}%)
+                  </p>
+                </>
               )}
               <p className="text-xs text-gray-500 mt-2 border-t border-green-300 pt-2">
                 {listingType === "FULL_NFT" 
                   ? "Buyer will receive the full NFT with 100% ownership rights"
-                  : "Buyer will receive ERC-20 fractional tokens representing partial ownership"}
+                  : `Buyer will receive ${ftTokenAmount ? Number(ftTokenAmount).toLocaleString() : 0} FT tokens (${ftTokenAmount && totalSupply > 0 ? (Number(ftTokenAmount) / totalSupply * 100).toFixed(4) : 0}%) representing partial ownership`}
               </p>
             </div>
           </div>
