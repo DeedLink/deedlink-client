@@ -6,8 +6,10 @@ import {
   FaStore,
   FaPlayCircle,
   FaLock,
+  FaSitemap,
+  FaUser,
 } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { formatCurrency, shortAddress } from "../../utils/format";
 import type { Title } from "../../types/title";
 import type { JSX } from "react/jsx-runtime";
@@ -70,29 +72,153 @@ const Modal = ({
   open,
   onClose,
   children,
+  header,
 }: {
   open: boolean;
   onClose: () => void;
   children: React.ReactNode;
+  header?: React.ReactNode;
 }) => {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-xl shadow-xl w-[90%] max-w-2xl p-5 max-h-[80vh] overflow-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Full Title History</h3>
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="flex justify-between items-center p-5 border-b border-gray-200">
+          {header || <h3 className="text-lg font-semibold">Full Title History</h3>}
           <button onClick={onClose} className="text-gray-600 hover:text-black text-xl">
             ✕
           </button>
         </div>
-        {children}
+        <div className="overflow-auto flex-1 p-5">
+          {children}
+        </div>
       </div>
     </div>
   );
 };
 
+interface OwnerNode {
+  address: string;
+  share: number;
+  children: OwnerNode[];
+  transaction?: Title;
+  level: number;
+}
+
 export const TitleHistory = ({ tnx }: { tnx: Title[] }) => {
   const [openModal, setOpenModal] = useState(false);
+  const [showTreeView, setShowTreeView] = useState(false);
+
+  const buildOwnershipTree = useMemo(() => {
+    if (!tnx || tnx.length === 0) return null;
+
+    const sortedTxs = [...tnx].sort((a, b) => {
+      const dateA = new Date(a.date || a.createdAt || 0).getTime();
+      const dateB = new Date(b.date || b.createdAt || 0).getTime();
+      return dateA - dateB;
+    });
+
+    const addressToNodes = new Map<string, OwnerNode[]>();
+    let rootNode: OwnerNode | null = null;
+
+    for (const tx of sortedTxs) {
+      if (tx.status !== "completed") continue;
+
+      if (tx.type === "init" && tx.to) {
+        const address = tx.to.toLowerCase();
+        rootNode = {
+          address,
+          share: 100,
+          children: [],
+          transaction: tx,
+          level: 0,
+        };
+        addressToNodes.set(address, [rootNode]);
+      } else if (tx.from && tx.to && tx.share && tx.share > 0 && tx.type !== "open_market") {
+        const fromAddress = tx.from.toLowerCase();
+        const toAddress = tx.to.toLowerCase();
+        const share = tx.share;
+
+        const fromNodes = addressToNodes.get(fromAddress) || [];
+        
+        for (const fromNode of fromNodes) {
+          if (fromNode.share >= share) {
+            fromNode.share = Math.max(0, fromNode.share - share);
+
+            const toNode: OwnerNode = {
+              address: toAddress,
+              share: share,
+              children: [],
+              transaction: tx,
+              level: fromNode.level + 1,
+            };
+
+            if (!addressToNodes.has(toAddress)) {
+              addressToNodes.set(toAddress, []);
+            }
+            addressToNodes.get(toAddress)!.push(toNode);
+            fromNode.children.push(toNode);
+            break;
+          }
+        }
+      }
+    }
+
+    const hasMultipleOwners = rootNode && (rootNode.children.length > 0 || addressToNodes.size > 1);
+    return hasMultipleOwners ? rootNode : null;
+  }, [tnx]);
+
+  const renderTreeNode = (node: OwnerNode, isLast: boolean, prefix: string = "", siblings: OwnerNode[] = []): JSX.Element => {
+    const hasChildren = node.children.length > 0;
+    const connector = isLast ? "└─ " : "├─ ";
+    const nextPrefix = isLast ? "   " : "│  ";
+
+    return (
+      <div key={`${node.address}-${node.level}-${node.transaction?._id || ''}`} className="my-2">
+        <div className="flex items-start gap-2 text-sm">
+          <span className="text-gray-400 font-mono text-xs whitespace-pre select-none">{prefix + connector}</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <FaUser className="text-blue-500 text-xs flex-shrink-0" />
+              <span className="font-medium text-gray-900 break-all">{shortAddress(node.address)}</span>
+              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-semibold whitespace-nowrap">
+                {node.share.toFixed(4)}%
+              </span>
+            </div>
+            {node.transaction && (
+              <div className="ml-6 mt-1 text-xs text-gray-500 space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {typeMap[node.transaction.type] && (
+                    <span className={`flex items-center gap-1 ${typeMap[node.transaction.type].color}`}>
+                      {typeMap[node.transaction.type].icon}
+                      <span>{typeMap[node.transaction.type].label}</span>
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <span className="text-gray-400">
+                    {formatDateWithTime(new Date(node.transaction.date || node.transaction.createdAt || 0).getTime())}
+                  </span>
+                  {node.transaction.amount > 0 && (
+                    <span className="ml-2 text-gray-600">
+                      • {formatCurrency(node.transaction.amount, "ETH")}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        {hasChildren && (
+          <div className="ml-4">
+            {node.children.map((child, idx) =>
+              renderTreeNode(child, idx === node.children.length - 1, prefix + nextPrefix, node.children)
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderRows = (list: Title[]) =>
     list.map((t, idx) => {
@@ -167,8 +293,55 @@ export const TitleHistory = ({ tnx }: { tnx: Title[] }) => {
         )}
       </section>
 
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <div className="space-y-3">{renderRows(tnx)}</div>
+      <Modal 
+        open={openModal} 
+        onClose={() => setOpenModal(false)}
+        header={
+          <div className="flex items-center justify-between w-full">
+            <h3 className="text-lg font-semibold">Full Title History</h3>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowTreeView(!showTreeView)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                  showTreeView
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                <FaSitemap className="inline mr-1" />
+                {showTreeView ? "List View" : "Tree View"}
+              </button>
+            </div>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+
+          {showTreeView && buildOwnershipTree ? (
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div className="flex items-center gap-2 mb-4">
+                <FaSitemap className="text-blue-600" />
+                <h4 className="font-semibold text-gray-900">Fractional Ownership Tree</h4>
+              </div>
+              <div className="bg-white rounded-lg p-4 border border-gray-200 overflow-x-auto max-h-[60vh] overflow-y-auto">
+                <div className="text-xs text-gray-500 mb-3 pb-2 border-b border-gray-200">
+                  This tree shows how ownership has been distributed through transfers. The root represents the initial owner, and branches show fractional ownership transfers.
+                </div>
+                {renderTreeNode(buildOwnershipTree, true)}
+              </div>
+            </div>
+          ) : null}
+
+          {!showTreeView && (
+            <div className="space-y-3">{renderRows(tnx)}</div>
+          )}
+
+          {showTreeView && !buildOwnershipTree && (
+            <div className="text-center py-8 text-gray-500">
+              <p>No ownership tree available. Ownership may not be fractionalized yet.</p>
+            </div>
+          )}
+        </div>
       </Modal>
     </>
   );
