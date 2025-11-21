@@ -138,7 +138,7 @@ const TransferFractionalTokensPopup: React.FC<TransferFractionalTokensPopupProps
           console.error("Failed to update deed owners:", updateError);
         }
 
-        showToast("Fractional tokens transferred successfully!", "success");
+        showToast("Fractional tokens transferred successfully! Ownership updated.", "success");
         onSuccess?.();
         onClose();
         setRecipientAddress("");

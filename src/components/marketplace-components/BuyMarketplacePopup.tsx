@@ -173,9 +173,16 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
           }
         }
 
-        showToast("Purchase successful!", "success");
+        showToast("Purchase successful! Your ownership will be updated shortly.", "success");
+        
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
         onSuccess();
         onClose();
+        
+        if (window.location.pathname.includes('/deed/')) {
+          window.location.reload();
+        }
       } else {
         showToast("Purchase failed. Please try again.", "error");
       }
@@ -281,8 +288,11 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
 
                 {isFractional && (
                   <div className="mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
-                    <p className="text-sm text-purple-800">
-                      💡 You will receive {marketplace.share}% fractional tokens representing partial ownership.
+                    <p className="text-sm text-purple-800 font-semibold mb-1">
+                      💡 You will receive {marketplace.share}% fractional tokens
+                    </p>
+                    <p className="text-xs text-purple-700">
+                      This represents {marketplace.share}% ownership of the property. After purchase, you will own {marketplace.share}% of the fractional tokens.
                     </p>
                   </div>
                 )}

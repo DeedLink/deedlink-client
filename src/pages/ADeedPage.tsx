@@ -54,6 +54,7 @@ const ADeedPage = () => {
   const [showCreateListing, setShowCreateListing] = useState(false);
   const [openTransferFractional, setOpenTransferFractional] = useState(false);
   const [certificate, setCertificate] = useState<Certificate | null>(null);
+  const [ownershipRefreshTrigger, setOwnershipRefreshTrigger] = useState(0);
 
   useEffect(() => {
     const loadCertificate = async () => {
@@ -114,17 +115,20 @@ const ADeedPage = () => {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!deed) {
       showToast("Deed information not available", "error");
       return;
     }
     try {
-      generateDeedPDF(deed, plan, signatures, tnx);
+      showLoader();
+      await generateDeedPDF(deed, plan, signatures, tnx);
       showToast("PDF downloaded successfully", "success");
     } catch (error) {
       console.error("Error generating PDF:", error);
       showToast("Failed to generate PDF", "error");
+    } finally {
+      hideLoader();
     }
   };
 
@@ -183,6 +187,7 @@ const ADeedPage = () => {
 
   const handleCreateListingSuccess = () => {
     getMarketPlaceData();
+    setOwnershipRefreshTrigger(prev => prev + 1);
   };
 
   const handleCancelLastWill = async () => {
@@ -263,6 +268,7 @@ const ADeedPage = () => {
                     <FractionalOwnershipCard
                       tokenId={deed.tokenId}
                       onTransfer={() => setOpenTransferFractional(true)}
+                      refreshTrigger={ownershipRefreshTrigger}
                     />
                   )}
                   <BlockchainOwners deed={deed} />
@@ -342,6 +348,7 @@ const ADeedPage = () => {
             deedId={deed._id}
             onSuccess={() => {
               setOpenTransferFractional(false);
+              setOwnershipRefreshTrigger(prev => prev + 1);
             }}
           />
         </>

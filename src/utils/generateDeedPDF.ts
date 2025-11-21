@@ -3,7 +3,106 @@ import type { IDeed } from "../types/responseDeed";
 import type { Plan } from "../types/plan";
 import type { Title } from "../types/title";
 
-export const generateDeedPDF = (
+const generateMapImage = async (coordinates: { latitude: number; longitude: number }[]): Promise<string | null> => {
+  if (!coordinates || coordinates.length === 0) return null;
+
+  try {
+    const mapContainer = document.createElement("div");
+    mapContainer.style.width = "800px";
+    mapContainer.style.height = "600px";
+    mapContainer.style.position = "absolute";
+    mapContainer.style.left = "-9999px";
+    mapContainer.style.top = "0";
+    mapContainer.style.backgroundColor = "#f0f0f0";
+    document.body.appendChild(mapContainer);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 800;
+    canvas.height = 600;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    ctx.fillStyle = "#e8f5e9";
+    ctx.fillRect(0, 0, 800, 600);
+
+    const bounds = {
+      minLat: Math.min(...coordinates.map(c => c.latitude)),
+      maxLat: Math.max(...coordinates.map(c => c.latitude)),
+      minLng: Math.min(...coordinates.map(c => c.longitude)),
+      maxLng: Math.max(...coordinates.map(c => c.longitude))
+    };
+
+    const latRange = bounds.maxLat - bounds.minLat || 0.001;
+    const lngRange = bounds.maxLng - bounds.minLng || 0.001;
+    const padding = 50;
+
+    const scaleX = (800 - 2 * padding) / lngRange;
+    const scaleY = (600 - 2 * padding) / latRange;
+    const scale = Math.min(scaleX, scaleY);
+
+    const centerX = 400;
+    const centerY = 300;
+    const offsetX = centerX - (bounds.minLng + bounds.maxLng) / 2 * scale;
+    const offsetY = centerY + (bounds.minLat + bounds.maxLat) / 2 * scale;
+
+    ctx.strokeStyle = "#228B22";
+    ctx.fillStyle = "rgba(34, 139, 34, 0.3)";
+    ctx.lineWidth = 3;
+
+    if (coordinates.length > 1) {
+      ctx.beginPath();
+      const firstPoint = coordinates[0];
+      const x = offsetX + firstPoint.longitude * scale;
+      const y = offsetY - firstPoint.latitude * scale;
+      ctx.moveTo(x, y);
+
+      coordinates.forEach((coord, idx) => {
+        const x = offsetX + coord.longitude * scale;
+        const y = offsetY - coord.latitude * scale;
+        ctx.lineTo(x, y);
+
+        ctx.fillStyle = "#228B22";
+        ctx.beginPath();
+        ctx.arc(x, y, 6, 0, 2 * Math.PI);
+        ctx.fill();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 12px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(`${idx + 1}`, x, y);
+
+        ctx.fillStyle = "rgba(34, 139, 34, 0.3)";
+      });
+
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    } else {
+      const coord = coordinates[0];
+      const x = offsetX + coord.longitude * scale;
+      const y = offsetY - coord.latitude * scale;
+      ctx.fillStyle = "#228B22";
+      ctx.beginPath();
+      ctx.arc(x, y, 8, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = "#000000";
+    ctx.font = "bold 16px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Property Location Map", 400, 30);
+
+    const imageData = canvas.toDataURL("image/png");
+    document.body.removeChild(mapContainer);
+    return imageData;
+  } catch (error) {
+    console.error("Error generating map image:", error);
+    return null;
+  }
+};
+
+export const generateDeedPDF = async (
   deed: IDeed,
   plan?: Plan,
   signatures?: { surveyor: boolean; notary: boolean; ivsl: boolean; fully: boolean } | null,
@@ -108,16 +207,16 @@ export const generateDeedPDF = (
 
   addHeader();
 
-  addSectionHeader("DEED INFORMATION");
+  addSectionHeader("1. DEED INFORMATION");
   addTwoColumnField("Deed Number", deed.deedNumber, "Deed Type", deed.deedType?.deedType || "N/A");
   addTwoColumnField("Registration Date", deed.registrationDate ? new Date(deed.registrationDate).toLocaleDateString() : "N/A", "Token ID", deed.tokenId ? `#${deed.tokenId}` : "Not Minted");
 
-  addSectionHeader("OWNER INFORMATION");
+  addSectionHeader("2. OWNER INFORMATION");
   addField("Full Name", deed.ownerFullName);
   addTwoColumnField("NIC Number", deed.ownerNIC, "Phone", deed.ownerPhone);
   addField("Address", deed.ownerAddress);
 
-  addSectionHeader("LAND DETAILS");
+  addSectionHeader("3. LAND DETAILS");
   addTwoColumnField("Land Title Number", deed.landTitleNumber, "Land Type", deed.landType);
   addField("Land Address", deed.landAddress);
   addTwoColumnField("Land Area", `${deed.landArea} ${deed.landSizeUnit || ""}`, "Survey Plan Number", deed.surveyPlanNumber || "N/A");
@@ -125,15 +224,28 @@ export const generateDeedPDF = (
     addField("Boundaries Description", deed.boundaries);
   }
 
-  addSectionHeader("LOCATION");
+  addSectionHeader("4. LOCATION INFORMATION");
   addTwoColumnField("District", deed.district, "Division", deed.division);
   if (deed.location && deed.location.length > 0) {
     const firstLoc = deed.location[0];
     addTwoColumnField("Latitude", firstLoc.latitude.toFixed(6), "Longitude", firstLoc.longitude.toFixed(6));
   }
 
+  const coordinatesToUse = (plan?.coordinates && plan.coordinates.length > 0) ? plan.coordinates : deed.location;
+  if (coordinatesToUse && coordinatesToUse.length > 0) {
+    addSectionHeader("5. PROPERTY MAP & BOUNDARIES");
+    const mapImage = await generateMapImage(coordinatesToUse);
+    if (mapImage) {
+      checkNewPage(80);
+      const imgWidth = contentWidth;
+      const imgHeight = 60;
+      doc.addImage(mapImage, "PNG", margin, yPosition, imgWidth, imgHeight);
+      yPosition += imgHeight + 5;
+    }
+  }
+
   if (plan) {
-    addSectionHeader("SURVEY PLAN DETAILS");
+    addSectionHeader("6. SURVEY PLAN DETAILS");
     if (plan.planId) addField("Plan ID", plan.planId);
     if (plan.areaSize > 0) {
       addTwoColumnField("Plan Area", `${plan.areaSize} ${plan.areaType}`, "Status", plan.status || "N/A");
@@ -146,11 +258,11 @@ export const generateDeedPDF = (
     }
 
     if (plan.coordinates && plan.coordinates.length > 0) {
-      checkNewPage(15);
+      checkNewPage(20);
       yPosition += 3;
       doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
-      doc.text("Plan Coordinates:", margin, yPosition);
+      doc.text("Boundary Coordinates:", margin, yPosition);
       yPosition += 6;
       
       doc.setFontSize(8);
@@ -160,6 +272,7 @@ export const generateDeedPDF = (
       plan.coordinates.forEach((coord, idx) => {
         addTableRow(`Point ${idx + 1}`, coord.latitude.toFixed(6), coord.longitude.toFixed(6));
       });
+      yPosition += 3;
     }
 
     if (plan.sides && (plan.sides.North || plan.sides.South || plan.sides.East || plan.sides.West)) {
@@ -167,12 +280,14 @@ export const generateDeedPDF = (
       yPosition += 3;
       doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
-      doc.text("Boundary Deeds:", margin, yPosition);
+      doc.text("Adjacent Boundary Deeds:", margin, yPosition);
       yPosition += 6;
       
+      doc.setFillColor(250, 250, 250);
+      doc.rect(margin, yPosition - 4, contentWidth, 4, "F");
       doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
-      addTableRow("Direction", "Deed Number");
+      addTableRow("Direction", "Adjacent Deed Number");
       doc.setFont("helvetica", "normal");
       if (plan.sides.North) addTableRow("North", plan.sides.North);
       if (plan.sides.South) addTableRow("South", plan.sides.South);
@@ -180,7 +295,7 @@ export const generateDeedPDF = (
       if (plan.sides.West) addTableRow("West", plan.sides.West);
     }
   } else if (deed.sides && (deed.sides.North || deed.sides.South || deed.sides.East || deed.sides.West)) {
-    addSectionHeader("BOUNDARY DEEDS");
+    addSectionHeader("6. BOUNDARY DEEDS");
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
     addTableRow("Direction", "Deed Number");
@@ -192,15 +307,16 @@ export const generateDeedPDF = (
   }
 
   if (deed.owners && deed.owners.length > 0) {
-    addSectionHeader("OWNERSHIP DETAILS");
+    addSectionHeader("7. OWNERSHIP DETAILS");
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
     addTableRow("Owner Address", "Ownership Share");
     doc.setFont("helvetica", "normal");
     deed.owners.forEach((owner) => {
+      checkNewPage(8);
       const addressLines = doc.splitTextToSize(owner.address, contentWidth / 2 - 10);
-      addressLines.forEach((line: string, idx: number) => {
-        if (idx === 0) {
+      addressLines.forEach((line: string, lineIdx: number) => {
+        if (lineIdx === 0) {
           addTableRow(line, `${owner.share}%`);
         } else {
           checkNewPage(6);
@@ -212,20 +328,22 @@ export const generateDeedPDF = (
   }
 
   if (signatures) {
-    addSectionHeader("VERIFICATION STATUS");
+    addSectionHeader("8. VERIFICATION STATUS");
+    doc.setFillColor(245, 255, 245);
+    doc.rect(margin, yPosition - 2, contentWidth, 20, "F");
     addTwoColumnField("Surveyor Verified", signatures.surveyor ? "✓ Verified" : "✗ Not Verified", "Notary Verified", signatures.notary ? "✓ Verified" : "✗ Not Verified");
     addTwoColumnField("IVSL Verified", signatures.ivsl ? "✓ Verified" : "✗ Not Verified", "Fully Verified", signatures.fully ? "✓ Verified" : "✗ Not Verified");
   }
 
   if (deed.surveyAssigned || deed.notaryAssigned || deed.ivslAssigned) {
-    addSectionHeader("ASSIGNED PERSONNEL");
+    addSectionHeader("9. ASSIGNED PERSONNEL");
     if (deed.surveyAssigned) addField("Surveyor", deed.surveyAssigned);
     if (deed.notaryAssigned) addField("Notary", deed.notaryAssigned);
     if (deed.ivslAssigned) addField("IVSL Officer", deed.ivslAssigned);
   }
 
   if (transactions && transactions.length > 0) {
-    addSectionHeader("TRANSACTION HISTORY");
+    addSectionHeader("10. TRANSACTION HISTORY");
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
     addTableRow("Date", "Type", "From → To");
@@ -240,8 +358,8 @@ export const generateDeedPDF = (
     sortedTxs.forEach((tx) => {
       checkNewPage(8);
       const dateStr = tx.date ? new Date(tx.date).toLocaleDateString() : "N/A";
-      const typeStr = tx.type || "N/A";
-      const fromTo = `${(tx.from || "N/A").substring(0, 6)}... → ${(tx.to || "N/A").substring(0, 6)}...`;
+      const typeStr = tx.type ? tx.type.replace(/_/g, " ").toUpperCase() : "N/A";
+      const fromTo = `${(tx.from || "N/A").substring(0, 8)}... → ${(tx.to || "N/A").substring(0, 8)}...`;
       addTableRow(dateStr, typeStr, fromTo);
     });
   }

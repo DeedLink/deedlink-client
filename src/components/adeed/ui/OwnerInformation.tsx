@@ -132,7 +132,32 @@ const OwnerInformation = ({ deed }: OwnerInformationProps) => {
     
     if (onChain.length !== offChain.length) {
       console.log(`[VERIFICATION] OwnerInformation: Length mismatch - onChain: ${onChain.length}, offChain: ${offChain.length}`);
-      return false;
+      console.log(`[VERIFICATION] OwnerInformation: On-chain owners:`, onChain);
+      console.log(`[VERIFICATION] OwnerInformation: Off-chain owners:`, offChain);
+      
+      const onChainAddresses = new Set(onChain.map(o => o.address.toLowerCase()));
+      const offChainAddresses = new Set(offChain.map(o => o.address.toLowerCase()));
+      
+      const onlyOnChain = onChain.filter(o => !offChainAddresses.has(o.address.toLowerCase()));
+      const onlyOffChain = offChain.filter(o => !onChainAddresses.has(o.address.toLowerCase()));
+      
+      if (onlyOnChain.length > 0 || onlyOffChain.length > 0) {
+        console.log(`[VERIFICATION] OwnerInformation: Addresses only in on-chain:`, onlyOnChain);
+        console.log(`[VERIFICATION] OwnerInformation: Addresses only in off-chain:`, onlyOffChain);
+        return false;
+      }
+      
+      const onChainTotal = onChain.reduce((sum, o) => sum + o.share, 0);
+      const offChainTotal = offChain.reduce((sum, o) => sum + o.share, 0);
+      const totalDiff = Math.abs(onChainTotal - offChainTotal);
+      
+      if (totalDiff > 0.1) {
+        console.log(`[VERIFICATION] OwnerInformation: Total ownership mismatch - onChain: ${onChainTotal}%, offChain: ${offChainTotal}%`);
+        return false;
+      }
+      
+      console.log(`[VERIFICATION] OwnerInformation: Length differs but totals match - considering verified`);
+      return true;
     }
 
     const onChainMap = new Map(onChain.map(o => [o.address.toLowerCase(), o.share]));
@@ -151,18 +176,33 @@ const OwnerInformation = ({ deed }: OwnerInformationProps) => {
       const offChainShare = offChainMap.get(address);
       if (offChainShare === undefined) {
         console.log(`[VERIFICATION] OwnerInformation: Address ${address} not found in offChain`);
-        return false;
+        const missingShare = share;
+        if (missingShare > 0.1) {
+          return false;
+        }
+        continue;
       }
       totalOffChain += offChainShare;
       const diff = Math.abs(share - offChainShare);
-      if (diff > 0.1) {
-        console.log(`[VERIFICATION] OwnerInformation: Share mismatch for ${address} - onChain: ${share}%, offChain: ${offChainShare}%, diff: ${diff}%`);
+      const roundedDiff = Math.abs(parseFloat(share.toFixed(4)) - parseFloat(offChainShare.toFixed(4)));
+      if (diff > 0.1 && roundedDiff > 0.01) {
+        console.log(`[VERIFICATION] OwnerInformation: Share mismatch for ${address} - onChain: ${share.toFixed(4)}%, offChain: ${offChainShare.toFixed(4)}%, diff: ${diff.toFixed(4)}%`);
         return false;
+      }
+    }
+    
+    for (const [address, share] of offChainMap) {
+      if (!onChainMap.has(address)) {
+        console.log(`[VERIFICATION] OwnerInformation: Address ${address} only in offChain with ${share.toFixed(4)}%`);
+        if (share > 0.1) {
+          return false;
+        }
       }
     }
 
     const totalDiff = Math.abs(totalOnChain - totalOffChain);
-    if (totalDiff > 0.1) {
+    const roundedTotalDiff = Math.abs(parseFloat(totalOnChain.toFixed(2)) - parseFloat(totalOffChain.toFixed(2)));
+    if (totalDiff > 0.1 && roundedTotalDiff > 0.01) {
       console.log(`[VERIFICATION] OwnerInformation: Total share mismatch - onChain: ${totalOnChain}%, offChain: ${totalOffChain}%, diff: ${totalDiff}%`);
       return false;
     }
@@ -187,23 +227,56 @@ const OwnerInformation = ({ deed }: OwnerInformationProps) => {
           />
         )}
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
-        <div>
-          <div className="text-xs text-gray-500 uppercase font-semibold">Full Name</div>
-          <div className="font-medium text-gray-800 mt-1">{deed.ownerFullName}</div>
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
+          <div>
+            <div className="text-xs text-gray-500 uppercase font-semibold">Full Name</div>
+            <div className="font-medium text-gray-800 mt-1">{deed.ownerFullName}</div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500 uppercase font-semibold">NIC</div>
+            <div className="font-medium text-gray-800 mt-1">{deed.ownerNIC}</div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500 uppercase font-semibold">Phone</div>
+            <div className="font-medium text-gray-800 mt-1">{deed.ownerPhone}</div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500 uppercase font-semibold">Address</div>
+            <div className="font-medium text-gray-800 mt-1">{deed.ownerAddress}</div>
+          </div>
         </div>
-        <div>
-          <div className="text-xs text-gray-500 uppercase font-semibold">NIC</div>
-          <div className="font-medium text-gray-800 mt-1">{deed.ownerNIC}</div>
-        </div>
-        <div>
-          <div className="text-xs text-gray-500 uppercase font-semibold">Phone</div>
-          <div className="font-medium text-gray-800 mt-1">{deed.ownerPhone}</div>
-        </div>
-        <div>
-          <div className="text-xs text-gray-500 uppercase font-semibold">Address</div>
-          <div className="font-medium text-gray-800 mt-1">{deed.ownerAddress}</div>
-        </div>
+        {deed.tokenId && (onChainOwners || offChainOwners) && (
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <div className="text-xs text-gray-600 uppercase font-semibold mb-2">Current Ownership Distribution</div>
+            <div className="space-y-2">
+              {onChainOwners && onChainOwners.length > 0 && (
+                <div>
+                  <div className="text-xs text-blue-600 font-medium mb-1">On-Chain (Blockchain):</div>
+                  <div className="flex flex-wrap gap-2">
+                    {onChainOwners.map((o, idx) => (
+                      <div key={idx} className="px-3 py-1.5 rounded-full bg-blue-100 text-blue-800 border border-blue-300 text-xs font-medium">
+                        {o.address.substring(0, 6)}...{o.address.substring(38)} • {o.share.toFixed(4)}%
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {offChainOwners && offChainOwners.length > 0 && (
+                <div>
+                  <div className="text-xs text-emerald-600 font-medium mb-1">Off-Chain (Database):</div>
+                  <div className="flex flex-wrap gap-2">
+                    {offChainOwners.map((o, idx) => (
+                      <div key={idx} className="px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-medium">
+                        {o.address.substring(0, 6)}...{o.address.substring(38)} • {o.share.toFixed(4)}%
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
