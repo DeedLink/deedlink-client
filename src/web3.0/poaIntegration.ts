@@ -16,12 +16,14 @@ async function getPropertyNFTContract() {
   return new ethers.Contract(PROPERTY_NFT_ADDRESS, PropertyNFTABI.abi, signer);
 }
 
-export enum PoARights {
-  SIGN = 0,
-  TRANSFER = 1,
-  FRACTIONALIZE = 2,
-  PAY_RENT = 3
-}
+export const PoARightsValues = {
+  SIGN: 0,
+  TRANSFER: 1,
+  FRACTIONALIZE: 2,
+  PAY_RENT: 3
+} as const;
+
+export type PoARights = typeof PoARightsValues[keyof typeof PoARightsValues];
 
 export async function assignPoA(
   tokenId: number,

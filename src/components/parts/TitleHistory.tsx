@@ -168,7 +168,7 @@ export const TitleHistory = ({ tnx }: { tnx: Title[] }) => {
     return hasMultipleOwners ? rootNode : null;
   }, [tnx]);
 
-  const renderTreeNode = (node: OwnerNode, isLast: boolean, prefix: string = "", siblings: OwnerNode[] = []): JSX.Element => {
+  const renderTreeNode = (node: OwnerNode, isLast: boolean, prefix: string = ""): JSX.Element => {
     const hasChildren = node.children.length > 0;
     const connector = isLast ? "└─ " : "├─ ";
     const nextPrefix = isLast ? "   " : "│  ";
@@ -212,7 +212,7 @@ export const TitleHistory = ({ tnx }: { tnx: Title[] }) => {
         {hasChildren && (
           <div className="ml-4">
             {node.children.map((child, idx) =>
-              renderTreeNode(child, idx === node.children.length - 1, prefix + nextPrefix, node.children)
+              renderTreeNode(child, idx === node.children.length - 1, prefix + nextPrefix)
             )}
           </div>
         )}
