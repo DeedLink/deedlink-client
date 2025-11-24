@@ -131,9 +131,24 @@ const TransferFractionalTokensPopup: React.FC<TransferFractionalTokensPopupProps
           status: "completed"
         });
 
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
         try {
+          const { addTransactionToDeed } = await import("../../../api/api");
           const updatedOwners = await calculateOwnershipFromEvents(tokenId, totalSupply);
           await updateDeedOwners(deedId, updatedOwners);
+          
+          for (const owner of updatedOwners) {
+            if (owner.share > 0) {
+              await addTransactionToDeed(
+                deedId,
+                account!,
+                owner.address,
+                0,
+                owner.share
+              );
+            }
+          }
         } catch (updateError) {
           console.error("Failed to update deed owners:", updateError);
         }
@@ -143,6 +158,7 @@ const TransferFractionalTokensPopup: React.FC<TransferFractionalTokensPopupProps
         onClose();
         setRecipientAddress("");
         setAmount("");
+        setTimeout(() => window.location.reload(), 1500);
       }
     } catch (error: any) {
       console.error("Transfer error:", error);

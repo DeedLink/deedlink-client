@@ -112,7 +112,7 @@ const GiveRentPopup: React.FC<GiveRentPopupProps> = ({ isOpen, onClose, tokenId 
         tokenId,
         rentAmount,
         parseInt(duration),
-        tenantAddress
+        tenantAddress.toLowerCase()
       );
       showToast(res?.message || "Rent successfully set!", "success");
       onClose();

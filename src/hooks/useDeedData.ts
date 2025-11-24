@@ -62,6 +62,27 @@ export const useDeedData = (deedNumber: string | undefined) => {
     }
   };
 
+  const syncOwnershipFromBlockchain = async () => {
+    if (!deed?.tokenId || !deed?._id) return;
+    
+    try {
+      const { calculateOwnershipFromEvents } = await import("../web3.0/eventService");
+      const { updateDeedOwners, getTotalSupply } = await import("../web3.0/contractService");
+      const { isPropertyFractionalized } = await import("../web3.0/contractService");
+      
+      const isFractionalized = await isPropertyFractionalized(deed.tokenId);
+      if (isFractionalized) {
+        const totalSupply = await getTotalSupply(deed.tokenId);
+        const owners = await calculateOwnershipFromEvents(deed.tokenId, totalSupply);
+        if (owners.length > 0) {
+          await updateDeedOwners(deed._id, owners);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to sync ownership from blockchain:", error);
+    }
+  };
+
   const pollForFractionalization = async (opts?: { attempts?: number; intervalMs?: number }) => {
     const attempts = opts?.attempts ?? 8;
     const intervalMs = opts?.intervalMs ?? 1500;
@@ -186,6 +207,7 @@ export const useDeedData = (deedNumber: string | undefined) => {
     getFractionalInfo,
     pollForFractionalization,
     getMarketPlaceData,
-    fetchDeed
+    fetchDeed,
+    syncOwnershipFromBlockchain
   };
 };

@@ -19,7 +19,7 @@ async function getPropertyNFTContract() {
 export async function setRent(
   tokenId: number,
   rentAmountInEth: string,
-  rentPeriodInDays: number,
+  rentPeriodInMonths: number,
   receiverAddress: string
 ) {
   const signer = await getSigner();
@@ -36,8 +36,9 @@ export async function setRent(
 
   const nft = await getPropertyNFTContract();
   const rentAmountWei = ethers.parseEther(rentAmountInEth);
+  const rentPeriodInSeconds = rentPeriodInMonths * 30 * 24 * 60 * 60;
 
-  const tx = await nft.setRent(tokenId, rentAmountWei, rentPeriodInDays, receiverAddress);
+  const tx = await nft.setRent(tokenId, rentAmountWei, rentPeriodInSeconds, receiverAddress);
   const receipt = await tx.wait();
 
   return {
@@ -62,15 +63,71 @@ export async function payRent(tokenId: number, rentAmountInEth: string) {
   };
 }
 
-// View current rent details
+export async function endRent(tokenId: number) {
+  const signer = await getSigner();
+  const userAddress = await signer.getAddress();
+  
+  const isFractionalized = await isPropertyFractionalized(tokenId);
+  
+  if (isFractionalized) {
+    const hasFull = await hasFullOwnership(tokenId, userAddress);
+    if (!hasFull) {
+      throw new Error("You must own 100% of the fractional tokens to end rent");
+    }
+  }
+
+  const nft = await getPropertyNFTContract();
+  const tx = await nft.endRent(tokenId);
+  const receipt = await tx.wait();
+
+  return {
+    success: true,
+    txHash: receipt.hash,
+    message: `Rent ended successfully for token #${tokenId}`
+  };
+}
+
+export async function updateRentReceiver(tokenId: number, newReceiver: string) {
+  const signer = await getSigner();
+  const userAddress = await signer.getAddress();
+  
+  const isFractionalized = await isPropertyFractionalized(tokenId);
+  
+  if (isFractionalized) {
+    const hasFull = await hasFullOwnership(tokenId, userAddress);
+    if (!hasFull) {
+      throw new Error("You must own 100% of the fractional tokens to update rent receiver");
+    }
+  }
+
+  const nft = await getPropertyNFTContract();
+  const tx = await nft.updateRentReceiver(tokenId, newReceiver);
+  const receipt = await tx.wait();
+
+  return {
+    success: true,
+    txHash: receipt.hash,
+    message: `Rent receiver updated successfully for token #${tokenId}`
+  };
+}
+
 export async function getRentDetails(tokenId: number) {
   const nft = await getPropertyNFTContract();
   const rent = await nft.rentInfo(tokenId);
+  const isActive = await nft.isRentActive(tokenId);
+  
+  const periodInSeconds = Number(rent.period);
+  const periodInMonths = periodInSeconds / (30 * 24 * 60 * 60);
+  const nextPaymentDue = Number(rent.lastPaid) + periodInSeconds;
 
   return {
     rentAmount: ethers.formatEther(rent.amount),
-    rentPeriodDays: Number(rent.period),
+    rentPeriodDays: periodInSeconds / (24 * 60 * 60),
+    rentPeriodMonths: periodInMonths,
     receiver: rent.receiver,
-    lastPaid: rent.lastPaid
+    lastPaid: rent.lastPaid,
+    nextPaymentDue: nextPaymentDue,
+    isActive: isActive,
+    canPay: rent.amount > 0 && BigInt(Math.floor(Date.now() / 1000)) >= BigInt(nextPaymentDue)
   };
 }

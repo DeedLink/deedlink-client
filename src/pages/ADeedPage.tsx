@@ -103,12 +103,36 @@ const ADeedPage = () => {
               description: `Property fractionalized into 1,000,000 tokens. Token address: ${res.tokenAddress}`,
               status: "completed"
             });
+
+            await new Promise(resolve => setTimeout(resolve, 3000));
+
+            const { calculateOwnershipFromEvents } = await import("../web3.0/eventService");
+            const { updateDeedOwners, addTransactionToDeed } = await import("../api/api");
+            const { getTotalSupply } = await import("../web3.0/contractService");
+            
+            const totalSupply = await getTotalSupply(deed.tokenId);
+            const owners = await calculateOwnershipFromEvents(deed.tokenId, totalSupply);
+            
+            if (owners.length > 0) {
+              await updateDeedOwners(deed._id, owners);
+              
+              for (const owner of owners) {
+                await addTransactionToDeed(
+                  deed._id,
+                  account || "",
+                  owner.address,
+                  0,
+                  owner.share
+                );
+              }
+            }
           } catch (txError) {
             console.error("Failed to record fractionalization transaction:", txError);
           }
         }
         
         showToast("Fractioning success", "success");
+        setTimeout(() => window.location.reload(), 2000);
       } catch (error: any) {
         console.error("Fractioning error:", error);
         showToast(error.message || "Fractioning failed!", "error");

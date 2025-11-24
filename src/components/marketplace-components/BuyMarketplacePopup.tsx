@@ -39,6 +39,7 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
     price: string;
     priceRaw: string;
   } | null>(null);
+  const [rentInfo, setRentInfo] = useState<any>(null);
 
   useEffect(() => {
     const fetchListingDetails = async () => {
@@ -84,7 +85,23 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
     };
 
     fetchListingDetails();
-  }, [isOpen, marketplace]);
+    checkRentStatus();
+  }, [isOpen, marketplace, deed?.tokenId]);
+
+  const checkRentStatus = async () => {
+    if (!deed?.tokenId) return;
+    try {
+      const { getRentDetails } = await import("../../../web3.0/rentIntegration");
+      const rent = await getRentDetails(deed.tokenId);
+      if (rent && rent.rentAmount !== "0.0") {
+        setRentInfo(rent);
+      } else {
+        setRentInfo(null);
+      }
+    } catch (error) {
+      setRentInfo(null);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -221,9 +238,23 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
           }
         } else {
           try {
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            const { addTransactionToDeed } = await import("../../../api/api");
             const totalSupply = await getTotalSupply(Number(marketplace.tokenId));
             const owners = await calculateOwnershipFromEvents(Number(marketplace.tokenId), totalSupply);
             await updateDeedOwners(deed._id, owners);
+            
+            for (const owner of owners) {
+              if (owner.share > 0) {
+                await addTransactionToDeed(
+                  deed._id,
+                  marketplace.from,
+                  owner.address,
+                  0,
+                  owner.share
+                );
+              }
+            }
           } catch (ownerError) {
             console.error("Failed to update fractional owners:", ownerError);
           }
@@ -302,6 +333,26 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
                 <p><span className="font-semibold">Land Area:</span> {deed.landArea} {deed.landSizeUnit}</p>
               </div>
             </div>
+
+            {rentInfo && rentInfo.rentAmount !== "0.0" && listingType === "NFT" && (
+              <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <FaExclamationTriangle className="text-yellow-600 mt-0.5 flex-shrink-0" size={20} />
+                  <div className="flex-1">
+                    <h3 className="font-bold text-yellow-900 mb-2">⚠️ Active Rent Detected</h3>
+                    <div className="space-y-1 text-sm text-yellow-800">
+                      <p><span className="font-semibold">Rent Amount:</span> {rentInfo.rentAmount} ETH</p>
+                      <p><span className="font-semibold">Current Tenant:</span> {rentInfo.receiver?.slice(0, 10)}...{rentInfo.receiver?.slice(-8)}</p>
+                      {account && account.toLowerCase() === rentInfo.receiver?.toLowerCase() ? (
+                        <p className="font-bold text-yellow-900 mt-2">You are the current tenant. Rent will be automatically ended when you become the owner.</p>
+                      ) : (
+                        <p className="mt-2">After purchase, rent receiver will be updated to you (the new owner). The tenant can continue paying rent to you.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
               <h3 className="font-bold text-gray-900 mb-3">Purchase Details</h3>

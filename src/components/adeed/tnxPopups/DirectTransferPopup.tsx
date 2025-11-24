@@ -2,10 +2,12 @@ import { type FC, useState, useEffect } from "react";
 import { createTransaction, getUsers, updateFullOwnerAddress, updateDeedOwners } from "../../../api/api";
 import type { User } from "../../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle } from "react-icons/io5";
-import { FaGift } from "react-icons/fa";
+import { FaGift, FaExclamationTriangle } from "react-icons/fa";
 import { transferNFT } from "../../../web3.0/contractService";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
 import { useWallet } from "../../../contexts/WalletContext";
+import { getRentDetails } from "../../../web3.0/rentIntegration";
+import { useAlert } from "../../../contexts/AlertContext";
 
 interface DirectTransferPopupProps {
   isOpen: boolean;
@@ -25,7 +27,23 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedWallet, setSelectedWallet] = useState("");
   const [loading, setLoading] = useState(false);
+  const [rentInfo, setRentInfo] = useState<any>(null);
   const { account } = useWallet();
+  const { showAlert } = useAlert();
+
+  const checkRentStatus = async () => {
+    if (!tokenId) return;
+    try {
+      const rent = await getRentDetails(tokenId);
+      if (rent && rent.rentAmount !== "0.0") {
+        setRentInfo(rent);
+      } else {
+        setRentInfo(null);
+      }
+    } catch (error) {
+      setRentInfo(null);
+    }
+  };
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -46,8 +64,11 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
         setFilteredUsers([]);
       }
     };
-    if (isOpen) fetchUsers();
-  }, [isOpen, account]);
+    if (isOpen) {
+      fetchUsers();
+      checkRentStatus();
+    }
+  }, [isOpen, account, tokenId]);
 
   useEffect(() => {
     const val = search.trim().toLowerCase();
@@ -65,9 +86,18 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
   const handleDirectTransfer = async () => {
     if (!selectedWallet) return alert("Please select a recipient!");
 
-    const confirmed = confirm(
-      `Transfer property #${tokenId} to:\n${selectedWallet}\n\nThis is a direct transfer with no payment.`
-    );
+    let confirmMessage = `Transfer property #${tokenId} to:\n${selectedWallet}\n\nThis is a direct transfer with no payment.`;
+    
+    if (rentInfo && rentInfo.rentAmount !== "0.0") {
+      const isTenant = selectedWallet.toLowerCase() === rentInfo.receiver?.toLowerCase();
+      if (isTenant) {
+        confirmMessage += `\n\n⚠️ WARNING: The recipient is the current tenant. Rent will be automatically ended upon transfer.`;
+      } else {
+        confirmMessage += `\n\n⚠️ WARNING: Active rent exists (${rentInfo.rentAmount} ETH). Rent receiver will be updated to the new owner (${selectedWallet}).`;
+      }
+    }
+
+    const confirmed = confirm(confirmMessage);
     if (!confirmed) return;
 
     setLoading(true);
@@ -143,6 +173,23 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
               gifts or transfers between your own wallets.
             </p>
           </div>
+
+          {rentInfo && rentInfo.rentAmount !== "0.0" && (
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <FaExclamationTriangle className="text-yellow-600 mt-0.5 flex-shrink-0" size={16} />
+                <div className="text-sm text-yellow-800">
+                  <p className="font-semibold mb-1">Active Rent Detected</p>
+                  <p className="mb-1">Rent: {rentInfo.rentAmount} ETH | Tenant: {shortAddress(rentInfo.receiver)}</p>
+                  {selectedWallet && selectedWallet.toLowerCase() === rentInfo.receiver?.toLowerCase() ? (
+                    <p className="font-semibold text-yellow-900">⚠️ Recipient is the tenant. Rent will be automatically ended.</p>
+                  ) : (
+                    <p>Rent receiver will be updated to the new owner after transfer.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
