@@ -110,3 +110,37 @@ export async function isWillReadyForExecution(tokenId: number) {
   const contract = await getLastWillContract();
   return await contract.isWillReadyForExecution(tokenId);
 }
+
+// Verify owner death (Notary only)
+export async function verifyOwnerDeath(tokenId: number, deathCertificateHash: string) {
+  const contract = await getLastWillContract();
+  const tx = await contract.verifyOwnerDeath(tokenId, deathCertificateHash);
+  const receipt = await tx.wait();
+
+  return {
+    success: true,
+    txHash: receipt.hash,
+    message: `Owner death verified for token #${tokenId}. Waiting period of 30 days begins.`
+  };
+}
+
+// Get death verification details
+export async function getDeathVerification(tokenId: number) {
+  const contract = await getLastWillContract();
+  const dv = await contract.getDeathVerification(tokenId);
+
+  return {
+    isVerified: dv[0],
+    verifiedAt: Number(dv[1]),
+    verifiedBy: dv[2],
+    deathCertificateHash: dv[3],
+    waitingPeriodEnd: Number(dv[4]),
+    canExecute: dv[5]
+  };
+}
+
+// Check if owner is deceased
+export async function isOwnerDeceased(tokenId: number) {
+  const contract = await getLastWillContract();
+  return await contract.isOwnerDeceased(tokenId);
+}
