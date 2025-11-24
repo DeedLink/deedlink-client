@@ -24,6 +24,7 @@ import type { Certificate } from "../types/certificate";
 import { cancelListing } from "../web3.0/marketService";
 import { createTransaction } from "../api/api";
 import { generateDeedPDF } from "../utils/generateDeedPDF";
+import { normalizeCertificateResponse } from "../utils/certificateHelpers";
 
 const PROPERTY_NFT_ADDRESS = import.meta.env.VITE_PROPERTY_NFT_ADDRESS as string;
 
@@ -65,7 +66,7 @@ const ADeedPage = () => {
       if (!deed?.tokenId) return;
       try {
         const res = await getCertificatesByTokenId(deed.tokenId);
-        setCertificate(res);
+        setCertificate(normalizeCertificateResponse(res));
       } catch {
         setCertificate(null);
       }

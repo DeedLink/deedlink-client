@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Certificate } from "../../types/certificate";
 import { getCertificatesByTokenId } from "../../api/api";
+import { normalizeCertificateResponse } from "../../utils/certificateHelpers";
 import { shortAddress } from "../../utils/format";
 
 type Props = {
@@ -17,8 +18,7 @@ const LastWillUI = ({ tokenId }: Props) => {
       try {
         setLoading(true);
         const res = await getCertificatesByTokenId(tokenId);
-        //console.log("Fetched certificate:", res);
-        setCertificate(res);
+        setCertificate(normalizeCertificateResponse(res));
       } catch (err: any) {
         setError(err.response?.data?.error || "Failed to load certificate");
       } finally {
