@@ -23,7 +23,7 @@ export const useDeedData = (deedNumber: string | undefined) => {
   const [numberOfFT, setNumberOfFT] = useState(0);
   const [fractionalInfo, setFractionalInfo] = useState<any | null>(null);
   const [tnx, setTnx] = useState<any[]>([]);
-  const [marketPlaceData, setMarketPlaceData] = useState<Marketplace[]>();
+  const [marketPlaceData, setMarketPlaceData] = useState<Marketplace[]>([]);
   
   const { showToast } = useToast();
   const { showLoader, hideLoader } = useLoader();
@@ -92,9 +92,15 @@ export const useDeedData = (deedNumber: string | undefined) => {
     try {
       if (!deed?._id) return;
       const res = await getMarketPlaceByDeedId(deed._id);
-      setMarketPlaceData(res);
+      const normalized = Array.isArray(res)
+        ? res
+        : Array.isArray((res as any)?.data)
+          ? (res as any).data
+          : [];
+      setMarketPlaceData(normalized);
     } catch (error) {
       console.error("Error fetching marketplace data:", error);
+      setMarketPlaceData([]);
     }
   };
 
