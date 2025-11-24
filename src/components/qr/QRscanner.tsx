@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
+import { Decrypting } from "../../utils/encryption";
 
 interface QRScannerProps {
   onScan: (data: QRData) => void;
@@ -40,7 +41,8 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
 
     const qrCodeSuccessCallback = async (decodedText: string) => {
       try {
-        const data: QRData = JSON.parse(decodedText);
+        const decryptedData = Decrypting(decodedText);
+        const data: QRData = decryptedData;
         if (data.deedId && data.escrowAddress && data.seller) {
           await stopScanner();
           onScan(data);
@@ -48,7 +50,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
           console.warn("QR code missing required fields:", data);
         }
       } catch (err) {
-        console.error("QR code parse error:", err);
+        console.error("QR code decrypt error:", err);
       }
     };
 
