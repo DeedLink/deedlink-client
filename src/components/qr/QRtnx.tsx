@@ -1,5 +1,6 @@
 import React from "react";
 import { QRCodeCanvas } from "qrcode.react";
+import { Encryting } from "../../utils/encryption";
 
 interface TnxQRProps {
   deedId: string;
@@ -17,13 +18,13 @@ const TnxQR: React.FC<TnxQRProps> = ({
   size = 200,
 }) => {
   const payload = { deedId, escrowAddress, seller, hash };
-  const qrValue = JSON.stringify(payload);
+  const encryptedData = Encryting(payload);
 
   return (
     <div className="flex flex-col items-center p-3 bg-white rounded-lg shadow-md">
       <QRCodeCanvas
         id="tnx-qr-canvas"
-        value={qrValue}
+        value={encryptedData}
         size={size}
         includeMargin={true}
       />
