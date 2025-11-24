@@ -94,8 +94,10 @@ export const useDeedData = (deedNumber: string | undefined) => {
       const res = await getMarketPlaceByDeedId(deed._id);
       const normalized = Array.isArray(res)
         ? res
-        : Array.isArray((res as any)?.data)
-          ? (res as any).data
+        : typeof res === "object" && res !== null
+          ? Object.values(res).flatMap((value) =>
+              Array.isArray(value) ? value : []
+            )
           : [];
       setMarketPlaceData(normalized);
     } catch (error) {

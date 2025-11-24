@@ -11,7 +11,8 @@ const MarketplaceBanner: React.FC<MarketplaceBannerProps> = ({
   marketPlaceData,
   onRemoveListing,
 }) => {
-  const activeListings = marketPlaceData?.filter(m => m.status === "open_to_sale") || [];
+  const listingsArray = Array.isArray(marketPlaceData) ? marketPlaceData : [];
+  const activeListings = listingsArray.filter(m => m.status === "open_to_sale");
 
   if (activeListings.length === 0) {
     return null;

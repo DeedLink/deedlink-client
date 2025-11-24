@@ -55,6 +55,10 @@ const ADeedPage = () => {
   const [openTransferFractional, setOpenTransferFractional] = useState(false);
   const [certificate, setCertificate] = useState<Certificate | null>(null);
   const [ownershipRefreshTrigger, setOwnershipRefreshTrigger] = useState(0);
+  const openMarketplaceListings = Array.isArray(marketPlaceData)
+    ? marketPlaceData.filter((listing) => listing.status === "open_to_sale")
+    : [];
+  const hasOpenMarketplaceListings = openMarketplaceListings.length > 0;
 
   useEffect(() => {
     const loadCertificate = async () => {
@@ -233,7 +237,7 @@ const ADeedPage = () => {
               marketPlaceData={marketPlaceData} 
               onRemoveListing={handleRemoveMarketListing}
             />
-            {(!marketPlaceData || marketPlaceData.filter(m => m.status === "open_to_sale").length === 0) && (
+            {!hasOpenMarketplaceListings && (
               <DeedActionBar
                 onFractioning={handleFractioning}
                 deedNumber={deed.deedNumber}
@@ -288,7 +292,7 @@ const ADeedPage = () => {
             marketPlaceData={marketPlaceData} 
             onRemoveListing={handleRemoveMarketListing}
           />
-          {(!marketPlaceData || marketPlaceData.filter(m => m.status === "open_to_sale").length === 0) && (
+          {!hasOpenMarketplaceListings && (
             <DeedActionBar
               onFractioning={handleFractioning}
               deedNumber={deed.deedNumber}
