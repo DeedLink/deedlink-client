@@ -41,14 +41,39 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
 
     const qrCodeSuccessCallback = async (decodedText: string) => {
       try {
-        const decryptedData = Decrypting(decodedText);
-        const data: QRData = decryptedData;
-        if (data.deedId && data.escrowAddress && data.seller) {
-          await stopScanner();
-          onScan(data);
-        } else {
-          console.warn("QR code missing required fields:", data);
+        if (!decodedText || decodedText.trim().length === 0) {
+          console.warn("QR code contains empty data");
+          return;
         }
+
+        const decryptedData = Decrypting(decodedText);
+        
+        if (!decryptedData || typeof decryptedData !== "object") {
+          console.warn("QR code decryption failed or returned invalid data:", decryptedData);
+          return;
+        }
+
+        const data = decryptedData as QRData;
+        
+        // Validate required fields
+        if (!data.deedId || !data.escrowAddress || !data.seller) {
+          console.warn("QR code missing required fields:", {
+            hasDeedId: !!data.deedId,
+            hasEscrowAddress: !!data.escrowAddress,
+            hasSeller: !!data.seller,
+            data
+          });
+          return;
+        }
+
+        // Validate escrow address format (should be Ethereum address)
+        if (!data.escrowAddress.startsWith("0x") || data.escrowAddress.length !== 42) {
+          console.warn("Invalid escrow address format:", data.escrowAddress);
+          return;
+        }
+
+        await stopScanner();
+        onScan(data);
       } catch (err) {
         console.error("QR code decrypt error:", err);
       }

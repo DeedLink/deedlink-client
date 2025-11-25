@@ -46,31 +46,50 @@ function PurchancePanel() {
       return;
     }
 
-    const trimmed = typed.trim();
-    
-    // Check if it's a valid Ethereum address (plain escrow address)
-    if (isAddress(trimmed)) {
-      console.log("Valid Ethereum address detected:", trimmed);
-      setSelectedEscrow(trimmed);
-      // Clear scanned data since we're using a plain address
-      setScannedData(null);
-      setDeedId("");
-      return;
-    }
+    // Add a small delay to avoid processing while user is still typing
+    const timeoutId = setTimeout(() => {
+      const trimmed = typed.trim();
+      console.log("Processing input:", trimmed.substring(0, 50) + "...");
+      
+      // Check if it's a valid Ethereum address (plain escrow address)
+      if (isAddress(trimmed)) {
+        console.log("Valid Ethereum address detected:", trimmed);
+        setSelectedEscrow(trimmed);
+        // Clear scanned data since we're using a plain address
+        setScannedData(null);
+        setDeedId("");
+        return;
+      }
 
-    // Otherwise, try to decrypt as QR string
-    console.log("Attempting to decrypt as QR string:", trimmed);
-    const [ok, decrypted] = validateEscrowString(trimmed);
-    if (ok && decrypted) {
-      const obj = decrypted as QRData;
-      console.log("Decrypted QR data:", obj);
-      if (obj.escrowAddress) {
+      // Otherwise, try to decrypt as QR string
+      console.log("Attempting to decrypt as QR string...");
+      const [ok, decrypted] = validateEscrowString(trimmed);
+      if (ok && decrypted) {
+        const obj = decrypted as QRData;
+        console.log("✅ Decrypted QR data successfully:", obj);
         setScannedData(obj);
         setDeedId(obj.deedId || "");
         setSelectedEscrow(obj.escrowAddress);
+      } else {
+        // If decryption failed, try to show helpful error
+        console.warn("❌ Failed to decrypt pasted string. It may not be a valid encrypted QR string.");
+        console.warn("Decryption result:", { ok, decrypted });
+        
+        // Only show error if the string looks like it might be encrypted (long base64-like string)
+        const inputLength = typed.trim().length;
+        if (inputLength > 50 && /^[A-Za-z0-9+/=]+$/.test(typed.trim())) {
+          showAlert({
+            type: "error",
+            title: "Invalid QR String",
+            message: "The pasted string could not be decrypted. Please ensure it's a valid encrypted QR code string or a valid Ethereum address.",
+            confirmText: "OK"
+          });
+        }
       }
-    }
-  }, [typed]);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [typed, showAlert]);
 
   return (
     <div className="space-y-4">
