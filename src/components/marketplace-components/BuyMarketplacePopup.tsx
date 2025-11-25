@@ -7,10 +7,11 @@ import { useToast } from "../../contexts/ToastContext";
 import { useLoader } from "../../contexts/LoaderContext";
 import { useWallet } from "../../contexts/WalletContext";
 import { buyNFT, buyFractionalTokens, getListingDetails } from "../../web3.0/marketService";
-import { createTransaction, updateMarketPlace, updateFullOwnerAddress, updateDeedOwners } from "../../api/api";
+import { createTransaction, updateMarketPlace, updateFullOwnerAddress, updateDeedOwners, addTransactionToDeed } from "../../api/api";
 import { getNFTOwner, getTotalSupply } from "../../web3.0/contractService";
 import { calculateOwnershipFromEvents } from "../../web3.0/eventService";
 import { useAlert } from "../../contexts/AlertContext";
+import { getRentDetails } from "../../web3.0/rentIntegration";
 
 interface BuyMarketplacePopupProps {
   marketplace: Marketplace;
@@ -91,7 +92,6 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
   const checkRentStatus = async () => {
     if (!deed?.tokenId) return;
     try {
-      const { getRentDetails } = await import("../../../web3.0/rentIntegration");
       const rent = await getRentDetails(deed.tokenId);
       if (rent && rent.rentAmount !== "0.0") {
         setRentInfo(rent);
@@ -239,7 +239,6 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
         } else {
           try {
             await new Promise(resolve => setTimeout(resolve, 3000));
-            const { addTransactionToDeed } = await import("../../../api/api");
             const totalSupply = await getTotalSupply(Number(marketplace.tokenId));
             const owners = await calculateOwnershipFromEvents(Number(marketplace.tokenId), totalSupply);
             await updateDeedOwners(deed._id, owners);
