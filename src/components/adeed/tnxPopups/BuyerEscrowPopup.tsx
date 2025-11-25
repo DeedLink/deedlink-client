@@ -82,7 +82,7 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
   const handleDepositPayment = async () => {
     if (!details) return alert("Loading escrow details...");
 
-    const confirmed = confirmDeposit(details);
+    const confirmed = await confirmDeposit(details);
     if (!confirmed) return;
 
     setLoading(true);
@@ -137,25 +137,35 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
     setLoading(true);
     try {
       const result = await finalizeEscrow(escrowAddress);
-      console.log("What you are looking for: ",result);
+      console.log("Finalization result:", result);
 
       if (result.success) {
-        const res=await transactionStatus(
-          escrowAddress,
-          "completed"
-        );
+        // Refresh status to show finalized state
+        const newStatus = await getEscrowStatus(escrowAddress);
+        setStatus(newStatus);
+        
+        // Update transaction status in DB
+        try {
+          const res = await transactionStatus(
+            escrowAddress,
+            "completed"
+          );
+          console.log("Transaction status updated in DB:", res);
+        } catch (dbError) {
+          console.error("Failed to update transaction status in DB:", dbError);
+        }
 
-        console.log("Transaction status updated in DB:", res);
-
+        // Update owner address in DB
         try {
           const updateOwner = await updateFullOwnerAddress(
-              details.tokenId,
-              details.buyer.toLowerCase(),
-              user?.name || "",
-              user?.nic || ""
-            );
+            details.tokenId,
+            details.buyer.toLowerCase(),
+            user?.name || "",
+            user?.nic || ""
+          );
           console.log("Owner address updated in DB:", updateOwner);
 
+          // Calculate ownership from events
           try {
             const owners = await calculateOwnershipFromEvents(Number(details.tokenId));
             console.log("Calculated owners from events:", owners);
@@ -181,14 +191,14 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
         });
         onClose();
       } else {
-        throw new Error(result.error);
+        throw new Error(result.error || "Failed to finalize escrow");
       }
     } catch (error: any) {
       console.error("Finalization failed:", error);
       showAlert({
         type: "error",
         title: "Failed to Finalize",
-        message: error.message,
+        message: error.message || "An unexpected error occurred during finalization",
         confirmText: "OK",
       });
     } finally {
