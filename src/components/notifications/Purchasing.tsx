@@ -5,6 +5,7 @@ import { useAlert } from "../../contexts/AlertContext";
 import { IoQrCodeOutline } from "react-icons/io5";
 import type { QRData } from "../qr/QRscanner";
 import { validateEscrowString } from "../../utils/helpers";
+import { isAddress } from "ethers";
 
 function PurchancePanel() {
   const [selectedEscrow, setSelectedEscrow] = useState<string | null>(null);
@@ -41,14 +42,33 @@ function PurchancePanel() {
   };
 
   useEffect(() => {
-    console.log(typed);
-    const [ok, decrypted] = validateEscrowString(typed);
+    if (!typed || typed.trim().length === 0) {
+      return;
+    }
+
+    const trimmed = typed.trim();
+    
+    // Check if it's a valid Ethereum address (plain escrow address)
+    if (isAddress(trimmed)) {
+      console.log("Valid Ethereum address detected:", trimmed);
+      setSelectedEscrow(trimmed);
+      // Clear scanned data since we're using a plain address
+      setScannedData(null);
+      setDeedId("");
+      return;
+    }
+
+    // Otherwise, try to decrypt as QR string
+    console.log("Attempting to decrypt as QR string:", trimmed);
+    const [ok, decrypted] = validateEscrowString(trimmed);
     if (ok && decrypted) {
       const obj = decrypted as QRData;
-      console.log(obj);
-      setScannedData(obj);
-      setDeedId(obj.deedId);
-      setSelectedEscrow(obj.escrowAddress)
+      console.log("Decrypted QR data:", obj);
+      if (obj.escrowAddress) {
+        setScannedData(obj);
+        setDeedId(obj.deedId || "");
+        setSelectedEscrow(obj.escrowAddress);
+      }
     }
   }, [typed]);
 
