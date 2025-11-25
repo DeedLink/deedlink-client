@@ -6,7 +6,7 @@ import { createCertificate, getDeedByDeedNumber, getUsers } from "../../../api/a
 import { useWallet } from "../../../contexts/WalletContext";
 import { shortAddress } from "../../../utils/format";
 import { IoCheckmarkCircle, IoSearchOutline } from "react-icons/io5";
-//import { setLastWill } from "../../../web3.0/lastWillIntegration";
+import { createWill } from "../../../web3.0/lastWillIntegration";
 
 interface SetLastWillPopupProps {
   isOpen: boolean;
@@ -21,15 +21,18 @@ const GOV_FEE_FIXED = 500;
 const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, tokenId, deedNumber }) => {
   const { showToast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
-  const [notaries, setNotaries] = useState<User[]>([]);
+  const [witnesses, setWitnesses] = useState<User[]>([]);
   const [searchBeneficiary, setSearchBeneficiary] = useState("");
-  const [searchNotary, setSearchNotary] = useState("");
+  const [searchWitness1, setSearchWitness1] = useState("");
+  const [searchWitness2, setSearchWitness2] = useState("");
   const [beneficiaryAddress, setBeneficiaryAddress] = useState("");
-  const [notaryAddress, setNotaryAddress] = useState("");
+  const [witness1Address, setWitness1Address] = useState("");
+  const [witness2Address, setWitness2Address] = useState("");
   const [estimatedValue, setEstimatedValue] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filteredBeneficiaries, setFilteredBeneficiaries] = useState<User[]>([]);
-  const [filteredNotaries, setFilteredNotaries] = useState<User[]>([]);
+  const [filteredWitnesses1, setFilteredWitnesses1] = useState<User[]>([]);
+  const [filteredWitnesses2, setFilteredWitnesses2] = useState<User[]>([]);
   const { account } = useWallet();
 
   const stampDuty = estimatedValue ? (estimatedValue * STAMP_DUTY_RATE).toFixed(2) : "0.00";
@@ -53,18 +56,19 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
             u.kycStatus === "verified" &&
             u.role === "user"
         );
-        const notaryList = data.filter(
+        const witnessList = data.filter(
           (u) =>
             u.walletAddress &&
             u.walletAddress !== account &&
             u.kycStatus === "verified" &&
-            u.role === "notary"
+            (u.role === "user" || u.role === "notary")
         );
 
         setUsers(currentUserBeneficiaries);
         setFilteredBeneficiaries(currentUserBeneficiaries);
-        setNotaries(notaryList);
-        setFilteredNotaries(notaryList);
+        setWitnesses(witnessList);
+        setFilteredWitnesses1(witnessList);
+        setFilteredWitnesses2(witnessList);
 
         if (deedRes && deedRes.valuation && deedRes.valuation.length > 0) {
           const latestValuation = deedRes.valuation
@@ -94,34 +98,62 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
   }, [searchBeneficiary, users]);
 
   useEffect(() => {
-    const val = searchNotary.trim().toLowerCase();
-    setFilteredNotaries(
+    const val = searchWitness1.trim().toLowerCase();
+    setFilteredWitnesses1(
       val === ""
-        ? notaries
-        : notaries.filter(
+        ? witnesses
+        : witnesses.filter(
             (u) =>
               u.name?.toLowerCase().includes(val) ||
               u.walletAddress?.toLowerCase().includes(val)
           )
     );
-  }, [searchNotary, notaries]);
+  }, [searchWitness1, witnesses]);
+
+  useEffect(() => {
+    const val = searchWitness2.trim().toLowerCase();
+    setFilteredWitnesses2(
+      val === ""
+        ? witnesses
+        : witnesses.filter(
+            (u) =>
+              u.name?.toLowerCase().includes(val) ||
+              u.walletAddress?.toLowerCase().includes(val)
+          )
+    );
+  }, [searchWitness2, witnesses]);
 
   const handleSetLastWill = async () => {
-    if (!beneficiaryAddress || !notaryAddress || estimatedValue <= 0) {
-      showToast("Please complete all required fields", "error");
+    if (!beneficiaryAddress || !witness1Address || !witness2Address) {
+      showToast("Please complete all required fields (Beneficiary and 2 Witnesses)", "error");
+      return;
+    }
+
+    if (witness1Address === witness2Address) {
+      showToast("Witnesses must be different", "error");
+      return;
+    }
+
+    if (beneficiaryAddress === account) {
+      showToast("You cannot be your own beneficiary", "error");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      // const res = await setLastWill(
-      //   tokenId,
-      //   beneficiaryAddress,
-      //   notaryAddress,
-      //   estimatedValue
-      // );
+      // Generate IPFS hash from certificate data (or use empty string if IPFS not available)
+      const ipfsHash = `last_will_${tokenId}_${Date.now()}`;
 
-      //console.log("Last Will set on blockchain:", res);
+      // Create will on blockchain
+      const res = await createWill(
+        tokenId,
+        beneficiaryAddress,
+        witness1Address,
+        witness2Address,
+        ipfsHash
+      );
+
+      console.log("Last Will set on blockchain:", res);
 
       const payload = {
         type: "last_will",
@@ -139,9 +171,14 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
             contact: beneficiaryAddress,
           },
           {
-            name: "Notary",
-            role: "notary",
-            contact: notaryAddress,
+            name: "Witness 1",
+            role: "witness",
+            contact: witness1Address,
+          },
+          {
+            name: "Witness 2",
+            role: "witness",
+            contact: witness2Address,
           }
         ],
         createdBy: account,
@@ -152,7 +189,7 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
           stampDuty: Number(stampDuty),
           fixedFee: GOV_FEE_FIXED,
           totalFee: Number(totalGovFee),
-          txHash: ""//res?.transactionHash || null
+          txHash: res?.txHash || ""
         }
       };
 
@@ -240,7 +277,7 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-600">Notary (Verified Notary)</label>
+            <label className="text-sm font-semibold text-gray-600">Witness 1 (Verified User)</label>
             <div className="mt-1">
               <div className="relative mb-2">
                 <IoSearchOutline
@@ -249,20 +286,20 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
                 />
                 <input
                   type="text"
-                  placeholder="Search notary by name or address"
-                  value={searchNotary}
-                  onChange={(e) => setSearchNotary(e.target.value)}
+                  placeholder="Search witness by name or address"
+                  value={searchWitness1}
+                  onChange={(e) => setSearchWitness1(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-gray-800 placeholder-gray-400"
                 />
               </div>
               <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-100">
-                {filteredNotaries.length > 0 ? (
-                  filteredNotaries.map((notary) => (
+                {filteredWitnesses1.length > 0 ? (
+                  filteredWitnesses1.map((witness) => (
                     <div
-                      key={notary.walletAddress}
-                      onClick={() => setNotaryAddress(notary.walletAddress!)}
+                      key={witness.walletAddress}
+                      onClick={() => setWitness1Address(witness.walletAddress!)}
                       className={`px-4 py-3 cursor-pointer transition ${
-                        notaryAddress === notary.walletAddress
+                        witness1Address === witness.walletAddress
                           ? "bg-emerald-50"
                           : "hover:bg-gray-50"
                       }`}
@@ -270,13 +307,13 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
                       <div className="flex items-center justify-between">
                         <div className="min-w-0">
                           <div className="font-semibold text-sm text-gray-900 truncate">
-                            {notary.name || "Unnamed Notary"}
+                            {witness.name || "Unnamed User"}
                           </div>
                           <div className="text-xs text-gray-500 font-mono">
-                            {shortAddress(notary.walletAddress!)}
+                            {shortAddress(witness.walletAddress!)}
                           </div>
                         </div>
-                        {notaryAddress === notary.walletAddress && (
+                        {witness1Address === witness.walletAddress && (
                           <IoCheckmarkCircle
                             className="text-emerald-600 flex-shrink-0 ml-2"
                             size={20}
@@ -287,7 +324,62 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
                   ))
                 ) : (
                   <div className="p-5 text-center text-gray-400 text-sm">
-                    No verified notaries found
+                    No verified users found
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-semibold text-gray-600">Witness 2 (Verified User)</label>
+            <div className="mt-1">
+              <div className="relative mb-2">
+                <IoSearchOutline
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={18}
+                />
+                <input
+                  type="text"
+                  placeholder="Search witness by name or address"
+                  value={searchWitness2}
+                  onChange={(e) => setSearchWitness2(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-gray-800 placeholder-gray-400"
+                />
+              </div>
+              <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-100">
+                {filteredWitnesses2.length > 0 ? (
+                  filteredWitnesses2.map((witness) => (
+                    <div
+                      key={witness.walletAddress}
+                      onClick={() => setWitness2Address(witness.walletAddress!)}
+                      className={`px-4 py-3 cursor-pointer transition ${
+                        witness2Address === witness.walletAddress
+                          ? "bg-emerald-50"
+                          : "hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="min-w-0">
+                          <div className="font-semibold text-sm text-gray-900 truncate">
+                            {witness.name || "Unnamed User"}
+                          </div>
+                          <div className="text-xs text-gray-500 font-mono">
+                            {shortAddress(witness.walletAddress!)}
+                          </div>
+                        </div>
+                        {witness2Address === witness.walletAddress && (
+                          <IoCheckmarkCircle
+                            className="text-emerald-600 flex-shrink-0 ml-2"
+                            size={20}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-5 text-center text-gray-400 text-sm">
+                    No verified users found
                   </div>
                 )}
               </div>
@@ -321,10 +413,10 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
           </div>
 
           <button
-            disabled={isSubmitting || !beneficiaryAddress || !notaryAddress || estimatedValue <= 0}
+            disabled={isSubmitting || !beneficiaryAddress || !witness1Address || !witness2Address}
             onClick={handleSetLastWill}
             className={`w-full mt-4 py-3 rounded-lg text-white font-semibold transition text-base shadow-lg ${
-              isSubmitting || !beneficiaryAddress || !notaryAddress || estimatedValue <= 0
+              isSubmitting || !beneficiaryAddress || !witness1Address || !witness2Address
                 ? "bg-emerald-400 cursor-not-allowed"
                 : "bg-emerald-600 hover:bg-emerald-700"
             }`}
