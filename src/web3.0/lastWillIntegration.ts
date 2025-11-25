@@ -23,15 +23,28 @@ export async function createWill(
   witness2: string,
   ipfsHash: string
 ) {
-  const contract = await getLastWillContract();
-  const tx = await contract.createWill(tokenId, beneficiary, witness1, witness2, ipfsHash);
-  const receipt = await tx.wait();
+  try {
+    const contract = await getLastWillContract();
+    const tx = await contract.createWill(tokenId, beneficiary, witness1, witness2, ipfsHash);
+    const receipt = await tx.wait();
 
-  return {
-    success: true,
-    txHash: receipt.hash,
-    message: `Will created for token #${tokenId}`
-  };
+    return {
+      success: true,
+      txHash: receipt.hash,
+      message: `Will created for token #${tokenId}`
+    };
+  } catch (error: any) {
+    console.error("Error in createWill:", error);
+    
+    // Re-throw with more context
+    if (error?.reason) {
+      throw new Error(error.reason);
+    } else if (error?.message) {
+      throw error;
+    } else {
+      throw new Error("Failed to create will on blockchain");
+    }
+  }
 }
 
 // Witness a will
@@ -143,4 +156,15 @@ export async function getDeathVerification(tokenId: number) {
 export async function isOwnerDeceased(tokenId: number) {
   const contract = await getLastWillContract();
   return await contract.isOwnerDeceased(tokenId);
+}
+
+// Check if a will already exists for a token
+export async function hasActiveWill(tokenId: number) {
+  try {
+    const contract = await getLastWillContract();
+    return await contract.hasActiveWill(tokenId);
+  } catch (error) {
+    console.error("Error checking active will:", error);
+    return false;
+  }
 }

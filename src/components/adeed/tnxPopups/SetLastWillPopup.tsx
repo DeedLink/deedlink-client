@@ -6,7 +6,8 @@ import { createCertificate, getDeedByDeedNumber, getUsers } from "../../../api/a
 import { useWallet } from "../../../contexts/WalletContext";
 import { shortAddress } from "../../../utils/format";
 import { IoCheckmarkCircle, IoSearchOutline } from "react-icons/io5";
-import { createWill } from "../../../web3.0/lastWillIntegration";
+import { createWill, hasActiveWill } from "../../../web3.0/lastWillIntegration";
+import { getAddress } from "ethers";
 
 interface SetLastWillPopupProps {
   isOpen: boolean;
@@ -139,17 +140,35 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
       return;
     }
 
+    if (!account) {
+      showToast("Wallet not connected. Please connect your wallet first.", "error");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      // Check if a will already exists
+      const willExists = await hasActiveWill(tokenId);
+      if (willExists) {
+        showToast("A Last Will already exists for this property. Please revoke it first before creating a new one.", "error");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Normalize addresses to checksum format
+      const normalizedBeneficiary = getAddress(beneficiaryAddress);
+      const normalizedWitness1 = getAddress(witness1Address);
+      const normalizedWitness2 = getAddress(witness2Address);
+
       // Generate IPFS hash from certificate data (or use empty string if IPFS not available)
       const ipfsHash = `last_will_${tokenId}_${Date.now()}`;
 
       // Create will on blockchain
       const res = await createWill(
         tokenId,
-        beneficiaryAddress,
-        witness1Address,
-        witness2Address,
+        normalizedBeneficiary,
+        normalizedWitness1,
+        normalizedWitness2,
         ipfsHash
       );
 
@@ -168,17 +187,17 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
           {
             name: "Beneficiary",
             role: "beneficiary",
-            contact: beneficiaryAddress,
+            contact: normalizedBeneficiary,
           },
           {
             name: "Witness 1",
             role: "witness",
-            contact: witness1Address,
+            contact: normalizedWitness1,
           },
           {
             name: "Witness 2",
             role: "witness",
-            contact: witness2Address,
+            contact: normalizedWitness2,
           }
         ],
         createdBy: account,
@@ -199,7 +218,44 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
       showToast("Last Will successfully set and stored!", "success");
       onClose();
     } catch (error: any) {
-      showToast(error.message || "Failed to set Last Will", "error");
+      console.error("Error creating last will:", error);
+      
+      // Extract meaningful error message
+      let errorMessage = "Failed to set Last Will";
+      
+      if (error?.message) {
+        const msg = error.message.toLowerCase();
+        
+        if (msg.includes("user rejected") || msg.includes("user denied")) {
+          errorMessage = "Transaction was rejected. Please try again.";
+        } else if (msg.includes("insufficient funds")) {
+          errorMessage = "Insufficient funds for transaction. Please add more ETH to your wallet.";
+        } else if (msg.includes("will already exists")) {
+          errorMessage = "A Last Will already exists for this property. Please revoke it first.";
+        } else if (msg.includes("not property owner")) {
+          errorMessage = "You are not the owner of this property.";
+        } else if (msg.includes("invalid beneficiary") || msg.includes("invalid witness")) {
+          errorMessage = "Invalid address provided. Please check the addresses and try again.";
+        } else if (msg.includes("wallet not connected")) {
+          errorMessage = "Wallet not connected. Please connect your wallet and try again.";
+        } else if (msg.includes("network") || msg.includes("provider")) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        } else {
+          // Try to extract the revert reason if available
+          const revertMatch = msg.match(/revert\s+(.+)/i) || msg.match(/reason:\s*(.+)/i);
+          if (revertMatch) {
+            errorMessage = revertMatch[1];
+          } else {
+            errorMessage = error.message;
+          }
+        }
+      } else if (error?.reason) {
+        errorMessage = error.reason;
+      } else if (typeof error === "string") {
+        errorMessage = error;
+      }
+      
+      showToast(errorMessage, "error");
     } finally {
       setIsSubmitting(false);
     }
