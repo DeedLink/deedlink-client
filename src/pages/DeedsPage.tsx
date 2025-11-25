@@ -46,12 +46,15 @@ const DeedsPage = () => {
         const signaturesMap = new Map<string, ISignatures>();
         const fullySignedDeeds: IDeed[] = [];
         
+        // Process all deeds - getDeedsByOwner already returns deeds where user is an owner (any share)
         for (const deed of res) {
+          // Only process deeds with tokenId (they can have signatures)
           if (deed.tokenId !== undefined) {
             try {
               const sigs = await getSignatures(deed.tokenId);
               signaturesMap.set(deed._id, sigs);
               
+              // Only show fully signed deeds
               if (sigs.fully) {
                 fullySignedDeeds.push(deed);
               }

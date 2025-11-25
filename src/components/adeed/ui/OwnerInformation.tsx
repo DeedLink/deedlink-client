@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { FaUserShield } from "react-icons/fa";
 import type { IDeed } from "../../../types/responseDeed";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
-import { getTransactionsByDeedId } from "../../../api/api";
+import { getTransactionsByDeedId, updateFullOwnerAddress } from "../../../api/api";
 import VerificationBadge from "./VerificationBadge";
 
 interface OwnerInformationProps {
@@ -56,17 +56,47 @@ const OwnerInformation = ({ deed }: OwnerInformationProps) => {
               const to = tx.to.toLowerCase();
               const from = tx.from ? tx.from.toLowerCase() : null;
               
-              if (from && from !== "0x0000000000000000000000000000000000000000") {
-                const fromShare = ownersMap.get(from) || 0;
-                const newFromShare = Math.max(0, fromShare - tx.share);
-                ownersMap.set(from, newFromShare);
-                console.log(`[OFF-CHAIN] OwnerInformation: Transfer ${tx.share}% from ${from} (new balance: ${newFromShare}%)`);
-              }
+              // Check if this is a full ownership transfer (100% share)
+              const isFullOwnershipTransfer = tx.share >= 99.9 || 
+                tx.type === "direct_transfer" || 
+                tx.type === "gift" || 
+                tx.type === "escrow_sale" ||
+                (tx.type === "escrow" && tx.share >= 99.9);
               
-              const currentShare = ownersMap.get(to) || 0;
-              const newShare = currentShare + tx.share;
-              ownersMap.set(to, newShare);
-              console.log(`[OFF-CHAIN] OwnerInformation: Transfer ${tx.share}% to ${to} (new balance: ${newShare}%)`);
+              if (isFullOwnershipTransfer) {
+                // Full ownership transfer: clear all previous owners and set new owner to 100%
+                console.log(`[OFF-CHAIN] OwnerInformation: Full ownership transfer detected (type: ${tx.type}, share: ${tx.share}%)`);
+                ownersMap.clear();
+                ownersMap.set(to, 100);
+                console.log(`[OFF-CHAIN] OwnerInformation: Full ownership transferred to ${to} (100%)`);
+                
+                // Update full owner address in database
+                if (deed.tokenId) {
+                  try {
+                    console.log(`[OFF-CHAIN] OwnerInformation: Updating full owner address for tokenId ${deed.tokenId} to ${to}`);
+                    await updateFullOwnerAddress(
+                      Number(deed.tokenId),
+                      to
+                    );
+                    console.log(`[OFF-CHAIN] OwnerInformation: Successfully updated full owner address`);
+                  } catch (error) {
+                    console.error(`[OFF-CHAIN] OwnerInformation: Failed to update full owner address:`, error);
+                  }
+                }
+              } else {
+                // Partial/fractional transfer: adjust shares
+                if (from && from !== "0x0000000000000000000000000000000000000000") {
+                  const fromShare = ownersMap.get(from) || 0;
+                  const newFromShare = Math.max(0, fromShare - tx.share);
+                  ownersMap.set(from, newFromShare);
+                  console.log(`[OFF-CHAIN] OwnerInformation: Transfer ${tx.share}% from ${from} (new balance: ${newFromShare}%)`);
+                }
+                
+                const currentShare = ownersMap.get(to) || 0;
+                const newShare = currentShare + tx.share;
+                ownersMap.set(to, newShare);
+                console.log(`[OFF-CHAIN] OwnerInformation: Transfer ${tx.share}% to ${to} (new balance: ${newShare}%)`);
+              }
             }
           }
         }
