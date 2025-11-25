@@ -3,7 +3,7 @@ export interface Title {
   deedId: string;
   from: string;
   to: string;
-  status: "pending" | "completed" | "failed";
+  status: "pending" | "completed" | "failed" | "init";
   hash?: string;
   blockchain_identification?: string;
   amount: number;
