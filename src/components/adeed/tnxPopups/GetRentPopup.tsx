@@ -3,7 +3,6 @@ import { FaTimes, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
 import { useWallet } from "../../../contexts/WalletContext";
 import { useToast } from "../../../contexts/ToastContext";
 import { getRentDetails, payRent } from "../../../web3.0/rentIntegration";
-import { ethers } from "ethers";
 import { shortAddress } from "../../../utils/format";
 
 interface GetRentPopupProps {

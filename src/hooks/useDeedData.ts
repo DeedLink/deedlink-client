@@ -67,8 +67,8 @@ export const useDeedData = (deedNumber: string | undefined) => {
     
     try {
       const { calculateOwnershipFromEvents } = await import("../web3.0/eventService");
-      const { updateDeedOwners, getTotalSupply } = await import("../web3.0/contractService");
-      const { isPropertyFractionalized } = await import("../web3.0/contractService");
+      const { updateDeedOwners } = await import("../api/api");
+      const { getTotalSupply, isPropertyFractionalized } = await import("../web3.0/contractService");
       
       const isFractionalized = await isPropertyFractionalized(deed.tokenId);
       if (isFractionalized) {

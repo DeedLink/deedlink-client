@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import type { Rent } from "../../types/rent";
 import { getRentDetails, endRent } from "../../web3.0/rentIntegration";
 import { shortAddress } from "../../utils/format";
 import { FaEthereum, FaClock, FaMoneyBillWave, FaUserAlt, FaTimesCircle } from "react-icons/fa";

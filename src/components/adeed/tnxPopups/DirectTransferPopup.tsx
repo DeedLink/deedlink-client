@@ -7,7 +7,6 @@ import { transferNFT } from "../../../web3.0/contractService";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
 import { useWallet } from "../../../contexts/WalletContext";
 import { getRentDetails } from "../../../web3.0/rentIntegration";
-import { useAlert } from "../../../contexts/AlertContext";
 
 interface DirectTransferPopupProps {
   isOpen: boolean;
@@ -29,7 +28,6 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
   const [loading, setLoading] = useState(false);
   const [rentInfo, setRentInfo] = useState<any>(null);
   const { account } = useWallet();
-  const { showAlert } = useAlert();
 
   const checkRentStatus = async () => {
     if (!tokenId) return;

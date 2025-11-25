@@ -48,7 +48,7 @@ const DeedCard = ({
       (o) => o.address.toLowerCase() === currentUser.toLowerCase()
     )?.share ?? 0;
   
-  const [state, setState] = useState<"pending" | "completed" | "failed">("completed");
+  const [state, setState] = useState<"pending" | "completed" | "failed" | "init">("completed");
   const [titles, setTitles] = useState<Title[]>([]);
 
   const getTransactions = async () => {
