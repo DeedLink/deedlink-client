@@ -426,6 +426,14 @@ const marketplaceApi = axios.create({
   },
 });
 
+marketplaceApi.interceptors.request.use((config) => {
+  const token = getItem("local", "token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return withVercelHeaders(config);
+});
+
 
 // Get all marketplaces
 export const getMarketPlaces = async (): Promise<Marketplace[]> => {

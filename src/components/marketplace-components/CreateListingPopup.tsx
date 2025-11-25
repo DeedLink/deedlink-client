@@ -172,7 +172,15 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
         };
 
         console.log("Creating marketplace DB entry:", marketplaceData);
-        await createMarketPlace(marketplaceData);
+        try {
+          await createMarketPlace(marketplaceData);
+          console.log("Marketplace DB entry created successfully");
+        } catch (marketplaceError: any) {
+          console.error("Failed to create marketplace DB entry:", marketplaceError);
+          console.error("Error response:", marketplaceError?.response?.data);
+          console.error("Error status:", marketplaceError?.response?.status);
+          throw new Error(marketplaceError?.response?.data?.message || marketplaceError?.message || "Failed to create marketplace entry");
+        }
 
         try {
           await createTransaction({
