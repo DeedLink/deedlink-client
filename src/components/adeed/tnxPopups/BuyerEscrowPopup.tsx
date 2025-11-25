@@ -7,8 +7,9 @@ import {
   getEscrowDetails, 
   getEscrowStatus 
 } from "../../../web3.0/escrowIntegration";
-import { transactionStatus, updateFullOwnerAddress } from "../../../api/api";
+import { transactionStatus, updateFullOwnerAddress, updateDeedOwners, getDeedsByOwner } from "../../../api/api";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
+import { getTotalSupply, isPropertyFractionalized } from "../../../web3.0/contractService";
 import { useLogin } from "../../../contexts/LoginContext";
 import { useAlert } from "../../../contexts/AlertContext";
 
@@ -165,10 +166,59 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
           );
           console.log("Owner address updated in DB:", updateOwner);
 
-          // Calculate ownership from events
+          // Calculate ownership from events and update off-chain owners array
           try {
-            const owners = await calculateOwnershipFromEvents(Number(details.tokenId));
+            // Wait a bit for blockchain to update
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            const isFractionalized = await isPropertyFractionalized(Number(details.tokenId));
+            let owners;
+            
+            if (isFractionalized) {
+              const totalSupply = await getTotalSupply(Number(details.tokenId));
+              owners = await calculateOwnershipFromEvents(Number(details.tokenId), totalSupply);
+            } else {
+              owners = await calculateOwnershipFromEvents(Number(details.tokenId));
+            }
+            
             console.log("Calculated owners from events:", owners);
+            
+            // Get deedId by finding deed with matching tokenId
+            try {
+              // Try buyer's deeds first (after ownership transfer)
+              let allDeeds = await getDeedsByOwner(details.buyer);
+              let matchingDeed = Array.isArray(allDeeds) 
+                ? allDeeds.find((d: any) => 
+                    d.tokenId === details.tokenId || 
+                    d.tokenId === String(details.tokenId) ||
+                    Number(d.tokenId) === Number(details.tokenId)
+                  )
+                : null;
+              
+              // If not found, try seller's deeds (in case transfer hasn't updated yet)
+              if (!matchingDeed) {
+                console.log("Not found in buyer's deeds, checking seller's deeds...");
+                allDeeds = await getDeedsByOwner(details.seller);
+                matchingDeed = Array.isArray(allDeeds) 
+                  ? allDeeds.find((d: any) => 
+                      d.tokenId === details.tokenId || 
+                      d.tokenId === String(details.tokenId) ||
+                      Number(d.tokenId) === Number(details.tokenId)
+                    )
+                  : null;
+              }
+              
+              if (matchingDeed && matchingDeed._id) {
+                console.log("Found deedId:", matchingDeed._id, "for tokenId:", details.tokenId);
+                await updateDeedOwners(matchingDeed._id, owners);
+                console.log("✅ Off-chain owners array updated successfully");
+              } else {
+                console.warn("⚠️ Could not find deedId for tokenId:", details.tokenId);
+                console.warn("Searched in buyer's and seller's deeds");
+              }
+            } catch (deedUpdateError) {
+              console.error("Failed to update off-chain owners array:", deedUpdateError);
+            }
           } catch (updateError) {
             console.error("Failed to calculate ownership from events:", updateError);
           }
