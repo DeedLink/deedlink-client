@@ -286,7 +286,7 @@ export async function cancelEscrow(
       throw new Error("Failed to get cancel receipt");
     }
     
-    const txHash = receipt.hash ?? receipt.transactionHash;
+    const txHash = receipt.hash;
 
     return {
       success: true,
@@ -298,6 +298,60 @@ export async function cancelEscrow(
     return {
       success: false,
       error: error.message || "Failed to cancel escrow"
+    };
+  }
+}
+
+// Seller withdraws NFT from escrow when buyer hasn't deposited
+// Called by: SELLER (only when buyer hasn't deposited payment)
+export async function sellerWithdrawFromEscrow(
+  escrowAddress: string
+): Promise<{ 
+  success: boolean;
+  txHash?: string;
+  error?: string;
+}> {
+  try {
+    const signer = await getSigner();
+    const sellerAddress = await signer.getAddress();
+    const escrow = await getEscrowContract(escrowAddress);
+    
+    // Verify caller is the seller
+    const seller = await escrow.seller();
+    if (seller.toLowerCase() !== sellerAddress.toLowerCase()) {
+      throw new Error("Only the seller can withdraw from this escrow");
+    }
+    
+    // Check escrow status - buyer must not have deposited
+    const status = await escrow.getStatus();
+    if (status._isBuyerDeposited) {
+      throw new Error("Cannot withdraw: Buyer has already deposited payment. Use cancel instead.");
+    }
+    
+    if (!status._isSellerDeposited) {
+      throw new Error("No NFT deposited to withdraw");
+    }
+    
+    // Cancel escrow (this will return NFT to seller)
+    const tx = await escrow.cancel();
+    const receipt = await tx.wait();
+    
+    if (!receipt) {
+      throw new Error("Failed to get withdrawal receipt");
+    }
+    
+    const txHash = receipt.hash;
+
+    return {
+      success: true,
+      txHash
+    };
+
+  } catch (error: any) {
+    console.error("Failed to withdraw from escrow:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to withdraw from escrow"
     };
   }
 }

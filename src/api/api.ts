@@ -173,7 +173,7 @@ export const uploadProfilePicture = async (file: File): Promise<{ dp: string; us
 };
 
 // Deed related api calls
-const deedApi = axios.create({
+export const deedApi = axios.create({
   baseURL: API.deed,
   headers: {
     "Content-Type": "application/json",
@@ -320,7 +320,7 @@ export const getPlanByPlanNumber = async (planId: string): Promise<any> => {
 
 // Transaction related api calls
 
-const tnxApi = axios.create({
+export const tnxApi = axios.create({
   baseURL: API.tnx,
   headers: {
     "Content-Type": "application/json",

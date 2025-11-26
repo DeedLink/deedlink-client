@@ -20,6 +20,7 @@ import FractionalOwnershipCard from "../components/adeed/ui/FractionalOwnershipC
 import TransferFractionalTokensPopup from "../components/adeed/tnxPopups/TransferFractionalTokensPopup";
 import FractionalizePopup from "../components/adeed/tnxPopups/FractionalizePopup";
 import DefractionalizePopup from "../components/adeed/tnxPopups/DefractionalizePopup";
+import PendingEscrowBanner from "../components/adeed/ui/PendingEscrowBanner";
 import type { Certificate } from "../types/certificate";
 import { cancelListing } from "../web3.0/marketService";
 import { generateDeedPDF } from "../utils/generateDeedPDF";
@@ -56,6 +57,7 @@ const ADeedPage = () => {
   const [openDefractionalize, setOpenDefractionalize] = useState(false);
   const [certificate, setCertificate] = useState<Certificate | null>(null);
   const [ownershipRefreshTrigger, setOwnershipRefreshTrigger] = useState(0);
+  const [selectedEscrowAddress, setSelectedEscrowAddress] = useState<string | undefined>(undefined);
   const openMarketplaceListings = Array.isArray(marketPlaceData)
     ? marketPlaceData.filter((listing) => listing.status === "open_to_sale")
     : [];
@@ -220,6 +222,16 @@ const ADeedPage = () => {
             <span>Back</span>
           </button>
 
+          {deed?._id && (
+            <div className="lg:hidden mb-6 w-full">
+              <PendingEscrowBanner 
+                deedId={deed._id}
+                onOpenEscrow={(escrowAddress) => {
+                  setOpenSaleEscrow(true);
+                }}
+              />
+            </div>
+          )}
           {hasOpenMarketplaceListings && (
             <div className="lg:hidden mb-6 w-full">
               <MarketplaceBanner 
@@ -287,6 +299,15 @@ const ADeedPage = () => {
         </div>
 
         <div className="hidden lg:block py-14 min-h-full pt-20 max-w-full mx-auto lg:sticky lg:top-24 lg:h-fit">
+          {deed?._id && (
+            <PendingEscrowBanner 
+              deedId={deed._id}
+              onOpenEscrow={(escrowAddress) => {
+                setSelectedEscrowAddress(escrowAddress);
+                setOpenSaleEscrow(true);
+              }}
+            />
+          )}
           <MarketplaceBanner 
             marketPlaceData={marketPlaceData} 
             onRemoveListing={handleRemoveMarketListing}
@@ -328,7 +349,11 @@ const ADeedPage = () => {
         openLastWill={openLastWill}
         onCloseTransact={() => setOpenTransact(false)}
         onCloseDirectTransfer={() => setOpenDirectTransfer(false)}
-        onCloseSaleEscrow={() => setOpenSaleEscrow(false)}
+        onCloseSaleEscrow={() => {
+          setOpenSaleEscrow(false);
+          setSelectedEscrowAddress(undefined);
+        }}
+        initialEscrowAddress={selectedEscrowAddress}
         onCloseGiveRent={() => setOpenGiveRent(false)}
         onCloseGetRent={() => setOpenGetRent(false)}
         onCloseMarket={handleMarketplaceClose}

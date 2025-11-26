@@ -61,13 +61,13 @@ export async function mintNFT(to: string, ipfsuri: string, dburi: string) {
 
 export async function transferNFT(from: string, to: string, tokenId: number) {
   try {
-    const nft = await getPropertyNFTContract();
-    const tx = await nft.transferFrom(from, to, tokenId);
-    const receipt = await tx.wait();
-    
-    return { 
-      txHash: receipt.hash ?? receipt.transactionHash 
-    };
+  const nft = await getPropertyNFTContract();
+  const tx = await nft.transferFrom(from, to, tokenId);
+  const receipt = await tx.wait();
+  
+  return { 
+    txHash: receipt.hash ?? receipt.transactionHash 
+  };
   } catch (error: any) {
     const errorMessage = error.reason || error.message || "Failed to transfer NFT";
     throw new Error(errorMessage);
@@ -168,7 +168,7 @@ export async function createFractionalToken(
       const approveTx = await propertyNFT.approve(FACTORY_ADDRESS, nftId);
       await approveTx.wait();
     }
-
+    
     const tx = await factory.createFractionToken(
       nftId, 
       name, 

@@ -18,6 +18,7 @@ import ADeedPage from './pages/ADeedPage';
 import { QRProvider } from './contexts/QRContext';
 import { AlertProvider } from './contexts/AlertContext';
 import { FloatingNotifyProvider } from './contexts/FloatingNotifyContext';
+import BuyerEscrowNotification from './components/adeed/ui/BuyerEscrowNotification';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
                       <LoginPopup />
                       <RegistrationPopup/>
                       <LoaderProvider>
+                        <BuyerEscrowNotification />
                         <div className="flex-grow bg-white">
                           <Routes>
                             <Route path="/" element={<HomePage />} />

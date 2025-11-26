@@ -154,17 +154,17 @@ const DeedActionBar = ({
 
         <div className="flex flex-col gap-2">
           {!isFractionalized ? (
-            <ActionButton
-              icon={<FaEdit size={16} />}
-              label="Create Fractions"
-              onClick={onFractioning}
-              color={
-                numberOfFT !== 0
+          <ActionButton
+            icon={<FaEdit size={16} />}
+            label="Create Fractions"
+            onClick={onFractioning}
+            color={
+              numberOfFT !== 0
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
                   : "bg-gray-800 hover:bg-gray-900 text-white border-gray-800"
-              }
-              disabled={numberOfFT !== 0}
-            />
+            }
+            disabled={numberOfFT !== 0}
+          />
           ) : (
             onDefractionalize && (
               <ActionButton

@@ -7,7 +7,7 @@ import {
   getEscrowDetails, 
   getEscrowStatus 
 } from "../../../web3.0/escrowIntegration";
-import { transactionStatus, updateFullOwnerAddress, updateDeedOwners, getDeedsByOwner } from "../../../api/api";
+import { transactionStatus, updateFullOwnerAddress, updateDeedOwners, getDeedsByOwner, createTransaction, getTransactionsByDeedId } from "../../../api/api";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
 import { getTotalSupply, isPropertyFractionalized } from "../../../web3.0/contractService";
 import { useLogin } from "../../../contexts/LoginContext";
@@ -74,7 +74,25 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
 }
 
   const handleDepositPayment = async () => {
-    if (!details) return alert("Loading escrow details...");
+    if (!details) {
+      showAlert({
+        type: "warning",
+        title: "Loading",
+        message: "Please wait while escrow details are being loaded.",
+        confirmText: "OK"
+      });
+      return;
+    }
+
+    if (!status?.isSellerDeposited) {
+      showAlert({
+        type: "warning",
+        title: "Seller Has Not Deposited",
+        message: "You cannot deposit payment until the seller deposits the NFT into escrow. Please wait for the seller to complete their part.",
+        confirmText: "OK"
+      });
+      return;
+    }
 
     const confirmed = await confirmDeposit(details);
     if (!confirmed) return;
@@ -131,19 +149,59 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
     try {
       const result = await finalizeEscrow(escrowAddress);
 
-      if (result.success) {
+      if (result.success && result.txHash) {
         // Refresh status to show finalized state
         const newStatus = await getEscrowStatus(escrowAddress);
         setStatus(newStatus);
         
-        // Update transaction status in DB
+        // Find the original escrow_sale transaction to get deedId
+        let deedId = "";
         try {
-          await transactionStatus(
-            escrowAddress,
-            "completed"
-          );
-        } catch (dbError) {
-          console.error("Failed to update transaction status in DB:", dbError);
+          const allDeeds = await getDeedsByOwner(details.seller);
+          const matchingDeed = Array.isArray(allDeeds) 
+            ? allDeeds.find((d: any) => 
+                d.tokenId === details.tokenId || 
+                d.tokenId === String(details.tokenId) ||
+                Number(d.tokenId) === Number(details.tokenId)
+              )
+            : null;
+          
+          if (matchingDeed && matchingDeed._id) {
+            deedId = matchingDeed._id;
+            const txs = await getTransactionsByDeedId(deedId);
+            const escrowTx = Array.isArray(txs) 
+              ? txs.find((t: any) => 
+                  t.type === "escrow_sale" && 
+                  t.blockchain_identification === escrowAddress
+                )
+              : null;
+            
+            if (escrowTx && escrowTx._id) {
+              await transactionStatus(escrowAddress, "completed");
+            }
+          }
+        } catch (txError) {
+          console.error("Failed to update escrow transaction status:", txError);
+        }
+
+        // Create sale_transfer transaction record for finalization
+        if (deedId) {
+          try {
+            await createTransaction({
+              deedId,
+              from: details.seller,
+              to: details.buyer,
+              amount: parseFloat(details.price),
+              share: 100,
+              type: "sale_transfer",
+              blockchain_identification: escrowAddress,
+              hash: result.txHash,
+              description: `Escrow sale finalized - Full ownership transferred from ${details.seller} to ${details.buyer}`,
+              status: "completed"
+            });
+          } catch (createTxError) {
+            console.error("Failed to create sale_transfer transaction:", createTxError);
+          }
         }
 
         // Update owner address in DB
@@ -241,11 +299,11 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
 
   return (
     <div
-      className="z-[60] flex items-center justify-center w-full h-full"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="border-b border-gray-100 flex items-center justify-between p-5">
@@ -309,16 +367,21 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
 
                 <div className="flex items-center gap-3">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                    status.isBuyerDeposited ? "bg-green-500" : "bg-gray-300"
+                    status.isBuyerDeposited ? "bg-green-500" : status.isSellerDeposited ? "bg-blue-500" : "bg-gray-300"
                   }`}>
                     {status.isBuyerDeposited && <span className="text-white text-xs">✓</span>}
+                    {!status.isBuyerDeposited && status.isSellerDeposited && <span className="text-white text-xs">!</span>}
                   </div>
                   <div>
-                    <div className={`text-sm font-medium ${status.isBuyerDeposited ? "text-green-700" : "text-gray-900"}`}>
+                    <div className={`text-sm font-medium ${status.isBuyerDeposited ? "text-green-700" : status.isSellerDeposited ? "text-blue-700" : "text-gray-500"}`}>
                       You Deposit Payment
                     </div>
                     <div className="text-xs text-gray-500">
-                      {status.isBuyerDeposited ? "Completed" : "Your turn"}
+                      {status.isBuyerDeposited 
+                        ? "Completed" 
+                        : status.isSellerDeposited 
+                          ? "Ready to deposit" 
+                          : "Waiting for seller"}
                     </div>
                   </div>
                 </div>
@@ -365,7 +428,11 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
                     : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg"
                 }`}
               >
-                {loading ? "Depositing..." : `Deposit ${details?.price} ETH`}
+                {loading 
+                  ? "Depositing..." 
+                  : !status.isSellerDeposited
+                    ? "Waiting for Seller to Deposit NFT"
+                    : `Deposit ${details?.price} ETH`}
               </button>
             )}
 

@@ -15,6 +15,7 @@ export interface Title {
     | "init"
     | "sale_transfer"
     | "escrow_sale"
+    | "escrow_cancel"
     | "defractionalize";
   date?: string;
   description?: string;

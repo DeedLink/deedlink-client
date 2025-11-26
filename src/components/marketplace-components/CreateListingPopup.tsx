@@ -169,7 +169,7 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
         };
 
         try {
-          await createMarketPlace(marketplaceData);
+        await createMarketPlace(marketplaceData);
         } catch (marketplaceError: any) {
           throw new Error(marketplaceError?.response?.data?.message || marketplaceError?.message || "Failed to create marketplace entry");
         }
@@ -357,12 +357,12 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
               <p><span className="font-medium">Price:</span> {amount || "0"} ETH {listingType === "FRACTIONAL" && "(per token)"}</p>
               {listingType === "FRACTIONAL" && ftTokenAmount && amount && totalSupply > 0 && (
                 <>
-                  <p className="text-xs text-gray-600 mt-1">
+                <p className="text-xs text-gray-600 mt-1">
                     Total value: {(Number(ftTokenAmount) * Number(amount)).toFixed(4)} ETH for {Number(ftTokenAmount).toLocaleString()} tokens ({(Number(ftTokenAmount) / totalSupply * 100).toFixed(4)}%)
                   </p>
                   <p className="text-xs text-blue-700 mt-1 font-semibold">
                     Your remaining ownership after sale: {(userFTBalance - Number(ftTokenAmount)).toLocaleString()} tokens ({(userFTBalance - Number(ftTokenAmount)) / totalSupply * 100}%)
-                  </p>
+                </p>
                 </>
               )}
               <p className="text-xs text-gray-500 mt-2 border-t border-green-300 pt-2">
