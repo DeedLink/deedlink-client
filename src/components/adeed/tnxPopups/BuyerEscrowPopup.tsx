@@ -181,11 +181,7 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
               owners = await calculateOwnershipFromEvents(Number(details.tokenId));
             }
             
-            console.log("Calculated owners from events:", owners);
-            
-            // Get deedId by finding deed with matching tokenId
             try {
-              // Try buyer's deeds first (after ownership transfer)
               let allDeeds = await getDeedsByOwner(details.buyer);
               let matchingDeed = Array.isArray(allDeeds) 
                 ? allDeeds.find((d: any) => 
@@ -195,9 +191,7 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
                   )
                 : null;
               
-              // If not found, try seller's deeds (in case transfer hasn't updated yet)
               if (!matchingDeed) {
-                console.log("Not found in buyer's deeds, checking seller's deeds...");
                 allDeeds = await getDeedsByOwner(details.seller);
                 matchingDeed = Array.isArray(allDeeds) 
                   ? allDeeds.find((d: any) => 
@@ -209,22 +203,11 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
               }
               
               if (matchingDeed && matchingDeed._id) {
-                console.log("Found deedId:", matchingDeed._id, "for tokenId:", details.tokenId);
                 await updateDeedOwners(matchingDeed._id, owners);
-                console.log("✅ Off-chain owners array updated successfully");
-              } else {
-                console.warn("⚠️ Could not find deedId for tokenId:", details.tokenId);
-                console.warn("Searched in buyer's and seller's deeds");
               }
-            } catch (deedUpdateError) {
-              console.error("Failed to update off-chain owners array:", deedUpdateError);
-            }
-          } catch (updateError) {
-            console.error("Failed to calculate ownership from events:", updateError);
-          }
-        } catch (err) {
-          console.error("Failed to update owner address in DB:", err);
-        }
+            } catch {}
+          } catch {}
+        } catch {}
 
         showAlert({
           type: "success",

@@ -31,6 +31,7 @@ interface DeedActionBarProps {
   onShare?: () => void;
   onViewBlockchain?: () => void;
   onFractioning: () => void;
+  onDefractionalize?: () => void;
   onDirectTransfer: () => void;
   onSaleEscrow: () => void;
   onRent: () => void;
@@ -52,6 +53,7 @@ const DeedActionBar = ({
   onShare,
   onViewBlockchain,
   onFractioning,
+  onDefractionalize,
   onRent,
   onPowerOfAttorney,
   onOpenMarket,
@@ -64,6 +66,10 @@ const DeedActionBar = ({
   const [titles, setTitles] = useState<any[]>([]);
   const [canSetRent, setCanSetRent] = useState(true);
   const [canSetPoA, setCanSetPoA] = useState(true);
+  const [isFractionalized, setIsFractionalized] = useState(false);
+  const [canDefractionalize, setCanDefractionalize] = useState(false);
+  const [canDirectTransfer, setCanDirectTransfer] = useState(true);
+  const [canSaleEscrow, setCanSaleEscrow] = useState(true);
   const { account } = useWallet();
 
   const getTransactions = async () => {
@@ -95,23 +101,40 @@ const DeedActionBar = ({
       if (!tokenId || !account) {
         setCanSetRent(true);
         setCanSetPoA(true);
+        setIsFractionalized(false);
+        setCanDefractionalize(false);
+        setCanDirectTransfer(true);
+        setCanSaleEscrow(true);
         return;
       }
 
       try {
-        const isFractionalized = await isPropertyFractionalized(tokenId);
-        if (isFractionalized) {
+        const fractionalized = await isPropertyFractionalized(tokenId);
+        setIsFractionalized(fractionalized);
+        
+        if (fractionalized) {
           const hasFull = await hasFullOwnership(tokenId, account);
           setCanSetRent(hasFull);
           setCanSetPoA(hasFull);
+          setCanDefractionalize(hasFull);
+          // Lock DirectTransfer and SaleEscrow when fractionalized
+          setCanDirectTransfer(false);
+          setCanSaleEscrow(false);
         } else {
           setCanSetRent(true);
           setCanSetPoA(true);
+          setCanDefractionalize(false);
+          setCanDirectTransfer(true);
+          setCanSaleEscrow(true);
         }
       } catch (error) {
         console.error("Error checking ownership:", error);
         setCanSetRent(false);
         setCanSetPoA(false);
+        setIsFractionalized(false);
+        setCanDefractionalize(false);
+        setCanDirectTransfer(true);
+        setCanSaleEscrow(true);
       }
     };
 
@@ -130,17 +153,33 @@ const DeedActionBar = ({
         <h3 className="font-semibold text-gray-900 mb-6 text-base">Quick Actions</h3>
 
         <div className="flex flex-col gap-2">
-          <ActionButton
-            icon={<FaEdit size={16} />}
-            label="Create Fractions"
-            onClick={onFractioning}
-            color={
-              numberOfFT !== 0
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
-                : "bg-gray-800 hover:bg-gray-900 text-white border-gray-800"
-            }
-            disabled={numberOfFT !== 0}
-          />
+          {!isFractionalized ? (
+            <ActionButton
+              icon={<FaEdit size={16} />}
+              label="Create Fractions"
+              onClick={onFractioning}
+              color={
+                numberOfFT !== 0
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                  : "bg-gray-800 hover:bg-gray-900 text-white border-gray-800"
+              }
+              disabled={numberOfFT !== 0}
+            />
+          ) : (
+            onDefractionalize && (
+              <ActionButton
+                icon={<FaEdit size={16} />}
+                label="Defractionalize"
+                onClick={onDefractionalize}
+                color={
+                  canDefractionalize
+                    ? "bg-green-600 hover:bg-green-700 text-white border-green-600"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                }
+                disabled={!canDefractionalize}
+              />
+            )
+          )}
 
           {onTransfer && 
             <ActionButton 
@@ -155,10 +194,19 @@ const DeedActionBar = ({
               icon={<FaExchangeAlt size={16} />} 
               label="Gift Your Deed" 
               onClick={onDirectTransfer} 
-              color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" 
+              color={canDirectTransfer ? "bg-white hover:bg-gray-50 text-gray-700 border-gray-300" : "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"}
+              disabled={!canDirectTransfer}
             />
           }
-          {onSaleEscrow && <ActionButton icon={<FaExchangeAlt size={16} />} label="Sell via Escrow" onClick={onSaleEscrow} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
+          {onSaleEscrow && (
+            <ActionButton 
+              icon={<FaExchangeAlt size={16} />} 
+              label="Sell via Escrow" 
+              onClick={onSaleEscrow} 
+              color={canSaleEscrow ? "bg-white hover:bg-gray-50 text-gray-700 border-gray-300" : "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"}
+              disabled={!canSaleEscrow}
+            />
+          )}
           {onRent && (
             <ActionButton 
               icon={<FaHome size={16} />} 

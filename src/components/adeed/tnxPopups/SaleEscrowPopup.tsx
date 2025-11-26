@@ -2,12 +2,14 @@ import { type FC, useState, useEffect } from "react";
 import { createTransaction, getUsers, getTransactionsByDeedId } from "../../../api/api";
 import type { User } from "../../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle, IoCashOutline } from "react-icons/io5";
-import { FaStore } from "react-icons/fa";
+import { FaStore, FaExclamationTriangle } from "react-icons/fa";
 import { completeFullOwnershipTransfer, sellerDepositNFT, getPaymentBreakdown } from "../../../web3.0/escrowIntegration";
 import { useWallet } from "../../../contexts/WalletContext";
 import { useQR } from "../../../contexts/QRContext";
 import { useAlert } from "../../../contexts/AlertContext";
 import { Encryting } from "../../../utils/encryption";
+import { isPropertyFractionalized } from "../../../web3.0/contractService";
+import { useToast } from "../../../contexts/ToastContext";
 
 interface SaleEscrowPopupProps {
   isOpen: boolean;
@@ -29,8 +31,10 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
   const [salePrice, setSalePrice] = useState("");
   const [loading, setLoading] = useState(false);
   const [escrowAddress, setEscrowAddress] = useState<string | null>(null);
+  const [isFractionalized, setIsFractionalized] = useState(false);
   const { account } = useWallet();
   const { showAlert } = useAlert();
+  const { showToast } = useToast();
   const [txHash, setTxHash] = useState("");
   const { showQRPopup } = useQR();
 
@@ -73,6 +77,19 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
 
 
   useEffect(() => {
+    const checkFractionalization = async () => {
+      if (!tokenId) return;
+      try {
+        const fractionalized = await isPropertyFractionalized(tokenId);
+        setIsFractionalized(fractionalized);
+        if (fractionalized) {
+          showToast("Escrow sale is not available for fractionalized properties. Use marketplace listing instead.", "error");
+        }
+      } catch (error) {
+        console.error("Error checking fractionalization:", error);
+      }
+    };
+
     const fetchUsers = async () => {
       try {
         const res = await getUsers();
@@ -90,8 +107,11 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
         setFilteredUsers([]);
       }
     };
-    if (isOpen) fetchUsers();
-  }, [isOpen, account]);
+    if (isOpen) {
+      checkFractionalization();
+      fetchUsers();
+    }
+  }, [isOpen, account, tokenId, showToast]);
 
   useEffect(() => {
     const val = search.trim().toLowerCase();
@@ -109,6 +129,11 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
   const breakdown = salePrice && parseFloat(salePrice) > 0 ? getPaymentBreakdown(salePrice) : null;
 
   const handleCreateSale = async () => {
+    if (isFractionalized) {
+      showToast("Escrow sale is not available for fractionalized properties. Please defractionalize first or use marketplace listing.", "error");
+      return;
+    }
+
     if (!selectedWallet) {
       showAlert({
         type: "warning",
@@ -289,11 +314,28 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
           {!escrowAddress ? (
             // Create Sale Form
             <>
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm text-green-800">
-                  Secure sale with escrow protection. Stamp fees are automatically collected.
-                </p>
-              </div>
+              {isFractionalized ? (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <FaStore className="text-red-600 mt-0.5 flex-shrink-0" size={20} />
+                    <div className="text-sm text-red-800">
+                      <p className="font-semibold mb-1">Escrow Sale Not Available</p>
+                      <p className="mb-2">This property is fractionalized. Escrow sale of the full NFT is not possible.</p>
+                      <p className="text-xs">To sell this property, you can:</p>
+                      <ul className="text-xs list-disc list-inside mt-1 space-y-1">
+                        <li>List fractional tokens on the marketplace</li>
+                        <li>Defractionalize the property first (requires 100% ownership)</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800">
+                    Secure sale with escrow protection. Stamp fees are automatically collected.
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">

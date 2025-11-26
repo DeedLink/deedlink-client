@@ -62,18 +62,10 @@ export async function listFractionalTokensForSale(
   nftAddress: string,
   tokenId: number,
   tokenAddress: string,
-  amountPercent: number,
+  amount: number,
   pricePerTokenInEth: string
 ) {
   try {
-    console.log("Listing fractional tokens:", { 
-      nftAddress, 
-      tokenId, 
-      tokenAddress, 
-      amountPercent, 
-      pricePerTokenInEth 
-    });
-
     if (!tokenAddress || tokenAddress === "0x0000000000000000000000000000000000000000") {
       throw new Error("Invalid fractional token address. Property may not be fractionalized yet.");
     }
@@ -93,35 +85,25 @@ export async function listFractionalTokensForSale(
     );
 
     const userAddress = await signer.getAddress();
-
-    console.log("Checking user balance...");
     const balance = await tokenContract.balanceOf(userAddress);
-    console.log("User fractional token balance:", balance.toString());
 
-    if (balance < amountPercent) {
-      throw new Error(`Insufficient fractional tokens. You have ${balance.toString()} but trying to list ${amountPercent}`);
+    if (balance < amount) {
+      throw new Error(`Insufficient fractional tokens. You have ${balance.toString()} but trying to list ${amount}`);
     }
 
-    console.log("Checking current allowance...");
     const marketplaceAddress = await marketplace.getAddress();
     const currentAllowance = await tokenContract.allowance(userAddress, marketplaceAddress);
-    console.log("Current allowance:", currentAllowance.toString());
 
-    if (currentAllowance < amountPercent) {
-      console.log("Approving fractional tokens for marketplace...");
-      const approveTx = await tokenContract.approve(marketplaceAddress, amountPercent);
-      const approveReceipt = await approveTx.wait();
-      console.log("Approval successful:", approveReceipt.hash);
-    } else {
-      console.log("Sufficient allowance already exists");
+    if (currentAllowance < amount) {
+      const approveTx = await tokenContract.approve(marketplaceAddress, amount);
+      await approveTx.wait();
     }
 
-    console.log("Creating fractional token listing...");
     const tx = await marketplace.listFractionalTokens(
       nftAddress,
       tokenId,
       tokenAddress,
-      amountPercent,
+      amount,
       priceInWei
     );
     const receipt = await tx.wait();
@@ -137,18 +119,12 @@ export async function listFractionalTokensForSale(
       } catch {}
     }
 
-    console.log("Fractional listing created successfully:", { 
-      listingId, 
-      txHash: receipt.hash 
-    });
-
     return {
       success: true,
       listingId,
       txHash: receipt.hash ?? receipt.transactionHash
     };
   } catch (error: any) {
-    console.error("Failed to list fractional tokens:", error);
     throw new Error(error.message || "Failed to list fractional tokens for sale");
   }
 }

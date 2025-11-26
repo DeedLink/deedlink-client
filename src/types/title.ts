@@ -14,7 +14,8 @@ export interface Title {
     | "closed"
     | "init"
     | "sale_transfer"
-    | "escrow_sale";
+    | "escrow_sale"
+    | "defractionalize";
   date?: string;
   description?: string;
   share: number;

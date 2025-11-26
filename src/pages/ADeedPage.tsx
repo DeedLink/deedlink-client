@@ -4,7 +4,6 @@ import { FaArrowLeft } from "react-icons/fa";
 import { useToast } from "../contexts/ToastContext";
 import { useLoader } from "../contexts/LoaderContext";
 import { useWallet } from "../contexts/WalletContext";
-import { createFractionalToken } from "../web3.0/contractService";
 import DeedActionBar from "../components/adeed/deedActionBar";
 import TitleHistory from "../components/parts/TitleHistory";
 import { deleteCertificate, deleteMarketPlacesById, getCertificatesByTokenId } from "../api/api";
@@ -20,9 +19,10 @@ import DeedModals from "../components/adeed/ui/DeedModals";
 import CreateListingPopup from "../components/marketplace-components/CreateListingPopup";
 import FractionalOwnershipCard from "../components/adeed/ui/FractionalOwnershipCard";
 import TransferFractionalTokensPopup from "../components/adeed/tnxPopups/TransferFractionalTokensPopup";
+import FractionalizePopup from "../components/adeed/tnxPopups/FractionalizePopup";
+import DefractionalizePopup from "../components/adeed/tnxPopups/DefractionalizePopup";
 import type { Certificate } from "../types/certificate";
 import { cancelListing } from "../web3.0/marketService";
-import { createTransaction } from "../api/api";
 import { generateDeedPDF } from "../utils/generateDeedPDF";
 import { normalizeCertificateResponse } from "../utils/certificateHelpers";
 
@@ -54,6 +54,8 @@ const ADeedPage = () => {
   const [openLastWill, setOpenLastWill] = useState(false);
   const [showCreateListing, setShowCreateListing] = useState(false);
   const [openTransferFractional, setOpenTransferFractional] = useState(false);
+  const [openFractionalize, setOpenFractionalize] = useState(false);
+  const [openDefractionalize, setOpenDefractionalize] = useState(false);
   const [certificate, setCertificate] = useState<Certificate | null>(null);
   const [ownershipRefreshTrigger, setOwnershipRefreshTrigger] = useState(0);
   const openMarketplaceListings = Array.isArray(marketPlaceData)
@@ -82,66 +84,17 @@ const ADeedPage = () => {
     }
   }, [openTransact, openDirectTransfer, openSaleEscrow, openGiveRent, openGetRent, openMarket, openLastWill, showCreateListing]);
 
-  const handleFractioning = async () => {
-    if (deed?.tokenId && deed?._id) {
-      try {
-        showLoader();
-        const res = await createFractionalToken(deed?.tokenId, deed?.deedNumber, deed?.deedNumber, 1000000);
-        console.log("Fractioning result:", res);
-        
-        if (res.success && res.txHash) {
-          try {
-            await createTransaction({
-              deedId: deed._id,
-              from: account || "",
-              to: account || "",
-              amount: 0,
-              share: 100,
-              type: "init",
-              blockchain_identification: res.txHash,
-              hash: res.txHash,
-              description: `Property fractionalized into 1,000,000 tokens. Token address: ${res.tokenAddress}`,
-              status: "completed"
-            });
-
-            await new Promise(resolve => setTimeout(resolve, 3000));
-
-            const { calculateOwnershipFromEvents } = await import("../web3.0/eventService");
-            const { updateDeedOwners, addTransactionToDeed } = await import("../api/api");
-            const { getTotalSupply } = await import("../web3.0/contractService");
-            
-            const totalSupply = await getTotalSupply(deed.tokenId);
-            const owners = await calculateOwnershipFromEvents(deed.tokenId, totalSupply);
-            
-            if (owners.length > 0) {
-              await updateDeedOwners(deed._id, owners);
-              
-              for (const owner of owners) {
-                await addTransactionToDeed(
-                  deed._id,
-                  account || "",
-                  owner.address,
-                  0,
-                  owner.share
-                );
-              }
-            }
-          } catch (txError) {
-            console.error("Failed to record fractionalization transaction:", txError);
-          }
-        }
-        
-        showToast("Fractioning success", "success");
-        setTimeout(() => window.location.reload(), 2000);
-      } catch (error: any) {
-        console.error("Fractioning error:", error);
-        showToast(error.message || "Fractioning failed!", "error");
-      } finally {
-        hideLoader();
-      }
-    } else {
-      showToast("Fractioning failed! No token ID", "error");
+  const handleFractionalize = () => {
+    if (!deed?.tokenId || !deed?._id) {
+      showToast("Fractionalization failed! No token ID", "error");
+      return;
     }
+    setOpenFractionalize(true);
+  };
+
+  const handleFractionalizeSuccess = () => {
+    setOwnershipRefreshTrigger(prev => prev + 1);
+    getMarketPlaceData();
   };
 
   const handleDownload = async () => {
@@ -257,14 +210,19 @@ const ADeedPage = () => {
             <span>Back</span>
           </button>
 
-          <div className="lg:hidden mb-6 w-full flex justify-center">
-            <MarketplaceBanner 
-              marketPlaceData={marketPlaceData} 
-              onRemoveListing={handleRemoveMarketListing}
-            />
-            {!hasOpenMarketplaceListings && (
+          {hasOpenMarketplaceListings && (
+            <div className="lg:hidden mb-6 w-full">
+              <MarketplaceBanner 
+                marketPlaceData={marketPlaceData} 
+                onRemoveListing={handleRemoveMarketListing}
+              />
+            </div>
+          )}
+          {!hasOpenMarketplaceListings && (
+            <div className="lg:hidden mb-6 w-full flex justify-center">
               <DeedActionBar
-                onFractioning={handleFractioning}
+                onFractioning={handleFractionalize}
+                onDefractionalize={() => setOpenDefractionalize(true)}
                 deedNumber={deed.deedNumber}
                 deedId={deed._id}
                 tokenId={deed.tokenId}
@@ -283,8 +241,8 @@ const ADeedPage = () => {
                 onCancelCertificate={handleCancelLastWill}
                 onLastWill={() => setOpenLastWill(true)}
               />
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
             <DeedHeader deed={deed} numberOfFT={numberOfFT} />
@@ -292,6 +250,12 @@ const ADeedPage = () => {
             <div className="p-6">
               <div className="grid lg:grid-cols-4 gap-6">
                 <div className="lg:col-span-3 space-y-6">
+                  {hasOpenMarketplaceListings && (
+                    <MarketplaceBanner 
+                      marketPlaceData={marketPlaceData} 
+                      onRemoveListing={handleRemoveMarketListing}
+                    />
+                  )}
                   <OwnerInformation deed={deed} />
                   {deed.tokenId && (
                     <FractionalOwnershipCard
@@ -319,7 +283,8 @@ const ADeedPage = () => {
           />
           {!hasOpenMarketplaceListings && (
             <DeedActionBar
-              onFractioning={handleFractioning}
+              onFractioning={handleFractionalize}
+              onDefractionalize={() => setOpenDefractionalize(true)}
               deedNumber={deed.deedNumber}
               deedId={deed._id}
               tokenId={deed.tokenId}
@@ -378,6 +343,24 @@ const ADeedPage = () => {
             onSuccess={() => {
               setOpenTransferFractional(false);
               setOwnershipRefreshTrigger(prev => prev + 1);
+            }}
+          />
+          <FractionalizePopup
+            isOpen={openFractionalize}
+            onClose={() => setOpenFractionalize(false)}
+            tokenId={deed.tokenId}
+            deedId={deed._id}
+            deedNumber={deed.deedNumber}
+            onSuccess={handleFractionalizeSuccess}
+          />
+          <DefractionalizePopup
+            isOpen={openDefractionalize}
+            onClose={() => setOpenDefractionalize(false)}
+            tokenId={deed.tokenId}
+            deedId={deed._id}
+            onSuccess={() => {
+              setOwnershipRefreshTrigger(prev => prev + 1);
+              getMarketPlaceData();
             }}
           />
         </>

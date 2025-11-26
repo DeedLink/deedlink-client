@@ -146,8 +146,6 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
       } else {
         const tokenAmountNum = Number(ftTokenAmount);
         const sharePercentage = totalSupply > 0 ? (tokenAmountNum / totalSupply) * 100 : 0;
-        console.log("Creating fractional listing...");
-        
         result = await listFractionalTokensForSale(
           nftAddress,
           tokenId,
@@ -171,14 +169,9 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
           listingTypeOnChain: blockchainListingType
         };
 
-        console.log("Creating marketplace DB entry:", marketplaceData);
         try {
           await createMarketPlace(marketplaceData);
-          console.log("Marketplace DB entry created successfully");
         } catch (marketplaceError: any) {
-          console.error("Failed to create marketplace DB entry:", marketplaceError);
-          console.error("Error response:", marketplaceError?.response?.data);
-          console.error("Error status:", marketplaceError?.response?.status);
           throw new Error(marketplaceError?.response?.data?.message || marketplaceError?.message || "Failed to create marketplace entry");
         }
 
@@ -197,9 +190,7 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
               : `Listed ${Number(ftTokenAmount).toLocaleString()} FT tokens (${finalShare.toFixed(4)}%) for sale at ${amountNum} ETH per token`,
             status: "completed"
           });
-        } catch (txError) {
-          console.error("Failed to record listing transaction:", txError);
-        }
+        } catch {}
 
         showToast("Listing created successfully!", "success");
         onSuccess();

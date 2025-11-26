@@ -201,10 +201,7 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
               : `Purchased ${tokenAmount > 0 ? tokenAmount.toLocaleString() : marketplace.share} FT tokens (${sharePercentage.toFixed(4)}%) from marketplace`,
             status: "completed"
           });
-          console.log("Transaction logged successfully");
-        } catch (txError) {
-          console.error("Failed to log transaction:", txError);
-        }
+        } catch {}
 
         if (marketplace._id) {
           await updateMarketPlace(marketplace._id, {
@@ -219,7 +216,6 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
               Number(marketplace.tokenId),
               account.toLowerCase()
             );
-            console.log("Owner address updated in database");
 
             const newOwner = await getNFTOwner(Number(marketplace.tokenId));
             if (newOwner.toLowerCase() !== account?.toLowerCase()) {
@@ -233,30 +229,14 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
               const owners = await calculateOwnershipFromEvents(Number(marketplace.tokenId));
               await updateDeedOwners(deed._id, owners);
             }
-          } catch (ownerError) {
-            console.error("Failed to update/verify owner:", ownerError);
-          }
+          } catch {}
         } else {
           try {
             await new Promise(resolve => setTimeout(resolve, 3000));
             const totalSupply = await getTotalSupply(Number(marketplace.tokenId));
             const owners = await calculateOwnershipFromEvents(Number(marketplace.tokenId), totalSupply);
             await updateDeedOwners(deed._id, owners);
-            
-            for (const owner of owners) {
-              if (owner.share > 0) {
-                await addTransactionToDeed(
-                  deed._id,
-                  marketplace.from,
-                  owner.address,
-                  0,
-                  owner.share
-                );
-              }
-            }
-          } catch (ownerError) {
-            console.error("Failed to update fractional owners:", ownerError);
-          }
+          } catch {}
         }
 
         showToast("Purchase successful! Your ownership will be updated shortly.", "success");

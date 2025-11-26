@@ -34,17 +34,12 @@ export const useDeedData = (deedNumber: string | undefined) => {
       if (!deed?.tokenId || !account) return;
 
       const tokenAddress = await getFractionalTokenAddress(deed.tokenId);
-      console.log("getNumberOfFT: tokenAddress=", tokenAddress, "tokenId=", deed.tokenId, "account=", account);
       if (!ethers.isAddress(tokenAddress)) {
-        console.error("Invalid token address:", tokenAddress);
         return;
       }
 
       const balance = await getFTBalance(tokenAddress, account);
-      console.log("getNumberOfFT: raw balance=", balance);
-      const formattedBalance = ethers.formatUnits(balance, 0);
-      console.log("getNumberOfFT: formattedBalance=", formattedBalance);
-      setNumberOfFT(parseInt(formattedBalance));
+      setNumberOfFT(balance);
     } catch (err) {
       console.error("Failed to get fractional token balance:", err);
     }

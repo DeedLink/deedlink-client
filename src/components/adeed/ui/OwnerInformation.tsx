@@ -21,20 +21,33 @@ const OwnerInformation = ({ deed }: OwnerInformationProps) => {
         return;
       }
 
-      try {
-        console.log(`[ON-CHAIN] OwnerInformation: Fetching ownership from events for tokenId ${deed.tokenId}...`);
-        const eventsOwners = await calculateOwnershipFromEvents(Number(deed.tokenId));
-        console.log(`[ON-CHAIN] OwnerInformation: Successfully fetched on-chain owners:`, eventsOwners);
-        setOnChainOwners(eventsOwners);
-      } catch (error) {
-        console.error("[ON-CHAIN] OwnerInformation: Error fetching on-chain owners from events:", error);
+      // Fetch on-chain and off-chain data simultaneously
+      const [onChainResult, offChainResult] = await Promise.allSettled([
+        (async () => {
+          console.log(`[ON-CHAIN] OwnerInformation: Fetching ownership from events for tokenId ${deed.tokenId}...`);
+          const eventsOwners = await calculateOwnershipFromEvents(Number(deed.tokenId));
+          console.log(`[ON-CHAIN] OwnerInformation: Successfully fetched on-chain owners:`, eventsOwners);
+          return eventsOwners;
+        })(),
+        (async () => {
+          console.log(`[OFF-CHAIN] OwnerInformation: Fetching transactions for deedId ${deed._id}...`);
+          const transactions = await getTransactionsByDeedId(deed._id);
+          console.log(`[OFF-CHAIN] OwnerInformation: Fetched ${transactions.length} transactions:`, transactions);
+          return transactions;
+        })()
+      ]);
+
+      // Process on-chain result
+      if (onChainResult.status === 'fulfilled') {
+        setOnChainOwners(onChainResult.value);
+      } else {
+        console.error("[ON-CHAIN] OwnerInformation: Error fetching on-chain owners from events:", onChainResult.reason);
         setOnChainOwners(null);
       }
 
-      try {
-        console.log(`[OFF-CHAIN] OwnerInformation: Fetching transactions for deedId ${deed._id}...`);
-        const transactions = await getTransactionsByDeedId(deed._id);
-        console.log(`[OFF-CHAIN] OwnerInformation: Fetched ${transactions.length} transactions:`, transactions);
+      // Process off-chain result
+      if (offChainResult.status === 'fulfilled') {
+        const transactions = offChainResult.value;
         
         const ownersMap = new Map<string, number>();
         let hasInit = false;
@@ -47,12 +60,14 @@ const OwnerInformation = ({ deed }: OwnerInformationProps) => {
         
         for (const tx of sortedTxs) {
           if (tx.status === "completed") {
-            if (tx.type === "init" && tx.to) {
+            if ((tx.type === "init" || tx.type === "defractionalize") && tx.to) {
               const to = tx.to.toLowerCase();
+              ownersMap.clear();
               ownersMap.set(to, 100);
               hasInit = true;
-              console.log(`[OFF-CHAIN] OwnerInformation: Init transaction - setting ${to} to 100%`);
-            } else if (tx.to && tx.share && tx.share > 0) {
+              console.log(`[OFF-CHAIN] OwnerInformation: ${tx.type === "defractionalize" ? "Defractionalization" : "Init"} transaction - setting ${to} to 100%`);
+            } else if (tx.to && tx.share && tx.share > 0 && tx.type !== "open_market") {
+              // Skip "open_market" - it's just a listing, not an ownership transfer
               const to = tx.to.toLowerCase();
               const from = tx.from ? tx.from.toLowerCase() : null;
               
@@ -61,6 +76,7 @@ const OwnerInformation = ({ deed }: OwnerInformationProps) => {
                 tx.type === "direct_transfer" || 
                 tx.type === "gift" || 
                 tx.type === "escrow_sale" ||
+                (tx.type === "sale_transfer" && tx.share >= 99.9) ||
                 (tx.type === "escrow" && tx.share >= 99.9);
               
               if (isFullOwnershipTransfer) {
@@ -128,8 +144,8 @@ const OwnerInformation = ({ deed }: OwnerInformationProps) => {
           console.log(`[OFF-CHAIN] OwnerInformation: No owners found, setting empty array`);
           setOffChainOwners([]);
         }
-      } catch (error) {
-        console.error("[OFF-CHAIN] OwnerInformation: Error calculating off-chain owners from transactions:", error);
+      } else {
+        console.error("[OFF-CHAIN] OwnerInformation: Error fetching off-chain data:", offChainResult.reason);
         if (deed.owners && deed.owners.length > 0) {
           const fallbackOwners = deed.owners.map(o => ({
             address: o.address.toLowerCase(),
