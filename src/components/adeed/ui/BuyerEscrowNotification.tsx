@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaBell, FaHandshake, FaEthereum, FaTimes } from "react-icons/fa";
 import { useWallet } from "../../../contexts/WalletContext";
+import { useLogin } from "../../../contexts/LoginContext";
 import { tnxApi } from "../../../api/api";
 import { getEscrowStatus, getEscrowDetails, getUserEscrows } from "../../../web3.0/escrowIntegration";
 import { shortAddress } from "../../../utils/format";
@@ -12,6 +13,7 @@ interface BuyerEscrowNotificationProps {
 
 const BuyerEscrowNotification: React.FC<BuyerEscrowNotificationProps> = ({ onDismiss }) => {
   const { account } = useWallet();
+  const { token, user } = useLogin();
   const [pendingEscrows, setPendingEscrows] = useState<Array<{
     escrowAddress: string;
     seller: string;
@@ -30,7 +32,8 @@ const BuyerEscrowNotification: React.FC<BuyerEscrowNotificationProps> = ({ onDis
     let isMounted = true;
     
     const fetchBuyerEscrows = async () => {
-      if (!account) {
+      // Only show notifications if user is logged in (authenticated), not just wallet connected
+      if (!account || !token || !user) {
         if (isMounted) {
           setPendingEscrows([]);
           setLoading(false);
@@ -150,7 +153,7 @@ const BuyerEscrowNotification: React.FC<BuyerEscrowNotificationProps> = ({ onDis
       isMounted = false;
       clearInterval(interval);
     };
-  }, [account, dismissedEscrows]);
+  }, [account, token, user, dismissedEscrows]);
 
   const handleDismiss = (escrowAddress: string) => {
     setDismissedEscrows(prev => new Set([...prev, escrowAddress]));
