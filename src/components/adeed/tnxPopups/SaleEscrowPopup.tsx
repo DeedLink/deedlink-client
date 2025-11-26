@@ -4,7 +4,7 @@ import { createTransaction, getUsers, getTransactionsByDeedId, transactionStatus
 import type { User } from "../../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle, IoCashOutline } from "react-icons/io5";
 import { FaStore } from "react-icons/fa";
-import { completeFullOwnershipTransfer, sellerDepositNFT, getPaymentBreakdown, sellerWithdrawFromEscrow, getEscrowStatus, getEscrowDetails, cancelEscrow } from "../../../web3.0/escrowIntegration";
+import { completeFullOwnershipTransfer, sellerDepositNFT, getPaymentBreakdown, sellerWithdrawFromEscrow, getEscrowStatus, cancelEscrow } from "../../../web3.0/escrowIntegration";
 import { useWallet } from "../../../contexts/WalletContext";
 import { useQR } from "../../../contexts/QRContext";
 import { useAlert } from "../../../contexts/AlertContext";

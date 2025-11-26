@@ -23,6 +23,7 @@ interface DeedModalsProps {
   onCloseGetRent: () => void;
   onCloseMarket: () => void;
   onCloseLastWill: () => void;
+  initialEscrowAddress?: string;
 }
 
 const DeedModals = ({

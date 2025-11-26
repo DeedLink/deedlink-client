@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { FaBell, FaHandshake, FaEthereum, FaTimes } from "react-icons/fa";
 import { useWallet } from "../../../contexts/WalletContext";
-import { getTransactionsByDeedId, tnxApi } from "../../../api/api";
+import { tnxApi } from "../../../api/api";
 import { getEscrowStatus, getEscrowDetails, getUserEscrows } from "../../../web3.0/escrowIntegration";
 import { shortAddress } from "../../../utils/format";
 import BuyerEscrowPopup from "../tnxPopups/BuyerEscrowPopup";
-import { ethers } from "ethers";
 
 interface BuyerEscrowNotificationProps {
   onDismiss?: () => void;

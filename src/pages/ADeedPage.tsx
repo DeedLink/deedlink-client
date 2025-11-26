@@ -227,6 +227,7 @@ const ADeedPage = () => {
               <PendingEscrowBanner 
                 deedId={deed._id}
                 onOpenEscrow={(escrowAddress) => {
+                  setSelectedEscrowAddress(escrowAddress);
                   setOpenSaleEscrow(true);
                 }}
               />
