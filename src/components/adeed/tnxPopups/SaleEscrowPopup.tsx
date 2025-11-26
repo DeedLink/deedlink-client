@@ -1,26 +1,30 @@
 import { type FC, useState, useEffect } from "react";
-import { createTransaction, getUsers, getTransactionsByDeedId } from "../../../api/api";
+import { ethers } from "ethers";
+import { createTransaction, getUsers, getTransactionsByDeedId, transactionStatus } from "../../../api/api";
 import type { User } from "../../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle, IoCashOutline } from "react-icons/io5";
 import { FaStore } from "react-icons/fa";
-import { completeFullOwnershipTransfer, sellerDepositNFT, getPaymentBreakdown } from "../../../web3.0/escrowIntegration";
+import { completeFullOwnershipTransfer, sellerDepositNFT, getPaymentBreakdown, sellerWithdrawFromEscrow, getEscrowStatus, cancelEscrow } from "../../../web3.0/escrowIntegration";
 import { useWallet } from "../../../contexts/WalletContext";
 import { useQR } from "../../../contexts/QRContext";
 import { useAlert } from "../../../contexts/AlertContext";
-import { Encryting } from "../../../utils/encryption";
+import { isPropertyFractionalized } from "../../../web3.0/contractService";
+import { useToast } from "../../../contexts/ToastContext";
 
 interface SaleEscrowPopupProps {
   isOpen: boolean;
   tokenId: number;
   deedId: string;
   onClose: () => void;
+  initialEscrowAddress?: string;
 }
 
 const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({ 
   isOpen, 
   tokenId, 
   deedId, 
-  onClose 
+  onClose,
+  initialEscrowAddress
 }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
@@ -29,10 +33,13 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
   const [salePrice, setSalePrice] = useState("");
   const [loading, setLoading] = useState(false);
   const [escrowAddress, setEscrowAddress] = useState<string | null>(null);
+  const [isFractionalized, setIsFractionalized] = useState(false);
   const { account } = useWallet();
   const { showAlert } = useAlert();
+  const { showToast } = useToast();
   const [txHash, setTxHash] = useState("");
   const { showQRPopup } = useQR();
+  const [escrowStatus, setEscrowStatus] = useState<{ isBuyerDeposited: boolean; isSellerDeposited: boolean; isFinalized: boolean } | null>(null);
 
   // If the seller created an escrow then closed the popup, we should recover
   // the escrow state when the popup is reopened. Look for a prior 'escrow_sale'
@@ -68,11 +75,44 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
       }
     };
 
-    recoverEscrowState();
-  }, [isOpen, deedId, account]);
+    if (initialEscrowAddress) {
+      setEscrowAddress(initialEscrowAddress);
+    } else {
+      recoverEscrowState();
+    }
+  }, [isOpen, deedId, account, initialEscrowAddress]);
 
+  // Fetch escrow status when escrow address is available
+  useEffect(() => {
+    const fetchEscrowStatus = async () => {
+      if (!escrowAddress || !isOpen) return;
+      try {
+        const status = await getEscrowStatus(escrowAddress);
+        setEscrowStatus(status);
+      } catch (error) {
+        console.error("Failed to fetch escrow status:", error);
+      }
+    };
+
+    fetchEscrowStatus();
+    const interval = setInterval(fetchEscrowStatus, 5000);
+    return () => clearInterval(interval);
+  }, [escrowAddress, isOpen]);
 
   useEffect(() => {
+    const checkFractionalization = async () => {
+      if (!tokenId) return;
+      try {
+        const fractionalized = await isPropertyFractionalized(tokenId);
+        setIsFractionalized(fractionalized);
+        if (fractionalized) {
+          showToast("Escrow sale is not available for fractionalized properties. Use marketplace listing instead.", "error");
+        }
+      } catch (error) {
+        console.error("Error checking fractionalization:", error);
+      }
+    };
+
     const fetchUsers = async () => {
       try {
         const res = await getUsers();
@@ -90,8 +130,11 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
         setFilteredUsers([]);
       }
     };
-    if (isOpen) fetchUsers();
-  }, [isOpen, account]);
+    if (isOpen) {
+      checkFractionalization();
+      fetchUsers();
+    }
+  }, [isOpen, account, tokenId, showToast]);
 
   useEffect(() => {
     const val = search.trim().toLowerCase();
@@ -109,6 +152,11 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
   const breakdown = salePrice && parseFloat(salePrice) > 0 ? getPaymentBreakdown(salePrice) : null;
 
   const handleCreateSale = async () => {
+    if (isFractionalized) {
+      showToast("Escrow sale is not available for fractionalized properties. Please defractionalize first or use marketplace listing.", "error");
+      return;
+    }
+
     if (!selectedWallet) {
       showAlert({
         type: "warning",
@@ -117,6 +165,25 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
       });
       return;
     }
+
+    if (!ethers.isAddress(selectedWallet)) {
+      showAlert({
+        type: "error",
+        title: "Invalid Address",
+        message: "Please enter a valid Ethereum address"
+      });
+      return;
+    }
+
+    if (selectedWallet.toLowerCase() === account?.toLowerCase()) {
+      showAlert({
+        type: "error",
+        title: "Invalid Buyer",
+        message: "Cannot create escrow sale to yourself"
+      });
+      return;
+    }
+
     if (!salePrice || parseFloat(salePrice) <= 0) {
       showAlert({
         type: "warning",
@@ -183,24 +250,22 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
             });
 
             if(result.escrowAddress && breakdown?.sellerAmount){
-              await createTransaction({
-                deedId,
-                from: account as string,
-                to: selectedWallet,
-                amount: parseFloat(salePrice),
-                share: 100,
-                type: "escrow_sale",
-                blockchain_identification: result.escrowAddress,
-                hash: result.stampFeeTxHash,
-                description: `Escrow Sale - ${result.stampFeeTxHash || "no_hash"}`
-              })
-              
-              console.log("Escrow: ",Encryting({
-                deedId: deedId,
-                escrowAddress: result.escrowAddress,
-                seller: account || "",
-                hash: result.stampFeeTxHash,
-              }))
+              try {
+                await createTransaction({
+                  deedId,
+                  from: account as string,
+                  to: selectedWallet,
+                  amount: parseFloat(salePrice),
+                  share: 100,
+                  type: "escrow_sale",
+                  blockchain_identification: result.escrowAddress,
+                  hash: result.stampFeeTxHash,
+                  description: `Escrow Sale - ${result.stampFeeTxHash || "no_hash"}`,
+                  status: "pending"
+                });
+              } catch (txError) {
+                console.error("Failed to create transaction record:", txError);
+              }
             }
           } else {
             throw new Error(result.error || "Failed to create escrow");
@@ -239,7 +304,9 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
             </div>
           ),
           confirmText: "OK",
-          onConfirm: onClose
+          onConfirm: () => {
+            setEscrowStatus({ isBuyerDeposited: false, isSellerDeposited: true, isFinalized: false });
+          }
         });
       } else {
         throw new Error(result.error);
@@ -250,6 +317,223 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
         type: "error",
         title: "Failed to Deposit NFT",
         message: error.message || "An error occurred while depositing the NFT",
+        confirmText: "OK"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelEscrow = async () => {
+    if (!escrowAddress || !deedId) return;
+
+    const confirmed = await new Promise<boolean>((resolve) => {
+      showAlert({
+        type: "warning",
+        title: "Cancel Escrow Sale",
+        htmlContent: (
+          <div className="text-white space-y-2">
+            <p>Are you sure you want to cancel this escrow sale?</p>
+            <p className="text-sm">This will cancel the escrow and you can create a new one if needed.</p>
+            {escrowStatus?.isSellerDeposited && (
+              <p className="text-xs text-yellow-300">⚠️ Your NFT will be returned to your wallet.</p>
+            )}
+          </div>
+        ),
+        confirmText: "Yes, Cancel",
+        cancelText: "Keep It",
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
+
+    if (!confirmed) return;
+
+    setLoading(true);
+    try {
+      let result;
+      if (escrowStatus?.isSellerDeposited && !escrowStatus.isBuyerDeposited) {
+        result = await sellerWithdrawFromEscrow(escrowAddress);
+      } else {
+        result = await cancelEscrow(escrowAddress);
+      }
+      
+      if (result.success && result.txHash) {
+        try {
+          const cancelTxResult = await createTransaction({
+            deedId,
+            from: account as string,
+            to: account as string,
+            amount: 0,
+            share: 100,
+            type: "escrow_cancel",
+            blockchain_identification: escrowAddress,
+            hash: result.txHash,
+            description: `Escrow cancelled by seller.`,
+            status: "completed"
+          });
+
+          if (!cancelTxResult) {
+            throw new Error("Failed to create cancellation transaction record");
+          }
+
+          await transactionStatus(escrowAddress, "failed");
+        } catch (txError: any) {
+          console.error("Failed to log escrow cancellation:", txError);
+          showAlert({
+            type: "warning",
+            title: "Escrow Cancelled on Blockchain",
+            htmlContent: (
+              <div className="space-y-2">
+                <p className="text-gray-700">The escrow has been cancelled on the blockchain.</p>
+                <p className="text-sm text-yellow-600">
+                  ⚠️ However, there was an issue logging this cancellation off-chain. 
+                  The transaction may not appear in your history, but the cancellation is complete.
+                </p>
+                <p className="text-xs text-gray-600"><strong>Transaction:</strong> {result.txHash}</p>
+              </div>
+            ),
+            confirmText: "OK"
+          });
+          return;
+        }
+
+        showAlert({
+          type: "success",
+          title: "Escrow Cancelled Successfully",
+          htmlContent: (
+            <div className="space-y-2">
+              <p className="text-gray-700">The escrow sale has been cancelled.</p>
+              {escrowStatus?.isSellerDeposited && (
+                <p className="text-sm text-gray-600">Your NFT has been returned to your wallet.</p>
+              )}
+              <p className="text-xs text-gray-600"><strong>Transaction:</strong> {result.txHash}</p>
+            </div>
+          ),
+          confirmText: "OK",
+          onConfirm: () => {
+            setEscrowAddress(null);
+            setEscrowStatus(null);
+            setTxHash("");
+            onClose();
+          }
+        });
+      } else {
+        throw new Error(result.error || "Failed to cancel escrow");
+      }
+    } catch (error: any) {
+      console.error("Escrow cancellation failed:", error);
+      showAlert({
+        type: "error",
+        title: "Failed to Cancel Escrow",
+        message: error.message || "An error occurred while cancelling the escrow",
+        confirmText: "OK"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleWithdrawNFT = async () => {
+    if (!escrowAddress || !deedId) return;
+
+    const confirmed = await new Promise<boolean>((resolve) => {
+      showAlert({
+        type: "warning",
+        title: "Withdraw NFT from Escrow",
+        htmlContent: (
+          <div className="text-white space-y-2">
+            <p>Are you sure you want to withdraw your NFT from escrow?</p>
+            <p className="text-sm">This will cancel the escrow sale and return your NFT to your wallet.</p>
+            <p className="text-xs text-gray-300">The buyer has not deposited payment yet.</p>
+          </div>
+        ),
+        confirmText: "Yes, Withdraw",
+        cancelText: "Cancel",
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
+
+    if (!confirmed) return;
+
+    setLoading(true);
+    try {
+      const result = await sellerWithdrawFromEscrow(escrowAddress);
+      
+      if (result.success && result.txHash) {
+        try {
+          const cancelTxResult = await createTransaction({
+            deedId,
+            from: account as string,
+            to: account as string,
+            amount: 0,
+            share: 100,
+            type: "escrow_cancel",
+            blockchain_identification: escrowAddress,
+            hash: result.txHash,
+            description: `Escrow cancelled - NFT withdrawn by seller. Buyer did not deposit payment.`,
+            status: "completed"
+          });
+
+          if (!cancelTxResult) {
+            throw new Error("Failed to create cancellation transaction record");
+          }
+
+          await transactionStatus(escrowAddress, "failed");
+        } catch (txError: any) {
+          console.error("Failed to log escrow cancellation:", txError);
+          showAlert({
+            type: "warning",
+            title: "NFT Withdrawn from Blockchain",
+            htmlContent: (
+              <div className="space-y-2">
+                <p className="text-gray-700">Your NFT has been withdrawn from escrow on the blockchain.</p>
+                <p className="text-sm text-yellow-600">
+                  ⚠️ However, there was an issue logging this cancellation off-chain. 
+                  The transaction may not appear in your history, but the withdrawal is complete.
+                </p>
+                <p className="text-xs text-gray-600"><strong>Transaction:</strong> {result.txHash}</p>
+              </div>
+            ),
+            confirmText: "OK",
+            onConfirm: () => {
+              setEscrowAddress(null);
+              setEscrowStatus(null);
+              setTxHash("");
+              onClose();
+            }
+          });
+          return;
+        }
+
+        showAlert({
+          type: "success",
+          title: "NFT Withdrawn Successfully",
+          htmlContent: (
+            <div className="space-y-2">
+              <p className="text-gray-700">Your NFT has been successfully withdrawn from escrow.</p>
+              <p className="text-sm text-gray-600">The escrow sale has been cancelled.</p>
+              <p className="text-xs text-gray-600"><strong>Transaction:</strong> {result.txHash}</p>
+            </div>
+          ),
+          confirmText: "OK",
+          onConfirm: () => {
+            setEscrowAddress(null);
+            setEscrowStatus(null);
+            setTxHash("");
+            onClose();
+          }
+        });
+      } else {
+        throw new Error(result.error || "Failed to withdraw NFT");
+      }
+    } catch (error: any) {
+      console.error("NFT withdrawal failed:", error);
+      showAlert({
+        type: "error",
+        title: "Failed to Withdraw NFT",
+        message: error.message || "An error occurred while withdrawing the NFT",
         confirmText: "OK"
       });
     } finally {
@@ -289,11 +573,28 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
           {!escrowAddress ? (
             // Create Sale Form
             <>
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm text-green-800">
-                  Secure sale with escrow protection. Stamp fees are automatically collected.
-                </p>
-              </div>
+              {isFractionalized ? (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <FaStore className="text-red-600 mt-0.5 flex-shrink-0" size={20} />
+                    <div className="text-sm text-red-800">
+                      <p className="font-semibold mb-1">Escrow Sale Not Available</p>
+                      <p className="mb-2">This property is fractionalized. Escrow sale of the full NFT is not possible.</p>
+                      <p className="text-xs">To sell this property, you can:</p>
+                      <ul className="text-xs list-disc list-inside mt-1 space-y-1">
+                        <li>List fractional tokens on the marketplace</li>
+                        <li>Defractionalize the property first (requires 100% ownership)</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800">
+                    Secure sale with escrow protection. Stamp fees are automatically collected.
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
@@ -422,7 +723,7 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
               </button>
             </>
           ) : (
-            // Deposit NFT Form
+            // Deposit NFT Form or Withdraw Form
             <>
               <div className="p-4 bg-green-50 rounded-xl border border-green-200">
                 <div className="text-sm font-semibold text-green-800 mb-2">✅ Escrow Created!</div>
@@ -439,28 +740,120 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
                     <span>Price:</span>
                     <span className="font-semibold">{salePrice} ETH</span>
                   </div>
+                  {escrowStatus && (
+                    <div className="mt-2 pt-2 border-t border-green-300 space-y-1">
+                      <div className="flex justify-between">
+                        <span>Seller Deposited:</span>
+                        <span className={escrowStatus.isSellerDeposited ? "text-green-600 font-semibold" : "text-gray-500"}>
+                          {escrowStatus.isSellerDeposited ? "✓ Yes" : "✗ No"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Buyer Deposited:</span>
+                        <span className={escrowStatus.isBuyerDeposited ? "text-green-600 font-semibold" : "text-orange-600"}>
+                          {escrowStatus.isBuyerDeposited ? "✓ Yes" : "✗ No"}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                <div className="text-sm font-semibold text-blue-800 mb-2">Next Step: Deposit NFT</div>
-                <p className="text-xs text-gray-600">
-                  Click the button below to deposit your NFT into the escrow. 
-                  After this, the buyer will deposit payment and finalize the transfer.
-                </p>
-              </div>
+              {escrowStatus?.isSellerDeposited && !escrowStatus.isBuyerDeposited && !escrowStatus.isFinalized ? (
+                <>
+                  <div className="p-4 bg-orange-50 rounded-xl border border-orange-200">
+                    <div className="text-sm font-semibold text-orange-800 mb-2">⚠️ Buyer Has Not Deposited</div>
+                    <p className="text-xs text-gray-600">
+                      Your NFT is in escrow, but the buyer has not deposited payment yet. 
+                      You can withdraw your NFT to cancel this escrow sale.
+                    </p>
+                  </div>
 
-              <button
-                onClick={handleDepositNFT}
-                disabled={loading}
-                className={`w-full py-3 rounded-xl font-semibold transition-all ${
-                  loading
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg"
-                }`}
-              >
-                {loading ? "Depositing NFT..." : "Deposit NFT to Escrow"}
-              </button>
+                  <div className="space-y-3">
+                    <button
+                      onClick={handleWithdrawNFT}
+                      disabled={loading}
+                      className={`w-full py-3 rounded-xl font-semibold transition-all ${
+                        loading
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          : "bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-md hover:shadow-lg"
+                      }`}
+                    >
+                      {loading ? "Withdrawing NFT..." : "Withdraw NFT from Escrow"}
+                    </button>
+                    <button
+                      onClick={handleCancelEscrow}
+                      disabled={loading}
+                      className={`w-full py-2.5 rounded-xl font-medium transition-all border-2 ${
+                        loading
+                          ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+                      }`}
+                    >
+                      Cancel Escrow
+                    </button>
+                  </div>
+                </>
+              ) : !escrowStatus?.isSellerDeposited ? (
+                <>
+                  <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                    <div className="text-sm font-semibold text-blue-800 mb-2">Next Step: Deposit NFT</div>
+                    <p className="text-xs text-gray-600">
+                      Click the button below to deposit your NFT into the escrow. 
+                      After this, the buyer will deposit payment and finalize the transfer.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <button
+                      onClick={handleDepositNFT}
+                      disabled={loading}
+                      className={`w-full py-3 rounded-xl font-semibold transition-all ${
+                        loading
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg"
+                      }`}
+                    >
+                      {loading ? "Depositing NFT..." : "Deposit NFT to Escrow"}
+                    </button>
+                    <button
+                      onClick={handleCancelEscrow}
+                      disabled={loading}
+                      className={`w-full py-2.5 rounded-xl font-medium transition-all border-2 ${
+                        loading
+                          ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+                      }`}
+                    >
+                      Cancel Escrow
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-4 bg-green-50 rounded-xl border border-green-200">
+                    <div className="text-sm font-semibold text-green-800 mb-2">✓ Escrow Active</div>
+                    <p className="text-xs text-gray-600">
+                      {escrowStatus.isBuyerDeposited 
+                        ? "Both parties have deposited. Waiting for buyer to finalize the transfer."
+                        : "Your NFT is in escrow. Waiting for buyer to deposit payment."}
+                    </p>
+                  </div>
+                  {!escrowStatus.isFinalized && (
+                    <button
+                      onClick={handleCancelEscrow}
+                      disabled={loading}
+                      className={`w-full py-2.5 rounded-xl font-medium transition-all border-2 ${
+                        loading
+                          ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+                      }`}
+                    >
+                      Cancel Escrow
+                    </button>
+                  )}
+                </>
+              )}
             </>
           )}
           <button

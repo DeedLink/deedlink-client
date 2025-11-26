@@ -135,7 +135,6 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
       let blockchainListingType: "NFT" | "FRACTIONAL";
 
       if (listingType === "FULL_NFT") {
-        console.log("Creating full NFT listing...");
         result = await listNFTForSale(
           nftAddress,
           tokenId,
@@ -146,8 +145,6 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
       } else {
         const tokenAmountNum = Number(ftTokenAmount);
         const sharePercentage = totalSupply > 0 ? (tokenAmountNum / totalSupply) * 100 : 0;
-        console.log("Creating fractional listing...");
-        
         result = await listFractionalTokensForSale(
           nftAddress,
           tokenId,
@@ -171,14 +168,9 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
           listingTypeOnChain: blockchainListingType
         };
 
-        console.log("Creating marketplace DB entry:", marketplaceData);
         try {
-          await createMarketPlace(marketplaceData);
-          console.log("Marketplace DB entry created successfully");
+        await createMarketPlace(marketplaceData);
         } catch (marketplaceError: any) {
-          console.error("Failed to create marketplace DB entry:", marketplaceError);
-          console.error("Error response:", marketplaceError?.response?.data);
-          console.error("Error status:", marketplaceError?.response?.status);
           throw new Error(marketplaceError?.response?.data?.message || marketplaceError?.message || "Failed to create marketplace entry");
         }
 
@@ -198,7 +190,7 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
             status: "completed"
           });
         } catch (txError) {
-          console.error("Failed to record listing transaction:", txError);
+          console.error("Failed to create transaction record:", txError);
         }
 
         showToast("Listing created successfully!", "success");
@@ -365,12 +357,12 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
               <p><span className="font-medium">Price:</span> {amount || "0"} ETH {listingType === "FRACTIONAL" && "(per token)"}</p>
               {listingType === "FRACTIONAL" && ftTokenAmount && amount && totalSupply > 0 && (
                 <>
-                  <p className="text-xs text-gray-600 mt-1">
+                <p className="text-xs text-gray-600 mt-1">
                     Total value: {(Number(ftTokenAmount) * Number(amount)).toFixed(4)} ETH for {Number(ftTokenAmount).toLocaleString()} tokens ({(Number(ftTokenAmount) / totalSupply * 100).toFixed(4)}%)
                   </p>
                   <p className="text-xs text-blue-700 mt-1 font-semibold">
                     Your remaining ownership after sale: {(userFTBalance - Number(ftTokenAmount)).toLocaleString()} tokens ({(userFTBalance - Number(ftTokenAmount)) / totalSupply * 100}%)
-                  </p>
+                </p>
                 </>
               )}
               <p className="text-xs text-gray-500 mt-2 border-t border-green-300 pt-2">

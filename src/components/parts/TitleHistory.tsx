@@ -66,6 +66,16 @@ const typeMap: Record<
     label: "Escrow Sale",
     color: "text-teal-600",
   },
+  defractionalize: {
+    icon: <FaSitemap className="text-purple-500" />,
+    label: "Defractionalization",
+    color: "text-purple-600",
+  },
+  escrow_cancel: {
+    icon: <FaLock className="text-red-500" />,
+    label: "Escrow Cancelled",
+    color: "text-red-600",
+  },
 };
 
 const Modal = ({

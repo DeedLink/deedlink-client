@@ -34,12 +34,9 @@ export interface TransferEvent {
 
 export async function getNFTTransferEvents(tokenId: number, fromBlock?: number): Promise<TransferEvent[]> {
   try {
-    console.log(`[ON-CHAIN] eventService: Fetching NFT Transfer events for tokenId ${tokenId}...`);
     const nft = await getPropertyNFTContract();
     const filter = nft.filters.Transfer(null, null, tokenId);
-    
     const events = await nft.queryFilter(filter, fromBlock);
-    console.log(`[ON-CHAIN] eventService: Found ${events.length} NFT Transfer events`);
     
     const transferEvents: TransferEvent[] = [];
     
@@ -58,11 +55,8 @@ export async function getNFTTransferEvents(tokenId: number, fromBlock?: number):
       }
     }
     
-    const sorted = transferEvents.sort((a, b) => a.blockNumber - b.blockNumber);
-    console.log(`[ON-CHAIN] eventService: Processed ${sorted.length} NFT Transfer events:`, sorted);
-    return sorted;
+    return transferEvents.sort((a, b) => a.blockNumber - b.blockNumber);
   } catch (error) {
-    console.error("[ON-CHAIN] eventService: Error fetching NFT transfer events:", error);
     return [];
   }
 }
@@ -72,25 +66,19 @@ export async function getFractionalTokenTransferEvents(
   fromBlock?: number
 ): Promise<TransferEvent[]> {
   try {
-    console.log(`[ON-CHAIN] eventService: Checking if tokenId ${tokenId} is fractionalized...`);
     const isFractionalized = await isPropertyFractionalized(tokenId);
     if (!isFractionalized) {
-      console.log(`[ON-CHAIN] eventService: TokenId ${tokenId} is not fractionalized`);
       return [];
     }
 
     const tokenAddress = await getFractionalTokenAddress(tokenId);
     if (!tokenAddress || tokenAddress === "0x0000000000000000000000000000000000000000") {
-      console.log(`[ON-CHAIN] eventService: No fractional token address found for tokenId ${tokenId}`);
       return [];
     }
 
-    console.log(`[ON-CHAIN] eventService: Fetching FractionalToken Transfer events for tokenId ${tokenId} (token: ${tokenAddress})...`);
     const ftContract = await getFractionalTokenContract(tokenAddress);
     const filter = ftContract.filters.Transfer();
-    
     const events = await ftContract.queryFilter(filter, fromBlock);
-    console.log(`[ON-CHAIN] eventService: Found ${events.length} FractionalToken Transfer events`);
     
     const transferEvents: TransferEvent[] = [];
     
@@ -109,11 +97,8 @@ export async function getFractionalTokenTransferEvents(
       }
     }
     
-    const sorted = transferEvents.sort((a, b) => a.blockNumber - b.blockNumber);
-    console.log(`[ON-CHAIN] eventService: Processed ${sorted.length} FractionalToken Transfer events:`, sorted);
-    return sorted;
+    return transferEvents.sort((a, b) => a.blockNumber - b.blockNumber);
   } catch (error) {
-    console.error("[ON-CHAIN] eventService: Error fetching fractional token transfer events:", error);
     return [];
   }
 }
@@ -128,27 +113,27 @@ export async function calculateOwnershipFromEvents(
   totalSupply?: number
 ): Promise<OwnershipInfo[]> {
   try {
-    console.log(`[ON-CHAIN] eventService: Calculating ownership from events for tokenId ${tokenId}...`);
     const isFractionalized = await isPropertyFractionalized(tokenId);
-    console.log(`[ON-CHAIN] eventService: TokenId ${tokenId} isFractionalized: ${isFractionalized}`);
     
     if (!isFractionalized) {
       const nftEvents = await getNFTTransferEvents(tokenId);
       if (nftEvents.length === 0) {
-        console.log(`[ON-CHAIN] eventService: No NFT transfer events found for tokenId ${tokenId}`);
+        try {
+          const nft = await getPropertyNFTContract();
+          const owner = await nft.ownerOf(tokenId);
+          if (owner && owner !== "0x0000000000000000000000000000000000000000") {
+            return [{ address: owner.toLowerCase(), share: 100 }];
+          }
+        } catch {
+          // If ownerOf fails, return empty
+        }
         return [];
       }
       
       const lastTransfer = nftEvents[nftEvents.length - 1];
       if (lastTransfer.to && lastTransfer.to !== "0x0000000000000000000000000000000000000000") {
-        const owner = [{
-          address: lastTransfer.to,
-          share: 100
-        }];
-        console.log(`[ON-CHAIN] eventService: Calculated NFT ownership:`, owner);
-        return owner;
+        return [{ address: lastTransfer.to, share: 100 }];
       }
-      console.log(`[ON-CHAIN] eventService: Invalid last transfer event for tokenId ${tokenId}`);
       return [];
     }
 
@@ -163,22 +148,45 @@ export async function calculateOwnershipFromEvents(
     if (supply === 0) return [];
 
     const ftEvents = await getFractionalTokenTransferEvents(tokenId);
+    
     if (ftEvents.length === 0) {
       const factoryAddress = import.meta.env.VITE_FACTORY_ADDRESS as string;
       const nft = await getPropertyNFTContract();
       const nftOwner = (await nft.ownerOf(tokenId)).toLowerCase();
       
       if (nftOwner === factoryAddress.toLowerCase()) {
-        return [];
+        const balances = new Map<string, number>();
+        const filter = ftContract.filters.Transfer(null, null);
+        const allEvents = await ftContract.queryFilter(filter);
+        
+        for (const event of allEvents) {
+          if ('args' in event && event.args) {
+            const args = event.args as any;
+            const from = args.from?.toLowerCase();
+            const to = args.to?.toLowerCase();
+            const amount = Number(args.value || 0);
+            
+            if (from && from !== "0x0000000000000000000000000000000000000000") {
+              balances.set(from, (balances.get(from) || 0) - amount);
+            }
+            if (to && to !== "0x0000000000000000000000000000000000000000") {
+              balances.set(to, (balances.get(to) || 0) + amount);
+            }
+          }
+        }
+        
+        const owners: OwnershipInfo[] = [];
+        for (const [address, balance] of balances.entries()) {
+          if (balance > 0) {
+            owners.push({ address, share: (balance / supply) * 100 });
+          }
+        }
+        return owners.sort((a, b) => b.share - a.share);
       }
       
-      return [{
-        address: nftOwner,
-        share: 100
-      }];
+      return [{ address: nftOwner, share: 100 }];
     }
 
-    console.log(`[ON-CHAIN] eventService: Calculating fractional ownership from ${ftEvents.length} events, totalSupply: ${supply}`);
     const balances = new Map<string, number>();
     
     for (const event of ftEvents) {
@@ -193,22 +201,16 @@ export async function calculateOwnershipFromEvents(
       }
     }
 
-    console.log(`[ON-CHAIN] eventService: Calculated balances:`, Array.from(balances.entries()));
-
     const owners: OwnershipInfo[] = [];
     
     for (const [address, balance] of balances.entries()) {
       if (balance > 0) {
-        const share = (balance / supply) * 100;
-        owners.push({ address, share });
+        owners.push({ address, share: (balance / supply) * 100 });
       }
     }
 
-    const sorted = owners.sort((a, b) => b.share - a.share);
-    console.log(`[ON-CHAIN] eventService: Final calculated fractional ownership:`, sorted);
-    return sorted;
+    return owners.sort((a, b) => b.share - a.share);
   } catch (error) {
-    console.error("Error calculating ownership from events:", error);
     return [];
   }
 }

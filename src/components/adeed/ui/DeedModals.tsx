@@ -23,6 +23,7 @@ interface DeedModalsProps {
   onCloseGetRent: () => void;
   onCloseMarket: () => void;
   onCloseLastWill: () => void;
+  initialEscrowAddress?: string;
 }
 
 const DeedModals = ({
@@ -40,7 +41,8 @@ const DeedModals = ({
   onCloseGiveRent,
   onCloseGetRent,
   onCloseMarket,
-  onCloseLastWill
+  onCloseLastWill,
+  initialEscrowAddress
 }: DeedModalsProps) => {
   return (
     <>
@@ -51,7 +53,13 @@ const DeedModals = ({
         <DirectTransferPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openDirectTransfer} onClose={onCloseDirectTransfer} />
       )}
       {openSaleEscrow && deed.tokenId && (
-        <SaleEscrowPopup deedId={deed._id} tokenId={deed.tokenId} isOpen={openSaleEscrow} onClose={onCloseSaleEscrow} />
+        <SaleEscrowPopup 
+          deedId={deed._id} 
+          tokenId={deed.tokenId} 
+          isOpen={openSaleEscrow} 
+          onClose={onCloseSaleEscrow}
+          initialEscrowAddress={initialEscrowAddress}
+        />
       )}
       {openGiveRent && deed.tokenId && (
         <GiveRentPopup isOpen={openGiveRent} tokenId={deed.tokenId} onClose={onCloseGiveRent} />

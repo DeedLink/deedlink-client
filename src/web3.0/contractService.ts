@@ -3,11 +3,11 @@ import { connectWallet } from "./wallet";
 import PropertyNFTABI from "./abis/PropertyNFT.json";
 import FractionalTokenFactoryABI from "./abis/FractionTokenFactory.json";
 import FractionalTokenABI from "./abis/FractionalToken.json";
+import MarketplaceABI from "./abis/Marketplace.json";
 
 const PROPERTY_NFT_ADDRESS = import.meta.env.VITE_PROPERTY_NFT_ADDRESS as string;
 const FACTORY_ADDRESS = import.meta.env.VITE_FACTORY_ADDRESS as string;
-
-console.log(PROPERTY_NFT_ADDRESS);
+const MARKETPLACE_ADDRESS = import.meta.env.VITE_MARKETPLACE_ADDRESS as string;
 
 async function getSigner() {
   const wallet = await connectWallet();
@@ -28,6 +28,11 @@ async function getFactoryContract() {
 async function getFractionalTokenContract(address: string) {
   const signer = await getSigner();
   return new ethers.Contract(address, FractionalTokenABI.abi, signer);
+}
+
+async function getMarketplaceContract() {
+  const signer = await getSigner();
+  return new ethers.Contract(MARKETPLACE_ADDRESS, MarketplaceABI.abi, signer);
 }
 
 export async function mintNFT(to: string, ipfsuri: string, dburi: string) {
@@ -55,14 +60,18 @@ export async function mintNFT(to: string, ipfsuri: string, dburi: string) {
 }
 
 export async function transferNFT(from: string, to: string, tokenId: number) {
+  try {
   const nft = await getPropertyNFTContract();
   const tx = await nft.transferFrom(from, to, tokenId);
   const receipt = await tx.wait();
-  console.log(receipt);
   
   return { 
     txHash: receipt.hash ?? receipt.transactionHash 
   };
+  } catch (error: any) {
+    const errorMessage = error.reason || error.message || "Failed to transfer NFT";
+    throw new Error(errorMessage);
+  }
 }
 
 export async function safeTransferNFT(from: string, to: string, tokenId: number) {
@@ -144,45 +153,21 @@ export async function createFractionalToken(
     const signer = await getSigner();
     const userAddress = await signer.getAddress();
 
-    console.log("=== Starting Fractionalization Process ===");
-    console.log("NFT ID:", nftId);
-    console.log("User Address:", userAddress);
-    console.log("Factory Address:", FACTORY_ADDRESS);
-    console.log("Property NFT Address:", PROPERTY_NFT_ADDRESS);
-
-    // Step 1: Verify ownership
-    console.log("\n1: Verifying NFT ownership...");
     const owner = await propertyNFT.ownerOf(nftId);
-    console.log("Current owner:", owner);
-    
     if (owner.toLowerCase() !== userAddress.toLowerCase()) {
       throw new Error(`You don't own this NFT. Owner: ${owner}`);
     }
 
-    // Step 2: Check if already fractionalized
-    console.log("\n2: Checking if already fractionalized...");
     const existingToken = await factory.propertyToFractionToken(nftId);
     if (existingToken !== "0x0000000000000000000000000000000000000000") {
       throw new Error(`Property ${nftId} is already fractionalized at ${existingToken}`);
     }
 
-    // Step 3: Approve factory to transfer the NFT
-    console.log("\n3: Approving factory to transfer NFT...");
     const currentApproval = await propertyNFT.getApproved(nftId);
-    console.log("Current approval:", currentApproval);
-    
     if (currentApproval.toLowerCase() !== FACTORY_ADDRESS.toLowerCase()) {
-      console.log("Setting approval for factory...");
       const approveTx = await propertyNFT.approve(FACTORY_ADDRESS, nftId);
-      const approveReceipt = await approveTx.wait();
-      console.log("Approval granted:", approveReceipt.hash);
-    } else {
-      console.log("Factory already approved");
+      await approveTx.wait();
     }
-
-    // Step 4: Create fractional tokens (this will transfer the NFT)
-    console.log("\n4: Creating fractional tokens...");
-    console.log("Parameters:", { nftId, name, symbol, supply });
     
     const tx = await factory.createFractionToken(
       nftId, 
@@ -192,48 +177,26 @@ export async function createFractionalToken(
       PROPERTY_NFT_ADDRESS
     );
     
-    console.log("Transaction submitted:", tx.hash);
     const receipt = await tx.wait();
-    console.log("Transaction confirmed:", receipt.hash);
-
-    // Step 5: Get the created token address
-    console.log("\n5: Getting fractional token address...");
     const tokenAddress = await factory.propertyToFractionToken(nftId);
-    console.log("Fractional token created at:", tokenAddress);
-
-    // Step 6: Verify NFT transfer
-    console.log("\n6: Verifying NFT transfer to factory...");
     const newOwner = await propertyNFT.ownerOf(nftId);
-    console.log("New NFT owner:", newOwner);
-    console.log("Factory address:", FACTORY_ADDRESS);
     
     if (newOwner.toLowerCase() !== FACTORY_ADDRESS.toLowerCase()) {
-      console.warn("Warning: NFT was not transferred to factory!");
-    } else {
-      console.log("NFT successfully transferred to factory");
+      throw new Error("NFT was not transferred to factory");
     }
-
-    console.log("\n=== Fractionalization Complete ===");
     
     return {
       success: true,
       tokenAddress,
-      txHash: receipt.hash ?? receipt.transactionHash,
-      message: `Property fractionalized successfully. Token address: ${tokenAddress}`
+      txHash: receipt.hash ?? receipt.transactionHash
     };
 
   } catch (error: any) {
-    console.error("\nFractionalization failed:", error);
-    
-    // Later I added this specific error handling for NFT transfer failure
-    if (error.message.includes("0x177e802f")) {
-      throw new Error(
-        "NFT transfer to factory failed. The factory contract doesn't own the NFT. " +
-        "This usually means the approval wasn't successful or the contract has insufficient permissions."
-      );
+    if (error.message && error.message.includes("0x177e802f")) {
+      throw new Error("NFT transfer to factory failed. Approval may not have been successful.");
     }
-    
-    throw error;
+    const errorMessage = error.reason || error.message || "Failed to create fractional tokens";
+    throw new Error(errorMessage);
   }
 }
 
@@ -244,9 +207,13 @@ export async function getFTBalance(tokenAddress: string, account: string) {
   ) {
     return 0;
   }
-  const tokenContract = await getFractionalTokenContract(tokenAddress);
-  const balance = await tokenContract.balanceOf(account);
-  return Number(balance);
+  try {
+    const tokenContract = await getFractionalTokenContract(tokenAddress);
+    const balance = await tokenContract.balanceOf(account);
+    return Number(balance);
+  } catch (error) {
+    return 0;
+  }
 }
 
 export async function getFractionalTokenAddress(nftId: number) {
@@ -299,7 +266,6 @@ export async function hasFullOwnership(nftId: number, userAddress: string): Prom
     const hasFull = await factory.hasFullOwnership(nftId, userAddress);
     return hasFull;
   } catch (error) {
-    console.error("Error checking full ownership:", error);
     return false;
   }
 }
@@ -334,7 +300,7 @@ export async function getFractionalTokenInfo(nftId: number) {
     const signer = await getSigner();
     const userAddress = await signer.getAddress();
     const totalSupply = await factory.propertyToTotalSupply(nftId);
-    const userBalance = await getFTBalance(tokenAddress, userAddress);
+    const userBalance = await factory.getFractionBalance(nftId, userAddress);
     const totalSupplyNum = Number(totalSupply);
     const userBalanceNum = Number(userBalance);
     const userPercentage = totalSupplyNum > 0 ? (userBalanceNum / totalSupplyNum) * 100 : 0;
@@ -347,7 +313,6 @@ export async function getFractionalTokenInfo(nftId: number) {
       userPercentage
     };
   } catch (error) {
-    console.error("Error getting fractional token info:", error);
     return {
       isFractionalized: false,
       tokenAddress: null,
@@ -360,6 +325,16 @@ export async function getFractionalTokenInfo(nftId: number) {
 
 export async function transferFractionalTokens(tokenAddress: string, to: string, amount: number) {
   try {
+    if (!ethers.isAddress(tokenAddress)) {
+      throw new Error("Invalid fractional token address");
+    }
+    if (!ethers.isAddress(to)) {
+      throw new Error("Invalid recipient address");
+    }
+    if (amount <= 0 || !Number.isInteger(amount)) {
+      throw new Error("Amount must be a positive integer");
+    }
+
     const ft = await getFractionalTokenContract(tokenAddress);
     const tx = await ft.transfer(to, amount);
     const receipt = await tx.wait();
@@ -368,8 +343,119 @@ export async function transferFractionalTokens(tokenAddress: string, to: string,
       txHash: receipt.hash ?? receipt.transactionHash
     };
   } catch (error: any) {
-    console.error("Error transferring fractional tokens:", error);
-    throw new Error(error.message || "Failed to transfer fractional tokens");
+    const errorMessage = error.reason || error.message || "Failed to transfer fractional tokens";
+    throw new Error(errorMessage);
+  }
+}
+
+export async function getTokensInMarketplace(tokenId: number): Promise<number> {
+  try {
+    const factory = await getFactoryContract();
+    const tokenAddress = await factory.propertyToFractionToken(tokenId);
+    if (!tokenAddress || tokenAddress === "0x0000000000000000000000000000000000000000") {
+      return 0;
+    }
+    
+    const marketplace = await getMarketplaceContract();
+    const marketplaceAddress = await marketplace.getAddress();
+    const ftContract = await getFractionalTokenContract(tokenAddress);
+    const balance = await ftContract.balanceOf(marketplaceAddress);
+    return Number(balance);
+  } catch {
+    return 0;
+  }
+}
+
+export async function getAllTokenHolders(tokenId: number): Promise<Array<{ address: string; balance: number }>> {
+  try {
+    const factory = await getFactoryContract();
+    const tokenAddress = await factory.propertyToFractionToken(tokenId);
+    if (!tokenAddress || tokenAddress === "0x0000000000000000000000000000000000000000") {
+      return [];
+    }
+    
+    const ftContract = await getFractionalTokenContract(tokenAddress);
+    const totalSupply = Number(await ftContract.totalSupply());
+    
+    if (totalSupply === 0) return [];
+    
+    const holders: Array<{ address: string; balance: number }> = [];
+    const checkedAddresses = new Set<string>();
+    
+    const filter = ftContract.filters.Transfer(null, null);
+    const events = await ftContract.queryFilter(filter);
+    
+    for (const event of events) {
+      if ('args' in event && event.args) {
+        const args = event.args as any;
+        const to = args.to?.toLowerCase();
+        const from = args.from?.toLowerCase();
+        
+        if (to && to !== "0x0000000000000000000000000000000000000000" && !checkedAddresses.has(to)) {
+          checkedAddresses.add(to);
+          try {
+            const balance = Number(await ftContract.balanceOf(to));
+            if (balance > 0) {
+              holders.push({ address: to, balance });
+            }
+          } catch {
+            // Skip if we can't get balance
+          }
+        }
+        
+        if (from && from !== "0x0000000000000000000000000000000000000000" && !checkedAddresses.has(from)) {
+          checkedAddresses.add(from);
+          try {
+            const balance = Number(await ftContract.balanceOf(from));
+            if (balance > 0) {
+              holders.push({ address: from, balance });
+            }
+          } catch {
+            // Skip if we can't get balance
+          }
+        }
+      }
+    }
+    
+    return holders.filter(h => h.balance > 0);
+  } catch {
+    return [];
+  }
+}
+
+export async function getActiveListingsForToken(tokenId: number): Promise<number[]> {
+  try {
+    const marketplace = await getMarketplaceContract();
+    const nextListingId = await marketplace.nextListingId();
+    const nextIdNum = Number(nextListingId);
+    
+    if (nextIdNum <= 1) {
+      return [];
+    }
+    
+    const activeListings: number[] = [];
+    const checkPromises: Promise<void>[] = [];
+    
+    for (let i = 1; i < nextIdNum && i < 1000; i++) {
+      checkPromises.push(
+        (async () => {
+          try {
+            const listing = await marketplace.getListing(i);
+            if (listing.isActive && Number(listing.tokenId) === tokenId) {
+              activeListings.push(i);
+            }
+          } catch {
+            // Listing doesn't exist or other error, skip
+          }
+        })()
+      );
+    }
+    
+    await Promise.all(checkPromises);
+    return activeListings.sort((a, b) => a - b);
+  } catch (error) {
+    console.error("Error getting active listings:", error);
+    return [];
   }
 }
 
@@ -377,6 +463,85 @@ export async function defractionalizeProperty(nftId: number) {
   try {
     const factory = await getFactoryContract();
     const PROPERTY_NFT_ADDRESS = import.meta.env.VITE_PROPERTY_NFT_ADDRESS as string;
+    const signer = await getSigner();
+    const userAddress = await signer.getAddress();
+    
+    const isFractionalized = await factory.isPropertyFractionalized(nftId);
+    if (!isFractionalized) {
+      throw new Error("Property is not fractionalized");
+    }
+    
+    const tokenAddress = await factory.propertyToFractionToken(nftId);
+    if (tokenAddress === "0x0000000000000000000000000000000000000000") {
+      throw new Error("Property is not fractionalized");
+    }
+    
+    const activeListings = await getActiveListingsForToken(nftId);
+    if (activeListings.length > 0) {
+      throw new Error(`Cannot defractionalize: There are ${activeListings.length} active marketplace listing(s) for this property. Please cancel them first.`);
+    }
+    
+    const [userBalanceFromFactory, totalSupply, hasFull, userBalanceFromToken, tokensInMarketplace, allHolders] = await Promise.all([
+      factory.getFractionBalance(nftId, userAddress),
+      factory.propertyToTotalSupply(nftId),
+      factory.hasFullOwnership(nftId, userAddress),
+      (async () => {
+        try {
+          const ftContract = await getFractionalTokenContract(tokenAddress);
+          const balance = await ftContract.balanceOf(userAddress);
+          return Number(balance);
+        } catch {
+          return 0;
+        }
+      })(),
+      getTokensInMarketplace(nftId),
+      getAllTokenHolders(nftId)
+    ]);
+    
+    const totalSupplyNum = Number(totalSupply);
+    const userBalanceFactoryNum = Number(userBalanceFromFactory);
+    const userBalanceTokenNum = Number(userBalanceFromToken);
+    
+    
+    if (totalSupplyNum === 0) {
+      throw new Error("Invalid total supply. Property may not be properly fractionalized.");
+    }
+    
+    const actualUserBalance = Math.max(userBalanceFactoryNum, userBalanceTokenNum);
+    
+    if (actualUserBalance === 0) {
+      throw new Error("You don't own any fractional tokens of this property.");
+    }
+    
+    if (tokensInMarketplace > 0) {
+      throw new Error(`Cannot defractionalize: ${tokensInMarketplace.toLocaleString()} tokens are currently in the marketplace contract. Please cancel all active listings first.`);
+    }
+    
+    const totalInOtherAddresses = allHolders
+      .filter(h => h.address.toLowerCase() !== userAddress.toLowerCase())
+      .reduce((sum, h) => sum + h.balance, 0);
+    
+    if (totalInOtherAddresses > 0) {
+      const otherHolders = allHolders
+        .filter(h => h.address.toLowerCase() !== userAddress.toLowerCase() && h.balance > 0)
+        .map(h => `${h.address.substring(0, 10)}... (${h.balance.toLocaleString()} tokens)`)
+        .join(", ");
+      throw new Error(`Cannot defractionalize: ${totalInOtherAddresses.toLocaleString()} tokens are held by other addresses: ${otherHolders}. You must own all tokens to defractionalize.`);
+    }
+    
+    if (actualUserBalance !== totalSupplyNum) {
+      const percentage = (actualUserBalance / totalSupplyNum) * 100;
+      const missing = totalSupplyNum - actualUserBalance;
+      throw new Error(`You must own 100% of the fractional tokens to defractionalize. You currently own ${actualUserBalance.toLocaleString()}/${totalSupplyNum.toLocaleString()} tokens (${percentage.toFixed(2)}%). Missing ${missing.toLocaleString()} tokens.`);
+    }
+    
+    if (!hasFull) {
+      const holdersInfo = allHolders.length > 0 
+        ? ` Token holders: ${allHolders.map(h => `${h.address.substring(0, 10)}... (${h.balance})`).join(", ")}`
+        : "";
+      throw new Error(`Ownership verification failed. You own ${actualUserBalance.toLocaleString()}/${totalSupplyNum.toLocaleString()} tokens but contract's hasFullOwnership returned false.${holdersInfo} This may indicate tokens are in escrow, marketplace, or other contracts.`);
+    }
+    
     const tx = await factory.defractionalizeProperty(nftId, PROPERTY_NFT_ADDRESS);
     const receipt = await tx.wait();
     return {
@@ -384,7 +549,27 @@ export async function defractionalizeProperty(nftId: number) {
       txHash: receipt.hash ?? receipt.transactionHash
     };
   } catch (error: any) {
-    console.error("Error defractionalizing property:", error);
-    throw new Error(error.message || "Failed to defractionalize property");
+    if (error.data && typeof error.data === 'string' && error.data.includes('fb8f41b2')) {
+      const value1Hex = error.data.slice(74, 138);
+      const value2Hex = error.data.slice(138, 202);
+      try {
+        const value1 = BigInt('0x' + value1Hex);
+        const value2 = BigInt('0x' + value2Hex);
+        if (value1 < value2) {
+          const percentage = (Number(value1) / Number(value2) * 100).toFixed(2);
+          throw new Error(`You must own 100% of the fractional tokens to defractionalize. You currently own ${value1.toString()}/${value2.toString()} tokens (${percentage}%).`);
+        }
+      } catch {}
+    }
+    
+    if (error.reason && error.reason !== "execution reverted") {
+      throw new Error(error.reason);
+    }
+    
+    if (error.message && !error.message.includes("execution reverted")) {
+      throw error;
+    }
+    
+    throw new Error("Failed to defractionalize property. Please ensure you own 100% of the fractional tokens and there are no active listings.");
   }
 }

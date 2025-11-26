@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
+import { ethers } from "ethers";
 import { useToast } from "../../../contexts/ToastContext";
 import { useLoader } from "../../../contexts/LoaderContext";
 import { useWallet } from "../../../contexts/WalletContext";
@@ -99,9 +100,24 @@ const TransferFractionalTokensPopup: React.FC<TransferFractionalTokensPopupProps
       return;
     }
 
+    if (!ethers.isAddress(recipientAddress)) {
+      showToast("Please enter a valid Ethereum address", "error");
+      return;
+    }
+
+    if (recipientAddress.toLowerCase() === account?.toLowerCase()) {
+      showToast("Cannot transfer tokens to yourself", "error");
+      return;
+    }
+
     const amountNum = Number(amount);
-    if (amountNum <= 0 || amountNum > userBalance) {
-      showToast(`Amount must be between 1 and ${userBalance}`, "error");
+    if (isNaN(amountNum) || amountNum <= 0 || !Number.isInteger(amountNum)) {
+      showToast("Amount must be a positive whole number", "error");
+      return;
+    }
+
+    if (amountNum > userBalance) {
+      showToast(`Amount must not exceed your balance of ${userBalance} tokens`, "error");
       return;
     }
 
@@ -131,26 +147,14 @@ const TransferFractionalTokensPopup: React.FC<TransferFractionalTokensPopupProps
           status: "completed"
         });
 
-        await new Promise(resolve => setTimeout(resolve, 3000));
-
         try {
-          const { addTransactionToDeed } = await import("../../../api/api");
+          await new Promise(resolve => setTimeout(resolve, 3000));
           const updatedOwners = await calculateOwnershipFromEvents(tokenId, totalSupply);
-          await updateDeedOwners(deedId, updatedOwners);
-          
-          for (const owner of updatedOwners) {
-            if (owner.share > 0) {
-              await addTransactionToDeed(
-                deedId,
-                account!,
-                owner.address,
-                0,
-                owner.share
-              );
-            }
+          if (updatedOwners.length > 0) {
+            await updateDeedOwners(deedId, updatedOwners);
           }
         } catch (updateError) {
-          console.error("Failed to update deed owners:", updateError);
+          console.error("Failed to update deed owners after transfer:", updateError);
         }
 
         showToast("Fractional tokens transferred successfully! Ownership updated.", "success");

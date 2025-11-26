@@ -20,40 +20,67 @@ const BlockchainOwners = ({ deed }: BlockchainOwnersProps) => {
   const [offChainOwners, setOffChainOwners] = useState<OwnerData[] | null>(null);
 
   useEffect(() => {
-    const fetchOnChainData = async () => {
+    const fetchData = async () => {
       if (!deed.tokenId) {
         setOnChainOwners(null);
-        return;
-      }
-
-      try {
-        console.log(`[ON-CHAIN] BlockchainOwners: Fetching ownership from events for tokenId ${deed.tokenId}...`);
-        const owners = await calculateOwnershipFromEvents(Number(deed.tokenId));
-        console.log(`[ON-CHAIN] BlockchainOwners: Successfully fetched on-chain owners:`, owners);
-        setOnChainOwners(owners);
-      } catch (error) {
-        console.error("[ON-CHAIN] BlockchainOwners: Error fetching on-chain owners from events:", error);
-        setOnChainOwners(null);
-      }
-    };
-
-    const fetchOffChainData = async () => {
-      if (!deed._id) {
-        if (deed.owners && deed.owners.length > 0) {
-          setOffChainOwners(deed.owners.map(o => ({
-            address: o.address.toLowerCase(),
-            share: o.share
-          })));
-        } else {
-          setOffChainOwners([]);
+        if (!deed._id) {
+          if (deed.owners && deed.owners.length > 0) {
+            setOffChainOwners(deed.owners.map(o => ({
+              address: o.address.toLowerCase(),
+              share: o.share
+            })));
+          } else {
+            setOffChainOwners([]);
+          }
         }
         return;
       }
 
-      try {
-        console.log(`[OFF-CHAIN] BlockchainOwners: Fetching transactions for deedId ${deed._id}...`);
-        const transactions = await getTransactionsByDeedId(deed._id);
-        console.log(`[OFF-CHAIN] BlockchainOwners: Fetched ${transactions.length} transactions:`, transactions);
+      // Fetch on-chain and off-chain data simultaneously
+      const [onChainResult, offChainResult] = await Promise.allSettled([
+        (async () => {
+          console.log(`[ON-CHAIN] BlockchainOwners: Fetching ownership from events for tokenId ${deed.tokenId}...`);
+          const owners = await calculateOwnershipFromEvents(Number(deed.tokenId));
+          console.log(`[ON-CHAIN] BlockchainOwners: Successfully fetched on-chain owners:`, owners);
+          return owners;
+        })(),
+        (async () => {
+          if (!deed._id) {
+            if (deed.owners && deed.owners.length > 0) {
+              return deed.owners.map(o => ({
+                address: o.address.toLowerCase(),
+                share: o.share
+              }));
+            }
+            return [];
+          }
+          console.log(`[OFF-CHAIN] BlockchainOwners: Fetching transactions for deedId ${deed._id}...`);
+          const transactions = await getTransactionsByDeedId(deed._id);
+          console.log(`[OFF-CHAIN] BlockchainOwners: Fetched ${transactions.length} transactions:`, transactions);
+          return transactions;
+        })()
+      ]);
+
+      // Process on-chain result
+      if (onChainResult.status === 'fulfilled') {
+        setOnChainOwners(onChainResult.value);
+      } else {
+        console.error("[ON-CHAIN] BlockchainOwners: Error fetching on-chain owners from events:", onChainResult.reason);
+        setOnChainOwners(null);
+      }
+
+      // Process off-chain result
+      if (offChainResult.status === 'fulfilled') {
+        const result = offChainResult.value;
+        
+        // If result is already an array of owners (from deed.owners fallback)
+        if (Array.isArray(result) && result.length > 0 && 'address' in result[0] && 'share' in result[0]) {
+          setOffChainOwners(result);
+          return;
+        }
+
+        // Otherwise, process transactions
+        const transactions = result as any[];
         
         const ownersMap = new Map<string, number>();
         let hasInit = false;
@@ -66,26 +93,43 @@ const BlockchainOwners = ({ deed }: BlockchainOwnersProps) => {
         
         for (const tx of sortedTxs) {
           if (tx.status === "completed") {
-            if (tx.type === "init" && tx.to) {
+            if ((tx.type === "init" || tx.type === "defractionalize") && tx.to) {
               const to = tx.to.toLowerCase();
+              ownersMap.clear();
               ownersMap.set(to, 100);
               hasInit = true;
-              console.log(`[OFF-CHAIN] BlockchainOwners: Init transaction - setting ${to} to 100%`);
-            } else if (tx.to && tx.share && tx.share > 0) {
+              console.log(`[OFF-CHAIN] BlockchainOwners: ${tx.type === "defractionalize" ? "Defractionalization" : "Init"} transaction - setting ${to} to 100%`);
+            } else if (tx.to && tx.share && tx.share > 0 && tx.type !== "open_market") {
+              // Skip "open_market" - it's just a listing, not an ownership transfer
               const to = tx.to.toLowerCase();
               const from = tx.from ? tx.from.toLowerCase() : null;
               
-              if (from && from !== "0x0000000000000000000000000000000000000000") {
-                const fromShare = ownersMap.get(from) || 0;
-                const newFromShare = Math.max(0, fromShare - tx.share);
-                ownersMap.set(from, newFromShare);
-                console.log(`[OFF-CHAIN] BlockchainOwners: Transfer ${tx.share}% from ${from} (new balance: ${newFromShare}%)`);
-              }
+              // Check if this is a full ownership transfer
+              const isFullOwnershipTransfer = tx.share >= 99.9 || 
+                tx.type === "direct_transfer" || 
+                tx.type === "gift" || 
+                tx.type === "escrow_sale" ||
+                (tx.type === "sale_transfer" && tx.share >= 99.9) ||
+                (tx.type === "escrow" && tx.share >= 99.9);
               
-              const currentShare = ownersMap.get(to) || 0;
-              const newShare = currentShare + tx.share;
-              ownersMap.set(to, newShare);
-              console.log(`[OFF-CHAIN] BlockchainOwners: Transfer ${tx.share}% to ${to} (new balance: ${newShare}%)`);
+              if (isFullOwnershipTransfer) {
+                ownersMap.clear();
+                ownersMap.set(to, 100);
+                console.log(`[OFF-CHAIN] BlockchainOwners: Full ownership transfer to ${to} (100%)`);
+              } else {
+                // Partial/fractional transfer
+                if (from && from !== "0x0000000000000000000000000000000000000000") {
+                  const fromShare = ownersMap.get(from) || 0;
+                  const newFromShare = Math.max(0, fromShare - tx.share);
+                  ownersMap.set(from, newFromShare);
+                  console.log(`[OFF-CHAIN] BlockchainOwners: Transfer ${tx.share}% from ${from} (new balance: ${newFromShare}%)`);
+                }
+                
+                const currentShare = ownersMap.get(to) || 0;
+                const newShare = currentShare + tx.share;
+                ownersMap.set(to, newShare);
+                console.log(`[OFF-CHAIN] BlockchainOwners: Transfer ${tx.share}% to ${to} (new balance: ${newShare}%)`);
+              }
             }
           }
         }
@@ -117,8 +161,8 @@ const BlockchainOwners = ({ deed }: BlockchainOwnersProps) => {
           console.log(`[OFF-CHAIN] BlockchainOwners: No owners found, setting empty array`);
           setOffChainOwners([]);
         }
-      } catch (error) {
-        console.error("[OFF-CHAIN] BlockchainOwners: Error calculating off-chain owners from transactions:", error);
+      } else {
+        console.error("[OFF-CHAIN] BlockchainOwners: Error fetching off-chain data:", offChainResult.reason);
         if (deed.owners && deed.owners.length > 0) {
           const fallbackOwners = deed.owners.map(o => ({
             address: o.address.toLowerCase(),
@@ -132,8 +176,7 @@ const BlockchainOwners = ({ deed }: BlockchainOwnersProps) => {
       }
     };
 
-    fetchOnChainData();
-    fetchOffChainData();
+    fetchData();
   }, [deed.tokenId, deed._id, deed.owners]);
 
   const compareOwners = (onChain: OwnerData[], offChain: OwnerData[]) => {

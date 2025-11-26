@@ -1,12 +1,14 @@
 import { type FC, useState, useEffect } from "react";
+import { ethers } from "ethers";
 import { createTransaction, getUsers, updateFullOwnerAddress, updateDeedOwners } from "../../../api/api";
 import type { User } from "../../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle } from "react-icons/io5";
 import { FaGift, FaExclamationTriangle } from "react-icons/fa";
-import { transferNFT } from "../../../web3.0/contractService";
+import { transferNFT, isPropertyFractionalized } from "../../../web3.0/contractService";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
 import { useWallet } from "../../../contexts/WalletContext";
 import { getRentDetails } from "../../../web3.0/rentIntegration";
+import { useToast } from "../../../contexts/ToastContext";
 
 interface DirectTransferPopupProps {
   isOpen: boolean;
@@ -27,7 +29,9 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
   const [selectedWallet, setSelectedWallet] = useState("");
   const [loading, setLoading] = useState(false);
   const [rentInfo, setRentInfo] = useState<any>(null);
+  const [isFractionalized, setIsFractionalized] = useState(false);
   const { account } = useWallet();
+  const { showToast } = useToast();
 
   const checkRentStatus = async () => {
     if (!tokenId) return;
@@ -44,6 +48,19 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
   };
 
   useEffect(() => {
+    const checkFractionalization = async () => {
+      if (!tokenId) return;
+      try {
+        const fractionalized = await isPropertyFractionalized(tokenId);
+        setIsFractionalized(fractionalized);
+        if (fractionalized) {
+          showToast("Direct transfer is not available for fractionalized properties. Use fractional token transfer instead.", "error");
+        }
+      } catch (error) {
+        console.error("Error checking fractionalization:", error);
+      }
+    };
+
     const fetchUsers = async () => {
       try {
         const res = await getUsers();
@@ -63,10 +80,11 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
       }
     };
     if (isOpen) {
+      checkFractionalization();
       fetchUsers();
       checkRentStatus();
     }
-  }, [isOpen, account, tokenId]);
+  }, [isOpen, account, tokenId, showToast]);
 
   useEffect(() => {
     const val = search.trim().toLowerCase();
@@ -82,7 +100,25 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
   }, [search, users]);
 
   const handleDirectTransfer = async () => {
-    if (!selectedWallet) return alert("Please select a recipient!");
+    if (isFractionalized) {
+      showToast("Direct transfer is not available for fractionalized properties. Please defractionalize first or use fractional token transfer.", "error");
+      return;
+    }
+
+    if (!selectedWallet) {
+      showToast("Please select a recipient", "error");
+      return;
+    }
+
+    if (!ethers.isAddress(selectedWallet)) {
+      showToast("Please enter a valid Ethereum address", "error");
+      return;
+    }
+
+    if (selectedWallet.toLowerCase() === account?.toLowerCase()) {
+      showToast("Cannot transfer property to yourself", "error");
+      return;
+    }
 
     let confirmMessage = `Transfer property #${tokenId} to:\n${selectedWallet}\n\nThis is a direct transfer with no payment.`;
     
@@ -124,12 +160,12 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
           console.error("Failed to update deed owners:", updateError);
         }
 
-        alert(`✅ Property transferred successfully!\n\nTransaction: ${res.txHash}`);
+        showToast(`Property transferred successfully! Transaction: ${res.txHash}`, "success");
         onClose();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Transfer failed:", error);
-      alert("❌ Transfer failed. Please try again.");
+      showToast(error.message || "Transfer failed. Please try again.", "error");
     } finally {
       setLoading(false);
     }
@@ -165,12 +201,29 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
         </div>
 
         <div className="p-6 space-y-5">
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              ℹ️ This is a free transfer with no payment required. Perfect for
-              gifts or transfers between your own wallets.
-            </p>
-          </div>
+          {isFractionalized ? (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <FaExclamationTriangle className="text-red-600 mt-0.5 flex-shrink-0" size={20} />
+                <div className="text-sm text-red-800">
+                  <p className="font-semibold mb-1">Direct Transfer Not Available</p>
+                  <p className="mb-2">This property is fractionalized. Direct transfer of the full NFT is not possible.</p>
+                  <p className="text-xs">To transfer ownership, you can:</p>
+                  <ul className="text-xs list-disc list-inside mt-1 space-y-1">
+                    <li>Transfer fractional tokens to the recipient</li>
+                    <li>Defractionalize the property first (requires 100% ownership)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                ℹ️ This is a free transfer with no payment required. Perfect for
+                gifts or transfers between your own wallets.
+              </p>
+            </div>
+          )}
 
           {rentInfo && rentInfo.rentAmount !== "0.0" && (
             <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -270,14 +323,14 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
 
           <button
             onClick={handleDirectTransfer}
-            disabled={loading || !selectedWallet}
+            disabled={loading || !selectedWallet || isFractionalized}
             className={`w-full py-3 rounded-xl font-semibold transition-all ${
-              loading || !selectedWallet
+              loading || !selectedWallet || isFractionalized
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                 : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg"
             }`}
           >
-            {loading ? "Processing Transfer..." : "Transfer Ownership"}
+            {loading ? "Processing Transfer..." : isFractionalized ? "Not Available (Fractionalized)" : "Transfer Ownership"}
           </button>
         </div>
 

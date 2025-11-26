@@ -21,7 +21,6 @@ export const API = {
   certificate: isVercelTest ? import.meta.env.VITE_CERTIFICATE_SERVICE_URL : import.meta.env.VITE_CERTIFICATE_SERVICE_URL,
 };
 
-console.log("isVercelTest:", isVercelTest);
 
 function withVercelHeaders(config: any) {
   if (isVercelTest && serviceMapPassword) {
@@ -87,7 +86,6 @@ export const uploadKYC = async (
     if (nicFrontSide) formData.append("nicFrontSide", nicFrontSide);
     if (nicBackSide) formData.append("nicBackSide", nicBackSide);
     if (userFrontImage) formData.append("userFrontImage", userFrontImage);
-    console.log("form data: ", formData.get("nicFrontSide"));
 
     const token = getItem("local", "token") || "";
     
@@ -175,7 +173,7 @@ export const uploadProfilePicture = async (file: File): Promise<{ dp: string; us
 };
 
 // Deed related api calls
-const deedApi = axios.create({
+export const deedApi = axios.create({
   baseURL: API.deed,
   headers: {
     "Content-Type": "application/json",
@@ -322,7 +320,7 @@ export const getPlanByPlanNumber = async (planId: string): Promise<any> => {
 
 // Transaction related api calls
 
-const tnxApi = axios.create({
+export const tnxApi = axios.create({
   baseURL: API.tnx,
   headers: {
     "Content-Type": "application/json",
@@ -437,8 +435,33 @@ marketplaceApi.interceptors.request.use((config) => {
 
 // Get all marketplaces
 export const getMarketPlaces = async (): Promise<Marketplace[]> => {
-  const res: AxiosResponse<Marketplace[]> = await marketplaceApi.get("/");
-  return res.data;
+  const res: AxiosResponse<Marketplace[] | Marketplace | { data?: Marketplace[] | Marketplace }> = await marketplaceApi.get("/");
+  
+  if (Array.isArray(res.data)) {
+    return res.data;
+  }
+  
+  if (typeof res.data === "object" && res.data !== null) {
+    if ("data" in res.data) {
+      const data = (res.data as { data?: Marketplace[] | Marketplace }).data;
+      if (Array.isArray(data)) {
+        return data;
+      }
+      if (data && typeof data === "object") {
+        return [data as Marketplace];
+      }
+    }
+    
+    const values = Object.values(res.data);
+    if (values.length > 0 && Array.isArray(values[0])) {
+      return values.flat() as Marketplace[];
+    }
+    if (values.length > 0 && typeof values[0] === "object") {
+      return values as Marketplace[];
+    }
+  }
+  
+  return [];
 };
 
 // Get marketplace by ID
