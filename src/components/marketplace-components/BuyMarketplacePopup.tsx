@@ -7,7 +7,7 @@ import { useToast } from "../../contexts/ToastContext";
 import { useLoader } from "../../contexts/LoaderContext";
 import { useWallet } from "../../contexts/WalletContext";
 import { buyNFT, buyFractionalTokens, getListingDetails } from "../../web3.0/marketService";
-import { createTransaction, updateMarketPlace, updateFullOwnerAddress, updateDeedOwners, addTransactionToDeed } from "../../api/api";
+import { createTransaction, updateMarketPlace, updateFullOwnerAddress, updateDeedOwners } from "../../api/api";
 import { getNFTOwner, getTotalSupply } from "../../web3.0/contractService";
 import { calculateOwnershipFromEvents } from "../../web3.0/eventService";
 import { useAlert } from "../../contexts/AlertContext";
@@ -51,10 +51,8 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
         
         if (marketplace.listingTypeOnChain) {
           setListingType(marketplace.listingTypeOnChain);
-          console.log("Using stored listing type:", marketplace.listingTypeOnChain);
         } else if (marketplace.share === 100) {
           setListingType("NFT");
-          console.log("Assuming NFT type based on share=100");
         } else {
           const details = await getListingDetails(Number(marketplace.marketPlaceId));
           setListingType(details.listingType as "NFT" | "FRACTIONAL");
@@ -63,11 +61,8 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
             price: details.price,
             priceRaw: details.priceRaw
           });
-          console.log("Fetched listing type from blockchain:", details.listingType);
-          console.log("Listing details:", details);
         }
       } catch (error) {
-        console.error("Failed to determine listing type:", error);
         try {
           const details = await getListingDetails(Number(marketplace.marketPlaceId));
           setListingType(details.listingType as "NFT" | "FRACTIONAL");
@@ -77,8 +72,8 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
             priceRaw: details.priceRaw
           });
         } catch (e) {
-          console.error("All methods failed:", e);
-          showToast("Failed to load listing details", "error");
+          console.error("Failed to load listing details:", e);
+          showToast("Failed to load listing details. Please try again.", "error");
         }
       } finally {
         setLoading(false);
@@ -125,12 +120,6 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
       showLoader();
       
       const priceInEth = marketplace.amount.toString();
-      console.log("Attempting purchase:", {
-        listingId: marketplace.marketPlaceId,
-        listingType,
-        share: marketplace.share,
-        priceInEth
-      });
 
       let result;
       let sharePercentage = marketplace.share;
@@ -138,7 +127,6 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
       let transactionTotalPrice = priceInEth;
 
       if (listingType === "NFT") {
-        console.log("Buying full NFT...");
         result = await buyNFT(Number(marketplace.marketPlaceId), priceInEth);
       } else {
         if (!listingDetails) {
@@ -167,17 +155,6 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
         const totalPriceWei = pricePerTokenWei * BigInt(tokenAmount);
         transactionTotalPrice = ethers.formatEther(totalPriceWei.toString());
         
-        console.log("Buying fractional tokens:", {
-          listingId: marketplace.marketPlaceId,
-          tokenAmount,
-          pricePerTokenInWei,
-          pricePerTokenEth: currentListingDetails.price,
-          totalPriceWei: totalPriceWei.toString(),
-          totalPriceEth: transactionTotalPrice,
-          totalSupply,
-          sharePercentage
-        });
-        
         result = await buyFractionalTokens(
           Number(marketplace.marketPlaceId),
           tokenAmount,
@@ -201,7 +178,9 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
               : `Purchased ${tokenAmount > 0 ? tokenAmount.toLocaleString() : marketplace.share} FT tokens (${sharePercentage.toFixed(4)}%) from marketplace`,
             status: "completed"
           });
-        } catch {}
+        } catch (txError) {
+          console.error("Failed to create transaction record:", txError);
+        }
 
         if (marketplace._id) {
           await updateMarketPlace(marketplace._id, {
@@ -227,16 +206,24 @@ const BuyMarketplacePopup: React.FC<BuyMarketplacePopupProps> = ({
               });
             } else {
               const owners = await calculateOwnershipFromEvents(Number(marketplace.tokenId));
-              await updateDeedOwners(deed._id, owners);
+              if (owners.length > 0) {
+                await updateDeedOwners(deed._id, owners);
+              }
             }
-          } catch {}
+          } catch (updateError) {
+            console.error("Failed to update deed owners after NFT purchase:", updateError);
+          }
         } else {
           try {
             await new Promise(resolve => setTimeout(resolve, 3000));
             const totalSupply = await getTotalSupply(Number(marketplace.tokenId));
             const owners = await calculateOwnershipFromEvents(Number(marketplace.tokenId), totalSupply);
-            await updateDeedOwners(deed._id, owners);
-          } catch {}
+            if (owners.length > 0) {
+              await updateDeedOwners(deed._id, owners);
+            }
+          } catch (updateError) {
+            console.error("Failed to update deed owners after fractional token purchase:", updateError);
+          }
         }
 
         showToast("Purchase successful! Your ownership will be updated shortly.", "success");

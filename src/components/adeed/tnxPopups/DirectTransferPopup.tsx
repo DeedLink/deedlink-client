@@ -1,4 +1,5 @@
 import { type FC, useState, useEffect } from "react";
+import { ethers } from "ethers";
 import { createTransaction, getUsers, updateFullOwnerAddress, updateDeedOwners } from "../../../api/api";
 import type { User } from "../../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle } from "react-icons/io5";
@@ -104,7 +105,20 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
       return;
     }
 
-    if (!selectedWallet) return alert("Please select a recipient!");
+    if (!selectedWallet) {
+      showToast("Please select a recipient", "error");
+      return;
+    }
+
+    if (!ethers.isAddress(selectedWallet)) {
+      showToast("Please enter a valid Ethereum address", "error");
+      return;
+    }
+
+    if (selectedWallet.toLowerCase() === account?.toLowerCase()) {
+      showToast("Cannot transfer property to yourself", "error");
+      return;
+    }
 
     let confirmMessage = `Transfer property #${tokenId} to:\n${selectedWallet}\n\nThis is a direct transfer with no payment.`;
     
@@ -146,12 +160,12 @@ export const DirectTransferPopup: FC<DirectTransferPopupProps> = ({
           console.error("Failed to update deed owners:", updateError);
         }
 
-        alert(`✅ Property transferred successfully!\n\nTransaction: ${res.txHash}`);
+        showToast(`Property transferred successfully! Transaction: ${res.txHash}`, "success");
         onClose();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Transfer failed:", error);
-      alert("❌ Transfer failed. Please try again.");
+      showToast(error.message || "Transfer failed. Please try again.", "error");
     } finally {
       setLoading(false);
     }

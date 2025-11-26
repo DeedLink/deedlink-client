@@ -135,7 +135,6 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
       let blockchainListingType: "NFT" | "FRACTIONAL";
 
       if (listingType === "FULL_NFT") {
-        console.log("Creating full NFT listing...");
         result = await listNFTForSale(
           nftAddress,
           tokenId,
@@ -190,7 +189,9 @@ const CreateListingPopup: React.FC<CreateListingPopupProps> = ({
               : `Listed ${Number(ftTokenAmount).toLocaleString()} FT tokens (${finalShare.toFixed(4)}%) for sale at ${amountNum} ETH per token`,
             status: "completed"
           });
-        } catch {}
+        } catch (txError) {
+          console.error("Failed to create transaction record:", txError);
+        }
 
         showToast("Listing created successfully!", "success");
         onSuccess();

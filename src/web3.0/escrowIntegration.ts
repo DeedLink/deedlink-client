@@ -72,14 +72,8 @@ export async function completeFullOwnershipTransfer(
 
     const breakdown = calculatePaymentBreakdown(totalPriceInEth);
     const sellerPriceInWei = ethers.parseEther(breakdown.sellerAmount);
-    
-    console.log("Creating escrow with payment breakdown:");
-    console.log(`  Total: ${breakdown.totalPrice} ETH`);
-    console.log(`  Stamp Fee: ${breakdown.stampFee} ETH → Admin`);
-    console.log(`  Seller Gets: ${breakdown.sellerAmount} ETH`);
 
     // Step 1: Send stamp fee to admin
-    console.log("\n1️⃣ Sending stamp fee to admin...");
     const signer = await getSigner();
     const stampFeeTx = await signer.sendTransaction({
       to: ADMIN_WALLET,
@@ -91,11 +85,9 @@ export async function completeFullOwnershipTransfer(
       throw new Error("Failed to get stamp fee transaction receipt");
     }
     
-    const stampFeeTxHash = stampFeeReceipt.hash ?? stampFeeReceipt.hash;
-    console.log(`✅ Stamp fee sent: ${stampFeeTxHash}`);
+    const stampFeeTxHash = stampFeeReceipt.hash ?? stampFeeReceipt.transactionHash;
 
     // Step 2: Create escrow contract
-    console.log("\n2️⃣ Creating escrow contract...");
     const factory = await getEscrowFactoryContract();
     const createTx = await factory.createNFTEscrow(
       buyerAddress,
@@ -110,8 +102,6 @@ export async function completeFullOwnershipTransfer(
       throw new Error("Failed to get escrow creation receipt");
     }
 
-    console.log(`✅ Escrow creation transaction:`, createReceipt);
-
     // Extract escrow address from event
     let escrowAddress: string | undefined;
     for (const log of createReceipt.logs) {
@@ -121,14 +111,14 @@ export async function completeFullOwnershipTransfer(
           escrowAddress = parsed.args.escrow;
           break;
         }
-      } catch {}
+      } catch (parseError) {
+        // Continue searching for EscrowCreated event
+      }
     }
 
     if (!escrowAddress) {
       throw new Error("Failed to get escrow address from transaction");
     }
-
-    console.log(`✅ Escrow created at: ${escrowAddress}`);
 
     return {
       success: true,
@@ -157,34 +147,24 @@ export async function sellerDepositNFT(
   error?: string;
 }> {
   try {
-    console.log("Seller depositing NFT to escrow...");
-
-    // Step 0: nftOwnershipVerification
     // Verify seller owns the NFT
     const signer = await getSigner();
     const sellerAddress = await signer.getAddress();
     const ownsNFT = await nftOwnershipVerification(tokenId, sellerAddress);
     if (!ownsNFT) {
-      // fetch current owner for diagnostic clarity
       let currentOwner = "unknown";
       try {
         currentOwner = await getNFTOwner(tokenId);
       } catch (e) {
-        console.warn("Failed to fetch current NFT owner for diagnostics:", e);
+        // Continue with error message
       }
-      console.error(`Ownership mismatch: connected=${sellerAddress}, nftOwner=${currentOwner}`);
       throw new Error(`Seller does not own the specified NFT. Current owner: ${currentOwner}`);
-    } else {
-      console.log("✅ Seller owns the NFT");
     }
 
-    // Step 1: Approve NFT to escrow contract
-    console.log("1️⃣ Approving NFT to escrow...");
-    const approveResult = await approveNFT(escrowAddress, tokenId);
-    console.log(`✅ NFT approved: ${approveResult.txHash}`);
+    // Approve NFT to escrow contract
+    await approveNFT(escrowAddress, tokenId);
 
-    // Step 2: Deposit NFT
-    console.log("2️⃣ Depositing NFT to escrow...");
+    // Deposit NFT
     const escrow = await getEscrowContract(escrowAddress);
     const depositTx = await escrow.depositNFTAsset();
     const depositReceipt = await depositTx.wait();
@@ -194,7 +174,6 @@ export async function sellerDepositNFT(
     }
     
     const txHash = depositReceipt.hash ?? depositReceipt.transactionHash;
-    console.log(`✅ NFT deposited: ${txHash}`);
 
     return {
       success: true,
@@ -221,16 +200,10 @@ export async function buyerDepositPayment(
   error?: string;
 }> {
   try {
-    console.log(`Buyer depositing ${amountInEth} ETH to escrow...`);
-
     const escrow = await getEscrowContract(escrowAddress);
     const amountInWei = ethers.parseEther(amountInEth);
-
-    const res = await getEscrowDetails(escrowAddress);
-    console.log(res);
     
     const tx = await escrow.depositPayment({ value: amountInWei });
-    console.log(tx);
     const receipt = await tx.wait();
     
     if (!receipt) {
@@ -238,7 +211,6 @@ export async function buyerDepositPayment(
     }
     
     const txHash = receipt.hash ?? receipt.transactionHash;
-    console.log(`✅ Payment deposited: ${txHash}`);
 
     return {
       success: true,
@@ -264,8 +236,6 @@ export async function finalizeEscrow(
   error?: string;
 }> {
   try {
-    console.log("Finalizing escrow...");
-
     const escrow = await getEscrowContract(escrowAddress);
     
     // Check if both parties deposited
@@ -282,7 +252,6 @@ export async function finalizeEscrow(
     }
     
     const txHash = receipt.hash ?? receipt.transactionHash;
-    console.log(`✅ Escrow finalized: ${txHash}`);
 
     return {
       success: true,
@@ -308,8 +277,6 @@ export async function cancelEscrow(
   error?: string;
 }> {
   try {
-    console.log("Cancelling escrow...");
-
     const escrow = await getEscrowContract(escrowAddress);
     
     const tx = await escrow.cancel();
@@ -320,7 +287,6 @@ export async function cancelEscrow(
     }
     
     const txHash = receipt.hash ?? receipt.transactionHash;
-    console.log(`✅ Escrow cancelled: ${txHash}`);
 
     return {
       success: true,

@@ -30,13 +30,6 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
   const { user } = useLogin();
   const { showAlert } = useAlert();
 
-  useEffect(()=>{
-    const getDetailsAll = async() => {
-        getEscrowDetails(escrowAddress);
-        console.log(details);
-    };
-    getDetailsAll();
-  },[]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -89,7 +82,6 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
     setLoading(true);
     try {
       const result = await buyerDepositPayment(escrowAddress, details.price);
-      console.log(result);
       
       if (result.success) {
         showAlert({
@@ -138,7 +130,6 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
     setLoading(true);
     try {
       const result = await finalizeEscrow(escrowAddress);
-      console.log("Finalization result:", result);
 
       if (result.success) {
         // Refresh status to show finalized state
@@ -147,24 +138,22 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
         
         // Update transaction status in DB
         try {
-          const res = await transactionStatus(
+          await transactionStatus(
             escrowAddress,
             "completed"
           );
-          console.log("Transaction status updated in DB:", res);
         } catch (dbError) {
           console.error("Failed to update transaction status in DB:", dbError);
         }
 
         // Update owner address in DB
         try {
-          const updateOwner = await updateFullOwnerAddress(
+          await updateFullOwnerAddress(
             details.tokenId,
             details.buyer.toLowerCase(),
             user?.name || "",
             user?.nic || ""
           );
-          console.log("Owner address updated in DB:", updateOwner);
 
           // Calculate ownership from events and update off-chain owners array
           try {
@@ -205,9 +194,15 @@ const BuyerEscrowPopup: FC<BuyerEscrowPopupProps> = ({
               if (matchingDeed && matchingDeed._id) {
                 await updateDeedOwners(matchingDeed._id, owners);
               }
-            } catch {}
-          } catch {}
-        } catch {}
+            } catch (updateError) {
+              console.error("Failed to update deed owners after finalization:", updateError);
+            }
+          } catch (ownershipError) {
+            console.error("Failed to calculate ownership after finalization:", ownershipError);
+          }
+        } catch (ownerUpdateError) {
+          console.error("Failed to update owner address after finalization:", ownerUpdateError);
+        }
 
         showAlert({
           type: "success",

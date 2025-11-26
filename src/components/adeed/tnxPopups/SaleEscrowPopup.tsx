@@ -1,4 +1,5 @@
 import { type FC, useState, useEffect } from "react";
+import { ethers } from "ethers";
 import { createTransaction, getUsers, getTransactionsByDeedId } from "../../../api/api";
 import type { User } from "../../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle, IoCashOutline } from "react-icons/io5";
@@ -7,7 +8,6 @@ import { completeFullOwnershipTransfer, sellerDepositNFT, getPaymentBreakdown } 
 import { useWallet } from "../../../contexts/WalletContext";
 import { useQR } from "../../../contexts/QRContext";
 import { useAlert } from "../../../contexts/AlertContext";
-import { Encryting } from "../../../utils/encryption";
 import { isPropertyFractionalized } from "../../../web3.0/contractService";
 import { useToast } from "../../../contexts/ToastContext";
 
@@ -142,6 +142,25 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
       });
       return;
     }
+
+    if (!ethers.isAddress(selectedWallet)) {
+      showAlert({
+        type: "error",
+        title: "Invalid Address",
+        message: "Please enter a valid Ethereum address"
+      });
+      return;
+    }
+
+    if (selectedWallet.toLowerCase() === account?.toLowerCase()) {
+      showAlert({
+        type: "error",
+        title: "Invalid Buyer",
+        message: "Cannot create escrow sale to yourself"
+      });
+      return;
+    }
+
     if (!salePrice || parseFloat(salePrice) <= 0) {
       showAlert({
         type: "warning",
@@ -208,24 +227,22 @@ const SaleEscrowPopup: FC<SaleEscrowPopupProps> = ({
             });
 
             if(result.escrowAddress && breakdown?.sellerAmount){
-              await createTransaction({
-                deedId,
-                from: account as string,
-                to: selectedWallet,
-                amount: parseFloat(salePrice),
-                share: 100,
-                type: "escrow_sale",
-                blockchain_identification: result.escrowAddress,
-                hash: result.stampFeeTxHash,
-                description: `Escrow Sale - ${result.stampFeeTxHash || "no_hash"}`
-              })
-              
-              console.log("Escrow: ",Encryting({
-                deedId: deedId,
-                escrowAddress: result.escrowAddress,
-                seller: account || "",
-                hash: result.stampFeeTxHash,
-              }))
+              try {
+                await createTransaction({
+                  deedId,
+                  from: account as string,
+                  to: selectedWallet,
+                  amount: parseFloat(salePrice),
+                  share: 100,
+                  type: "escrow_sale",
+                  blockchain_identification: result.escrowAddress,
+                  hash: result.stampFeeTxHash,
+                  description: `Escrow Sale - ${result.stampFeeTxHash || "no_hash"}`,
+                  status: "pending"
+                });
+              } catch (txError) {
+                console.error("Failed to create transaction record:", txError);
+              }
             }
           } else {
             throw new Error(result.error || "Failed to create escrow");

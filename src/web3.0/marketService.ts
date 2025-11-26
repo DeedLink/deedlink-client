@@ -22,15 +22,11 @@ export async function listNFTForSale(
   priceInEth: string
 ) {
   try {
-    console.log("Listing NFT for sale:", { nftAddress, tokenId, priceInEth });
-    
     const marketplace = await getMarketplaceContract();
     const priceInWei = ethers.parseEther(priceInEth);
 
-    console.log("Approving marketplace for NFT transfers...");
     await setApprovalForAll(MARKETPLACE_ADDRESS, true);
 
-    console.log("Creating NFT listing...");
     const tx = await marketplace.listNFT(nftAddress, tokenId, priceInWei);
     const receipt = await tx.wait();
 
@@ -42,10 +38,14 @@ export async function listNFTForSale(
           listingId = parsed.args.listingId.toString();
           break;
         }
-      } catch {}
+      } catch (parseError) {
+        // Continue searching for Listed event
+      }
     }
 
-    console.log("NFT listing created successfully:", { listingId, txHash: receipt.hash });
+    if (!listingId) {
+      throw new Error("Failed to extract listing ID from transaction");
+    }
 
     return {
       success: true,
@@ -53,8 +53,8 @@ export async function listNFTForSale(
       txHash: receipt.hash ?? receipt.transactionHash
     };
   } catch (error: any) {
-    console.error("Failed to list NFT:", error);
-    throw new Error(error.message || "Failed to list NFT for sale");
+    const errorMessage = error.reason || error.message || "Failed to list NFT for sale";
+    throw new Error(errorMessage);
   }
 }
 
@@ -116,7 +116,13 @@ export async function listFractionalTokensForSale(
           listingId = parsed.args.listingId.toString();
           break;
         }
-      } catch {}
+      } catch (parseError) {
+        // Continue searching for Listed event
+      }
+    }
+
+    if (!listingId) {
+      throw new Error("Failed to extract listing ID from transaction");
     }
 
     return {
@@ -131,23 +137,24 @@ export async function listFractionalTokensForSale(
 
 export async function buyNFT(listingId: number, priceInEth: string) {
   try {
-    console.log("Buying NFT:", { listingId, priceInEth });
-    
     const marketplace = await getMarketplaceContract();
     const priceInWei = ethers.parseEther(priceInEth);
 
+    const listing = await marketplace.getListing(listingId);
+    if (!listing.isActive) {
+      throw new Error("Listing is no longer active");
+    }
+
     const tx = await marketplace.buyNFT(listingId, { value: priceInWei });
     const receipt = await tx.wait();
-
-    console.log("NFT purchase successful:", receipt.hash);
 
     return {
       success: true,
       txHash: receipt.hash ?? receipt.transactionHash
     };
   } catch (error: any) {
-    console.error("Failed to buy NFT:", error);
-    throw new Error(error.message || "Failed to purchase NFT");
+    const errorMessage = error.reason || error.message || "Failed to purchase NFT";
+    throw new Error(errorMessage);
   }
 }
 
@@ -157,8 +164,6 @@ export async function buyFractionalTokens(
   totalPriceInEth: string
 ) {
   try {
-    console.log("Buying fractional tokens:", { listingId, amount, totalPriceInEth });
-    
     const marketplace = await getMarketplaceContract();
     
     const listing = await marketplace.getListing(listingId);
@@ -176,14 +181,6 @@ export async function buyFractionalTokens(
     const expectedTotalPrice = listedPricePerToken * BigInt(amount);
     const priceInWei = ethers.parseEther(totalPriceInEth);
     
-    console.log("Price validation:", {
-      listedPricePerToken: listedPricePerToken.toString(),
-      amount,
-      expectedTotalPrice: expectedTotalPrice.toString(),
-      providedPrice: priceInWei.toString(),
-      match: expectedTotalPrice === priceInWei
-    });
-    
     if (expectedTotalPrice !== priceInWei) {
       const expectedEth = ethers.formatEther(expectedTotalPrice);
       throw new Error(`Price mismatch. Expected ${expectedEth} ETH but provided ${totalPriceInEth} ETH`);
@@ -194,46 +191,35 @@ export async function buyFractionalTokens(
     });
     const receipt = await tx.wait();
 
-    console.log("Fractional tokens purchase successful:", receipt.hash);
-
     return {
       success: true,
       txHash: receipt.hash ?? receipt.transactionHash
     };
   } catch (error: any) {
-    console.error("Failed to buy fractional tokens:", error);
-    
-    let errorMessage = "Failed to purchase fractional tokens";
-    if (error.reason) {
-      errorMessage = error.reason;
-    } else if (error.message) {
-      errorMessage = error.message;
-    } else if (error.data) {
-      errorMessage = `Transaction failed: ${JSON.stringify(error.data)}`;
-    }
-    
+    const errorMessage = error.reason || error.message || "Failed to purchase fractional tokens";
     throw new Error(errorMessage);
   }
 }
 
 export async function cancelListing(listingId: number) {
   try {
-    console.log("Cancelling listing:", listingId);
-    
     const marketplace = await getMarketplaceContract();
+
+    const listing = await marketplace.getListing(listingId);
+    if (!listing.isActive) {
+      throw new Error("Listing is already inactive or cancelled");
+    }
 
     const tx = await marketplace.cancelListing(listingId);
     const receipt = await tx.wait();
-
-    console.log("Listing cancelled successfully:", receipt.hash);
 
     return {
       success: true,
       txHash: receipt.hash ?? receipt.transactionHash
     };
   } catch (error: any) {
-    console.error("Failed to cancel listing:", error);
-    throw new Error(error.message || "Failed to cancel listing");
+    const errorMessage = error.reason || error.message || "Failed to cancel listing";
+    throw new Error(errorMessage);
   }
 }
 
@@ -242,27 +228,12 @@ export async function getListingDetails(listingId: number) {
     const marketplace = await getMarketplaceContract();
     const listing = await marketplace.getListing(listingId);
 
-    console.log("Raw listing data from contract:", {
-      listingId,
-      seller: listing.seller,
-      nftAddress: listing.nftAddress,
-      tokenId: listing.tokenId.toString(),
-      tokenAddress: listing.tokenAddress,
-      price: listing.price.toString(),
-      priceFormatted: ethers.formatEther(listing.price),
-      amount: listing.amount.toString(),
-      listingType: listing.listingType,
-      listingTypeNumber: Number(listing.listingType),
-      isActive: listing.isActive
-    });
+    if (!listing) {
+      throw new Error("Listing not found");
+    }
 
     const typeNumber = Number(listing.listingType);
     const listingTypeStr = typeNumber === 0 ? "NFT" : "FRACTIONAL";
-
-    console.log("Interpreted listing type:", {
-      raw: typeNumber,
-      interpreted: listingTypeStr
-    });
 
     return {
       seller: listing.seller,
@@ -276,8 +247,8 @@ export async function getListingDetails(listingId: number) {
       isActive: listing.isActive
     };
   } catch (error: any) {
-    console.error("Failed to get listing details:", error);
-    throw new Error(error.message || "Failed to get listing details");
+    const errorMessage = error.reason || error.message || "Failed to get listing details";
+    throw new Error(errorMessage);
   }
 }
 

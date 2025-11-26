@@ -118,6 +118,15 @@ export async function calculateOwnershipFromEvents(
     if (!isFractionalized) {
       const nftEvents = await getNFTTransferEvents(tokenId);
       if (nftEvents.length === 0) {
+        try {
+          const nft = await getPropertyNFTContract();
+          const owner = await nft.ownerOf(tokenId);
+          if (owner && owner !== "0x0000000000000000000000000000000000000000") {
+            return [{ address: owner.toLowerCase(), share: 100 }];
+          }
+        } catch {
+          // If ownerOf fails, return empty
+        }
         return [];
       }
       

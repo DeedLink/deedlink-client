@@ -91,7 +91,9 @@ const FractionalizePopup: React.FC<FractionalizePopupProps> = ({
           if (owners.length > 0) {
             await updateDeedOwners(deedId, owners);
           }
-        } catch {}
+        } catch (updateError) {
+          console.error("Failed to update deed owners after fractionalization:", updateError);
+        }
       }
 
       showToast("Property fractionalized successfully!", "success");

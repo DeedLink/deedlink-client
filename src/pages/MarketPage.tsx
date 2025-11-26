@@ -20,7 +20,13 @@ const MarketPage: React.FC = () => {
     showLoader();
     try {
       const data = await getMarketPlaces();
-      setMarketplaces(Array.isArray(data) ? data : []);
+      const normalized = Array.isArray(data) 
+        ? data 
+        : typeof data === "object" && data !== null
+          ? Object.values(data).flatMap((value) => Array.isArray(value) ? value : [])
+          : [];
+      
+      setMarketplaces(normalized);
     } catch (error) {
       console.error("Failed to fetch marketplaces:", error);
       showAlert({
@@ -54,11 +60,15 @@ const MarketPage: React.FC = () => {
   }).filter(m => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
+    const listingType = m.listingTypeOnChain || (m.share === 100 ? "NFT" : "FRACTIONAL");
     return (
       m.tokenId?.toString().includes(query) ||
       m.marketPlaceId?.toString().includes(query) ||
       m.amount?.toString().includes(query) ||
-      m.share?.toString().includes(query)
+      m.share?.toString().includes(query) ||
+      listingType.toLowerCase().includes(query) ||
+      (listingType === "FRACTIONAL" && "fractional token ft".includes(query)) ||
+      (listingType === "NFT" && "nft full property".includes(query))
     );
   }).sort((a, b) => {
     if (sortBy === "price_asc") return (a.amount || 0) - (b.amount || 0);
@@ -138,7 +148,7 @@ const MarketPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex gap-2 mb-6">
+          <div className="flex flex-wrap gap-2 mb-6">
             {[
               { key: "ALL", label: "All", count: marketplaces.length },
               { key: "AVAILABLE", label: "Available", count: availableCount },
@@ -149,13 +159,21 @@ const MarketPage: React.FC = () => {
                 onClick={() => setFilter(f.key as any)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                   filter === f.key 
-                    ? "bg-blue-600 text-white" 
+                    ? "bg-blue-600 text-white shadow-md" 
                     : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                 }`}
               >
                 {f.label} ({f.count})
               </button>
             ))}
+            <div className="ml-auto flex gap-2">
+              <span className="px-3 py-2 text-xs font-semibold text-gray-600 bg-gray-100 rounded-lg">
+                NFT: {marketplaces.filter(m => (m.listingTypeOnChain || (m.share === 100 ? "NFT" : "FRACTIONAL")) === "NFT").length}
+              </span>
+              <span className="px-3 py-2 text-xs font-semibold text-indigo-600 bg-indigo-100 rounded-lg">
+                FT: {marketplaces.filter(m => (m.listingTypeOnChain || (m.share === 100 ? "NFT" : "FRACTIONAL")) === "FRACTIONAL").length}
+              </span>
+            </div>
           </div>
 
           {filteredOtherListings.length > 0 ? (

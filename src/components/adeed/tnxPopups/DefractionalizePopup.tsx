@@ -173,14 +173,20 @@ const DefractionalizePopup: React.FC<DefractionalizePopupProps> = ({
           await updateFullOwnerAddress(tokenId, account);
           
           // Wait for blockchain to update
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 3000));
           
           // Update owners array based on on-chain data
           try {
             const owners = await calculateOwnershipFromEvents(tokenId);
-            await updateDeedOwners(deedId, owners);
-          } catch {}
-        } catch {}
+            if (owners.length > 0) {
+              await updateDeedOwners(deedId, owners);
+            }
+          } catch (ownershipError) {
+            console.error("Failed to calculate and update ownership after defractionalization:", ownershipError);
+          }
+        } catch (updateError) {
+          console.error("Failed to update full owner address after defractionalization:", updateError);
+        }
       }
 
       showToast("Property defractionalized successfully!", "success");
