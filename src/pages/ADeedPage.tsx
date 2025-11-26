@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useToast } from "../contexts/ToastContext";
 import { useLoader } from "../contexts/LoaderContext";
-import { useWallet } from "../contexts/WalletContext";
 import DeedActionBar from "../components/adeed/deedActionBar";
 import TitleHistory from "../components/parts/TitleHistory";
 import { deleteCertificate, deleteMarketPlacesById, getCertificatesByTokenId } from "../api/api";
@@ -33,7 +32,6 @@ const ADeedPage = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { showLoader, hideLoader } = useLoader();
-  const { account } = useWallet();
 
   const {
     deed,
@@ -143,12 +141,17 @@ const ADeedPage = () => {
         await deleteMarketPlacesById(marketId);
         showToast("Listing removed successfully", "success");
         await getMarketPlaceData();
+        
+        if (openDefractionalize) {
+          setOpenDefractionalize(false);
+          setTimeout(() => setOpenDefractionalize(true), 500);
+        }
       } else {
         showToast("Failed to cancel listing on blockchain", "error");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error removing marketplace listing:", error);
-      showToast("Failed to remove listing", "error");
+      showToast(error.message || "Failed to remove listing", "error");
     } finally {
       hideLoader();
     }
@@ -191,8 +194,15 @@ const ADeedPage = () => {
   if (!deed) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center space-y-4">
           <p className="text-2xl font-semibold text-gray-700">Loading deed information...</p>
+          <p className="text-gray-500">If this takes too long, the deed may not exist or there may be a connection issue.</p>
+          <button
+            onClick={() => navigate("/deeds")}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+          >
+            Go to Deeds Page
+          </button>
         </div>
       </div>
     );

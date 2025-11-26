@@ -85,7 +85,7 @@ export async function completeFullOwnershipTransfer(
       throw new Error("Failed to get stamp fee transaction receipt");
     }
     
-    const stampFeeTxHash = stampFeeReceipt.hash ?? stampFeeReceipt.transactionHash;
+    const stampFeeTxHash = stampFeeReceipt.hash;
 
     // Step 2: Create escrow contract
     const factory = await getEscrowFactoryContract();

@@ -135,12 +135,15 @@ export const useDeedData = (deedNumber: string | undefined) => {
   };
 
   const fetchDeed = async () => {
-    if (!deedNumber) return;
+    if (!deedNumber) {
+      setDeed(null);
+      return;
+    }
     
     showLoader();
     try {
       const res = await getDeedByDeedNumber(deedNumber);
-      if (res) {
+      if (res && res.deedNumber) {
         setDeed(res);
         
         if (res.tokenId !== undefined) {
@@ -163,10 +166,14 @@ export const useDeedData = (deedNumber: string | undefined) => {
           }
         }
       } else {
+        setDeed(null);
         showToast("Deed not found", "error");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to fetch deed:", error);
+      setDeed(null);
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to load deed information";
+      showToast(errorMessage, "error");
     } finally {
       hideLoader();
     }

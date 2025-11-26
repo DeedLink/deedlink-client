@@ -28,6 +28,7 @@ const DefractionalizePopup: React.FC<DefractionalizePopupProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [canDefractionalize, setCanDefractionalize] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [blockingReason, setBlockingReason] = useState<string | null>(null);
 
   useEffect(() => {
     const checkEligibility = async () => {
@@ -38,18 +39,40 @@ const DefractionalizePopup: React.FC<DefractionalizePopupProps> = ({
 
       try {
         setChecking(true);
+        setBlockingReason(null);
+        
         const isFractionalized = await isPropertyFractionalized(tokenId);
         if (!isFractionalized) {
           setCanDefractionalize(false);
+          setBlockingReason("Property is not fractionalized");
+          setChecking(false);
+          return;
+        }
+
+        const { getActiveListingsForToken } = await import("../../../web3.0/contractService");
+        const activeListings = await getActiveListingsForToken(tokenId);
+        
+        if (activeListings.length > 0) {
+          setCanDefractionalize(false);
+          setBlockingReason(`There are ${activeListings.length} active marketplace listing(s). Please cancel them first.`);
           setChecking(false);
           return;
         }
 
         const hasFull = await hasFullOwnership(tokenId, account);
-        setCanDefractionalize(hasFull);
+        if (!hasFull) {
+          setCanDefractionalize(false);
+          setBlockingReason("You must own 100% of the fractional tokens to defractionalize this property.");
+          setChecking(false);
+          return;
+        }
+
+        setCanDefractionalize(true);
+        setBlockingReason(null);
       } catch (error) {
         console.error("Error checking defractionalization eligibility:", error);
         setCanDefractionalize(false);
+        setBlockingReason("Failed to verify eligibility. Please try again.");
       } finally {
         setChecking(false);
       }
@@ -115,11 +138,6 @@ const DefractionalizePopup: React.FC<DefractionalizePopupProps> = ({
         .reduce((sum, h) => sum + h.balance, 0);
       
       if (totalInOtherAddresses > 0) {
-        const otherHolders = allHolders
-          .filter(h => h.address.toLowerCase() !== account.toLowerCase() && h.balance > 0)
-          .slice(0, 3)
-          .map(h => `${h.address.substring(0, 8)}... (${h.balance})`)
-          .join(", ");
         showToast(`Cannot defractionalize: ${totalInOtherAddresses.toLocaleString()} tokens are held by other addresses. You must own all tokens.`, "error");
         setCanDefractionalize(false);
         return;
@@ -197,11 +215,27 @@ const DefractionalizePopup: React.FC<DefractionalizePopupProps> = ({
       const errorMessage = error.message || error.reason || "Defractionalization failed!";
       showToast(errorMessage, "error");
       
-      try {
-        const isFractionalized = await isPropertyFractionalized(tokenId);
-        const hasFull = await hasFullOwnership(tokenId, account);
-        setCanDefractionalize(hasFull && isFractionalized);
-      } catch {}
+      if (errorMessage.includes("marketplace listing")) {
+        setBlockingReason(errorMessage.replace("Cannot defractionalize: ", ""));
+        setCanDefractionalize(false);
+      } else {
+        try {
+          const isFractionalized = await isPropertyFractionalized(tokenId);
+          const { getActiveListingsForToken } = await import("../../../web3.0/contractService");
+          const activeListings = await getActiveListingsForToken(tokenId);
+          
+          if (activeListings.length > 0) {
+            setBlockingReason(`There are ${activeListings.length} active marketplace listing(s). Please cancel them first.`);
+            setCanDefractionalize(false);
+          } else {
+            const hasFull = await hasFullOwnership(tokenId, account);
+            setCanDefractionalize(hasFull && isFractionalized);
+            if (!hasFull) {
+              setBlockingReason("You must own 100% of the fractional tokens to defractionalize this property.");
+            }
+          }
+        } catch {}
+      }
     } finally {
       setIsSubmitting(false);
       hideLoader();
@@ -230,9 +264,16 @@ const DefractionalizePopup: React.FC<DefractionalizePopupProps> = ({
           <div className="space-y-4">
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-sm text-red-800">
-                <strong>Cannot Defractionalize:</strong> You must own 100% of the fractional tokens to defractionalize this property.
+                <strong>Cannot Defractionalize:</strong> {blockingReason || "You must own 100% of the fractional tokens to defractionalize this property."}
               </p>
             </div>
+            {blockingReason && blockingReason.includes("marketplace listing") && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-xs text-yellow-800">
+                  💡 <strong>Tip:</strong> Go to the marketplace section above to cancel your active listings, then try defractionalizing again.
+                </p>
+              </div>
+            )}
             <button
               onClick={onClose}
               className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"

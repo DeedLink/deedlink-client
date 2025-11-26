@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { createTransaction, getUsers, getTransactionsByDeedId } from "../../../api/api";
 import type { User } from "../../../types/types";
 import { IoClose, IoWalletOutline, IoSearchOutline, IoCheckmarkCircle, IoCashOutline } from "react-icons/io5";
-import { FaStore, FaExclamationTriangle } from "react-icons/fa";
+import { FaStore } from "react-icons/fa";
 import { completeFullOwnershipTransfer, sellerDepositNFT, getPaymentBreakdown } from "../../../web3.0/escrowIntegration";
 import { useWallet } from "../../../contexts/WalletContext";
 import { useQR } from "../../../contexts/QRContext";

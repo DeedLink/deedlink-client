@@ -452,8 +452,9 @@ export async function getActiveListingsForToken(tokenId: number): Promise<number
     }
     
     await Promise.all(checkPromises);
-    return activeListings;
-  } catch {
+    return activeListings.sort((a, b) => a - b);
+  } catch (error) {
+    console.error("Error getting active listings:", error);
     return [];
   }
 }
