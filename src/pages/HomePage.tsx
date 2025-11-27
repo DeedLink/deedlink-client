@@ -72,11 +72,11 @@ const transactionFlows = [
   },
   {
     title: "Direct / gift transfer",
-    desc: "For family transfers or administrative corrections where money is not exchanged.",
+    desc: "For transfers where money is not exchanged, such as gifts or administrative corrections.",
     steps: [
       "Current owner opens a transfer request with the new address and share.",
-      "Registrar confirms NIC and relationship documents.",
-      "A direct_transfer or gift transaction is written, reducing the giver’s share.",
+      "Registrar confirms NIC and required documents.",
+      "A direct_transfer or gift transaction is written, reducing the giver's share.",
       "Deed owners array updates so certificates show the new holder.",
     ],
   },
