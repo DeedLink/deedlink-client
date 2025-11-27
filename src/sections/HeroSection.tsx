@@ -3,9 +3,9 @@ import { useLogin } from "../contexts/LoginContext";
 import { useSignup } from "../contexts/SignupContext";
 
 const heroHighlights = [
-  "Digitally register land transfers with tamper-proof audit trails",
-  "Verify deed authenticity in seconds with blockchain-backed records",
-  "Monitor ownership updates, caveats, and mortgages from one dashboard",
+  "Every deed lives in one safe place that you can trust",
+  "Money and approvals move faster because everyone sees the same status",
+  "Important plans, IDs, and agreements stay protected and easy to share",
 ];
 
 const heroStats = [
@@ -20,9 +20,10 @@ const HeroSection = () => {
 
   return (
     <section
-      className="relative w-full bg-cover bg-center flex flex-col items-start justify-center text-white pb-24 pt-32 px-4 md:px-10"
+      className="relative w-full min-h-screen bg-cover bg-center flex flex-col justify-center text-white py-16 md:py-24 px-4 md:px-10"
       style={{
         backgroundImage: `linear-gradient(rgba(0,60,10,0.9), rgba(0,60,10,0.92)), url(${background})`,
+        backgroundPosition: "center 25%",
       }}
     >
       <div className="max-w-boundary mx-auto w-full px-4 md:px-16">
@@ -36,14 +37,12 @@ const HeroSection = () => {
         <div className="grid gap-12 lg:gap-16 lg:grid-cols-[minmax(0,3fr)_minmax(280px,2fr)] items-center">
           <div>
             <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-6">
-              Instantly understand every land deed — captured, verified, and
-              protected in one secure vault.
+              DeedLink keeps property deeds safe, clear, and easy to transfer for every citizen.
             </h1>
             <p className="mb-6 leading-relaxed text-sm md:text-base opacity-90">
-              ADeed is the government's trusted web platform for digitizing
-              property ownership. From first submission to final registration,
-              we surface the status, data, and parties involved so citizens,
-              lawyers, and officers know exactly what is happening.
+              Instead of piles of paper, you get one guided workspace that shows what has been
+              submitted, who is reviewing it, and when the deed is ready. People trust the process
+              because nothing goes missing and everyone sees the same information.
             </p>
 
             <ul className="space-y-4 mb-8 text-sm md:text-base">
@@ -65,7 +64,7 @@ const HeroSection = () => {
                     onClick={openLogin}
                     className="text-[#00420A] bg-white px-6 py-3 rounded-lg shadow hover:bg-green-100 transition cursor-pointer font-medium"
                   >
-                    Login to your vault
+                    Login to your account
                   </button>
                   <button
                     onClick={openSignup}
