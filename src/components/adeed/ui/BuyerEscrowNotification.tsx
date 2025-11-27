@@ -27,7 +27,7 @@ const BuyerEscrowNotification: React.FC<BuyerEscrowNotificationProps> = ({ onDis
   }>>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEscrow, setSelectedEscrow] = useState<string | null>(null);
-  const [notificationMap, setNotificationMap] = useState<Record<string, string>>({});
+  const [_notificationMap, setNotificationMap] = useState<Record<string, string>>({});
   const dismissedEscrowsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
