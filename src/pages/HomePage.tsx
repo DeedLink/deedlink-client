@@ -23,15 +23,19 @@ const clarityPillars = [
 const peopleCards = [
   {
     label: "Citizens and owners",
-    detail: "Follow the progress, download certificates, and share clean proof with buyers.",
+    detail: "Submit deed requests, track progress, download certificates, and share verified proof with buyers or banks.",
   },
   {
-    label: "Lawyers and survey teams",
-    detail: "Upload plans, give feedback, and avoid repeating site visits or paperwork.",
+    label: "Surveyors",
+    detail: "Upload survey plans, review property boundaries, and sign deeds on-chain to verify land details.",
   },
   {
-    label: "Officers and ministries",
-    detail: "Review, stamp, and release deeds faster because every file is already complete.",
+    label: "Notaries",
+    detail: "Review deed documents, verify identities, and provide on-chain signatures to authorize transfers.",
+  },
+  {
+    label: "IVSL valuators",
+    detail: "Assess property values, set valuations for stamp fee calculations, and sign to complete the approval process.",
   },
 ];
 
@@ -75,7 +79,6 @@ const transactionFlows = [
     desc: "For transfers where money is not exchanged, such as gifts or administrative corrections.",
     steps: [
       "Current owner opens a transfer request with the new address and share.",
-      "Registrar confirms NIC and required documents.",
       "A direct_transfer or gift transaction is written, reducing the giver's share.",
       "Deed owners array updates so certificates show the new holder.",
     ],
@@ -109,28 +112,28 @@ const HomePage = () => {
       <HeroSection />
 
       <section className="bg-[#01240f] text-white">
-        <div className="max-w-boundary mx-auto px-6 md:px-16 py-12 md:py-16 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center">
+        <div className="max-w-boundary mx-auto px-4 sm:px-6 md:px-16 py-8 sm:py-12 md:py-16 grid gap-6 sm:gap-8 lg:gap-10 lg:grid-cols-[1.1fr_0.9fr] items-start lg:items-center">
           <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-emerald-200 mb-3">
+            <p className="text-xs uppercase tracking-[0.35em] text-emerald-200 mb-2 sm:mb-3">
               Why it matters
             </p>
-            <h2 className="text-3xl md:text-4xl font-semibold mb-6 text-white">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-4 sm:mb-6 text-white">
               DeedLink keeps every land request moving even when you cannot visit an office.
             </h2>
-            <p className="text-sm md:text-base text-emerald-100 leading-relaxed">
+            <p className="text-sm sm:text-base text-emerald-100 leading-relaxed">
               People start the request online, officials review from their desks, and buyers or banks can see
               proof without waiting for stamped letters. This means fewer trips, less guesswork, and faster
               access to funds.
             </p>
           </div>
-          <div className="grid gap-4">
+          <div className="grid gap-3 sm:gap-4">
             {clarityPillars.map((card) => (
               <div
                 key={card.title}
-                className="bg-white/10 border border-white/15 rounded-2xl p-5"
+                className="bg-white/10 border border-white/15 rounded-2xl p-4 sm:p-5"
               >
-                <h3 className="text-xl font-semibold mb-2 text-white">{card.title}</h3>
-                <p className="text-sm text-emerald-100">{card.desc}</p>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 text-white">{card.title}</h3>
+                <p className="text-xs sm:text-sm text-emerald-100">{card.desc}</p>
               </div>
             ))}
           </div>
@@ -138,29 +141,29 @@ const HomePage = () => {
       </section>
 
       <section className="bg-emerald-50">
-        <div className="max-w-boundary mx-auto px-6 md:px-16 py-12 md:py-16 grid lg:grid-cols-[1.2fr_0.8fr] gap-10">
+        <div className="max-w-boundary mx-auto px-4 sm:px-6 md:px-16 py-8 sm:py-12 md:py-16 grid gap-6 sm:gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:gap-10">
           <div>
             <p className="text-xs uppercase tracking-[0.35em] text-emerald-700 mb-2">
               Built for every person
             </p>
-            <h2 className="text-3xl font-semibold text-emerald-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-emerald-900 mb-3 sm:mb-4">
               Everyone sees the same facts, so trust grows and waiting time shrinks.
             </h2>
-            <p className="text-emerald-800 leading-relaxed">
+            <p className="text-sm sm:text-base text-emerald-800 leading-relaxed">
               From citizens paying school fees to ministries clearing big projects, DeedLink helps people stay
               calm because the real information is always there.
             </p>
           </div>
-          <div className="grid gap-4">
+          <div className="grid gap-3 sm:gap-4">
             {peopleCards.map((card) => (
               <div
                 key={card.label}
-                className="bg-white rounded-2xl border border-emerald-100 p-5 shadow-sm"
+                className="bg-white rounded-2xl border border-emerald-100 p-4 sm:p-5 shadow-sm"
               >
-                <p className="text-sm uppercase tracking-[0.3em] text-emerald-600 mb-2">
+                <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-emerald-600 mb-2">
                   {card.label}
                 </p>
-                <p className="text-emerald-800 text-sm">{card.detail}</p>
+                <p className="text-xs sm:text-sm text-emerald-800">{card.detail}</p>
               </div>
             ))}
           </div>
@@ -168,30 +171,30 @@ const HomePage = () => {
       </section>
 
       <section className="bg-white">
-        <div className="max-w-boundary mx-auto px-6 md:px-16 py-12 md:py-16">
-          <div className="mb-10 text-center md:text-left">
+        <div className="max-w-boundary mx-auto px-4 sm:px-6 md:px-16 py-8 sm:py-12 md:py-16">
+          <div className="mb-6 sm:mb-10 text-center md:text-left">
             <p className="text-xs uppercase tracking-[0.35em] text-emerald-600 mb-2">
               Registration & signing flow
             </p>
-            <h2 className="text-3xl font-semibold text-gray-900 mb-3">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-2 sm:mb-3">
               Follow the deed from the first form to the final certificate.
             </h2>
-            <p className="text-gray-600 max-w-3xl">
+            <p className="text-sm sm:text-base text-gray-600 max-w-3xl mx-auto md:mx-0">
               Each box in this flow is connected, so you can see what just happened and what comes next. If
               something is missing, the case highlights it before anyone travels again.
             </p>
           </div>
-          <div className="flex flex-col gap-6 md:flex-row md:items-stretch">
+          <div className="flex flex-col gap-4 sm:gap-6 md:flex-row md:items-stretch overflow-x-auto md:overflow-visible pb-4 md:pb-0">
             {registrationFlow.map((step, index) => (
               <div
                 key={step.title}
-                className="relative flex-1 bg-emerald-50 border border-emerald-100 rounded-2xl p-6 shadow-sm"
+                className="relative flex-1 min-w-[280px] sm:min-w-0 bg-emerald-50 border border-emerald-100 rounded-2xl p-4 sm:p-6 shadow-sm"
               >
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-emerald-700 font-semibold mb-4 border border-emerald-200">
+                <span className="inline-flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-white text-emerald-700 font-semibold mb-3 sm:mb-4 border border-emerald-200 text-sm sm:text-base">
                   {index + 1}
                 </span>
-                <h3 className="text-xl font-semibold mb-2 text-emerald-900">{step.title}</h3>
-                <p className="text-sm text-emerald-800 leading-relaxed">{step.desc}</p>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 text-emerald-900">{step.title}</h3>
+                <p className="text-xs sm:text-sm text-emerald-800 leading-relaxed">{step.desc}</p>
                 {index < registrationFlow.length - 1 && (
                   <span className="hidden md:block absolute top-1/2 right-0 translate-x-1/2 w-10 border-t-2 border-dashed border-emerald-200"></span>
                 )}
@@ -202,29 +205,29 @@ const HomePage = () => {
       </section>
 
       <section className="bg-emerald-100">
-        <div className="max-w-boundary mx-auto px-6 md:px-16 py-12 md:py-16">
-          <div className="mb-10 text-center md:text-left">
+        <div className="max-w-boundary mx-auto px-4 sm:px-6 md:px-16 py-8 sm:py-12 md:py-16">
+          <div className="mb-6 sm:mb-10 text-center md:text-left">
             <p className="text-xs uppercase tracking-[0.35em] text-emerald-700 mb-2">
               Transaction paths
             </p>
-            <h2 className="text-3xl font-semibold text-gray-900 mb-3">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-2 sm:mb-3">
               See how different deed transactions flow from start to finish.
             </h2>
-            <p className="text-gray-600 max-w-3xl">
+            <p className="text-sm sm:text-base text-gray-600 max-w-3xl mx-auto md:mx-0">
               Whether it is a sale, a loan, or a family transfer, the steps are simple and well documented.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {transactionFlows.map((type) => (
               <div
                 key={type.title}
-                className="bg-white rounded-2xl border border-emerald-200 p-6 shadow-sm"
+                className="bg-white rounded-2xl border border-emerald-200 p-4 sm:p-6 shadow-sm"
               >
-                <h3 className="text-xl font-semibold mb-4 text-gray-900">{type.title}</h3>
-                <p className="text-sm text-emerald-800 mb-4">{type.desc}</p>
-                <ol className="space-y-2 text-sm text-emerald-900 list-decimal list-inside">
+                <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-gray-900">{type.title}</h3>
+                <p className="text-xs sm:text-sm text-emerald-800 mb-3 sm:mb-4">{type.desc}</p>
+                <ol className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-emerald-900 list-decimal list-inside">
                   {type.steps.map((item, index) => (
-                    <li key={`${type.title}-step-${index}`}>{item}</li>
+                    <li key={`${type.title}-step-${index}`} className="leading-relaxed">{item}</li>
                   ))}
                 </ol>
               </div>
@@ -234,13 +237,13 @@ const HomePage = () => {
       </section>
 
       {user &&  
-      <div className="w-full pt-8 md:pt-12 px-6 md:px-16">
+      <div className="w-full pt-6 sm:pt-8 md:pt-12 px-4 sm:px-6 md:px-16">
         <UserDetailsCard user={user}/>
       </div>
       }
 
       <section className="bg-emerald-900 text-white">
-        <div className="max-w-boundary mx-auto px-6 md:px-16 py-12 md:py-16">
+        <div className="max-w-boundary mx-auto px-4 sm:px-6 md:px-16 py-8 sm:py-12 md:py-16">
           <WhyChooseSection />
         </div>
       </section>
