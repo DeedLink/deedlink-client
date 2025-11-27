@@ -141,31 +141,134 @@ const HomePage = () => {
       </section>
 
       <section className="bg-emerald-50">
-        <div className="max-w-boundary mx-auto px-4 sm:px-6 md:px-16 py-8 sm:py-12 md:py-16 grid gap-6 sm:gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:gap-10">
-          <div>
+        <div className="max-w-boundary mx-auto px-4 sm:px-6 md:px-16 py-8 sm:py-12 md:py-16">
+          <div className="mb-8 sm:mb-10">
             <p className="text-xs uppercase tracking-[0.35em] text-emerald-700 mb-2">
               Built for every person
             </p>
             <h2 className="text-2xl sm:text-3xl font-semibold text-emerald-900 mb-3 sm:mb-4">
               Everyone sees the same facts, so trust grows and waiting time shrinks.
             </h2>
-            <p className="text-sm sm:text-base text-emerald-800 leading-relaxed">
+            <p className="text-sm sm:text-base text-emerald-800 leading-relaxed max-w-3xl">
               From citizens paying school fees to ministries clearing big projects, DeedLink helps people stay
               calm because the real information is always there.
             </p>
           </div>
-          <div className="grid gap-3 sm:gap-4">
-            {peopleCards.map((card) => (
-              <div
-                key={card.label}
-                className="bg-white rounded-2xl border border-emerald-100 p-4 sm:p-5 shadow-sm"
-              >
-                <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-emerald-600 mb-2">
-                  {card.label}
-                </p>
-                <p className="text-xs sm:text-sm text-emerald-800">{card.detail}</p>
+
+          <div className="grid gap-6 sm:gap-8 lg:grid-cols-[1fr_1fr] lg:gap-10">
+            {/* Stakeholder Cards */}
+            <div className="grid gap-3 sm:gap-4">
+              {peopleCards.map((card) => (
+                <div
+                  key={card.label}
+                  className="bg-white rounded-2xl border border-emerald-100 p-4 sm:p-5 shadow-sm"
+                >
+                  <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-emerald-600 mb-2">
+                    {card.label}
+                  </p>
+                  <p className="text-xs sm:text-sm text-emerald-800">{card.detail}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Signing & Registry Flowchart */}
+            <div className="bg-white rounded-2xl border border-emerald-200 p-5 sm:p-6 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-emerald-700 mb-4 sm:mb-6 font-semibold">
+                Signing & Registry Flow
+              </p>
+              
+              <div className="space-y-0">
+                {/* Step 1: Owner Submission */}
+                <div className="flex items-start gap-3 pb-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center border-2 border-emerald-300 mt-0.5">
+                    <span className="text-emerald-700 font-bold text-sm">1</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg flex-shrink-0">👤</span>
+                      <p className="text-sm font-semibold text-emerald-900">Owner Submits</p>
+                    </div>
+                    <p className="text-xs text-emerald-700">Deed request with land details</p>
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <div className="flex items-center pl-[22px] py-1">
+                  <div className="w-0.5 h-5 bg-emerald-300"></div>
+                </div>
+
+                {/* Step 2: Surveyor */}
+                <div className="flex items-start gap-3 pb-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center border-2 border-emerald-300 mt-0.5">
+                    <span className="text-emerald-700 font-bold text-sm">2</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg flex-shrink-0">📐</span>
+                      <p className="text-sm font-semibold text-emerald-900">Surveyor Signs</p>
+                    </div>
+                    <p className="text-xs text-emerald-700">Verifies boundaries & uploads plans</p>
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <div className="flex items-center pl-[22px] py-1">
+                  <div className="w-0.5 h-5 bg-emerald-300"></div>
+                </div>
+
+                {/* Step 3: Notary */}
+                <div className="flex items-start gap-3 pb-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center border-2 border-emerald-300 mt-0.5">
+                    <span className="text-emerald-700 font-bold text-sm">3</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg flex-shrink-0">✍️</span>
+                      <p className="text-sm font-semibold text-emerald-900">Notary Signs</p>
+                    </div>
+                    <p className="text-xs text-emerald-700">Reviews documents & verifies identity</p>
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <div className="flex items-center pl-[22px] py-1">
+                  <div className="w-0.5 h-5 bg-emerald-300"></div>
+                </div>
+
+                {/* Step 4: IVSL Valuator */}
+                <div className="flex items-start gap-3 pb-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center border-2 border-emerald-300 mt-0.5">
+                    <span className="text-emerald-700 font-bold text-sm">4</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg flex-shrink-0">💰</span>
+                      <p className="text-sm font-semibold text-emerald-900">IVSL Valuator Signs</p>
+                    </div>
+                    <p className="text-xs text-emerald-700">Sets valuation & completes approval</p>
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <div className="flex items-center pl-[22px] py-1">
+                  <div className="w-0.5 h-5 bg-emerald-300"></div>
+                </div>
+
+                {/* Step 5: Registry Complete */}
+                <div className="flex items-start gap-3 pt-1">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center border-2 border-emerald-600 mt-0.5">
+                    <span className="text-white font-bold text-sm">✓</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg flex-shrink-0">🔒</span>
+                      <p className="text-sm font-semibold text-emerald-900">Registry Complete</p>
+                    </div>
+                    <p className="text-xs text-emerald-700">Deed activated & ready for transactions</p>
+                  </div>
+                </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
