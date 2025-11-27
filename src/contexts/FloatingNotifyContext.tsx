@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback } from "react";
 import { FaBell, FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaTimes } from "react-icons/fa";
 
 type NotificationType = "success" | "error" | "info" | "warning";
+type NotificationRemovalReason = "manual" | "auto";
 
 interface Notification {
   id: string;
@@ -11,12 +12,14 @@ interface Notification {
   image?: string;
   timestamp: number;
   read: boolean;
+  onClick?: () => void;
+  onRemove?: (reason: NotificationRemovalReason) => void;
 }
 
 interface NotifyContextType {
-  showNotification: (notification: Omit<Notification, "id" | "timestamp" | "read">) => void;
+  showNotification: (notification: Omit<Notification, "id" | "timestamp" | "read">) => string;
   markAsRead: (id: string) => void;
-  clearNotification: (id: string) => void;
+  clearNotification: (id: string, reason?: NotificationRemovalReason) => void;
   clearAll: () => void;
 }
 
@@ -54,23 +57,36 @@ export const FloatingNotifyProvider: React.FC<{ children: React.ReactNode }> = (
   const [isOpen, setIsOpen] = useState(false);
 
   const showNotification = useCallback((notif: Omit<Notification, "id" | "timestamp" | "read">) => {
-    setNotifications(prev => [{
+    const newNotification: Notification = {
       ...notif,
       id: Math.random().toString(36).slice(2, 9),
       timestamp: Date.now(),
       read: false
-    }, ...prev]);
+    };
+    setNotifications(prev => [newNotification, ...prev]);
+    return newNotification.id;
   }, []);
 
   const markAsRead = useCallback((id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   }, []);
 
-  const clearNotification = useCallback((id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+  const clearNotification = useCallback((id: string, reason: NotificationRemovalReason = "auto") => {
+    setNotifications(prev => {
+      const target = prev.find(n => n.id === id);
+      if (target?.onRemove) {
+        target.onRemove(reason);
+      }
+      return prev.filter(n => n.id !== id);
+    });
   }, []);
 
-  const clearAll = useCallback(() => setNotifications([]), []);
+  const clearAll = useCallback(() => {
+    setNotifications(prev => {
+      prev.forEach(n => n.onRemove?.("manual"));
+      return [];
+    });
+  }, []);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -115,7 +131,10 @@ export const FloatingNotifyProvider: React.FC<{ children: React.ReactNode }> = (
                     className={`p-4 cursor-pointer transition-colors ${
                       !n.read ? "bg-neutral-800 hover:bg-neutral-700" : "hover:bg-neutral-800"
                     }`}
-                    onClick={() => markAsRead(n.id)}
+                    onClick={() => {
+                      markAsRead(n.id);
+                      n.onClick?.();
+                    }}
                   >
                     <div className="flex items-start gap-3">
                       {n.image ? (
@@ -129,7 +148,7 @@ export const FloatingNotifyProvider: React.FC<{ children: React.ReactNode }> = (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              clearNotification(n.id);
+                              clearNotification(n.id, "manual");
                             }}
                             className="text-gray-500 hover:text-red-400"
                           >

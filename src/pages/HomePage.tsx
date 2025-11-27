@@ -5,12 +5,10 @@ import HeroSection from "../sections/HeroSection";
 import WhyChooseSection from "../sections/WhyChooseSection";
 import { useLogin } from "../contexts/LoginContext";
 import UserDetailsCard from "../components/ui/UserDetailsCard";
-import { useFloatingNotify } from "../contexts/FloatingNotifyContext";
 
 const HomePage = () => {
   const { showLoader, hideLoader } = useLoader();
   const { user } = useLogin();
-  const { showNotification } = useFloatingNotify();
 
   useEffect(() => {
     showLoader();
@@ -19,14 +17,6 @@ const HomePage = () => {
     }, 2000);
     return () => clearTimeout(timer);
   }, []);
-
-  useEffect(()=>{
-    showNotification({
-      type: "success",
-      title: "Success",
-      message: "Operation completed"
-    });
-  },[]);
 
   return (
     <main className="bg-white text-gray-900">
