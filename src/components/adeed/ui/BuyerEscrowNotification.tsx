@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useWallet } from "../../../contexts/WalletContext";
 import { useLogin } from "../../../contexts/LoginContext";
 import { tnxApi } from "../../../api/api";
@@ -27,8 +27,8 @@ const BuyerEscrowNotification: React.FC<BuyerEscrowNotificationProps> = ({ onDis
   }>>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEscrow, setSelectedEscrow] = useState<string | null>(null);
-  const [notificationMap, setNotificationMap] = useState<Record<string, string>>({});
-  const [dismissedEscrows, setDismissedEscrows] = useState<Set<string>>(() => new Set());
+  const [_notificationMap, setNotificationMap] = useState<Record<string, string>>({});
+  const dismissedEscrowsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let isMounted = true;
@@ -96,7 +96,7 @@ const BuyerEscrowNotification: React.FC<BuyerEscrowNotificationProps> = ({ onDis
         }
 
         const escrowPromises = buyerEscrowTxs
-          .filter(({ tx }) => !dismissedEscrows.has(tx.blockchain_identification))
+          .filter(({ tx }) => !dismissedEscrowsRef.current.has(tx.blockchain_identification))
           .map(async ({ tx, deedId }) => {
             try {
               const [details, status] = await Promise.all([
@@ -159,69 +159,74 @@ const BuyerEscrowNotification: React.FC<BuyerEscrowNotificationProps> = ({ onDis
 
   useEffect(() => {
     if (!account || !token || !user) {
-      if (Object.values(notificationMap).length) {
-        Object.values(notificationMap).forEach(id => clearNotification(id));
-      }
-      setNotificationMap({});
-      setDismissedEscrows(new Set());
+      setNotificationMap(prev => {
+        Object.values(prev).forEach(id => clearNotification(id));
+        return {};
+      });
+      dismissedEscrowsRef.current.clear();
       setSelectedEscrow(null);
     }
-  }, [account, token, user, notificationMap, clearNotification]);
+  }, [account, token, user, clearNotification]);
 
   useEffect(() => {
-    if (!Object.keys(notificationMap).length) return;
-    const activeAddresses = new Set(pendingEscrows.map(e => e.escrowAddress));
-    Object.entries(notificationMap).forEach(([address, notifId]) => {
-      if (!activeAddresses.has(address)) {
-        clearNotification(notifId);
-      }
+    setNotificationMap(prev => {
+      if (!Object.keys(prev).length) return prev;
+      const activeAddresses = new Set(pendingEscrows.map(e => e.escrowAddress));
+      const updates: Record<string, string> = {};
+      
+      Object.entries(prev).forEach(([address, notifId]) => {
+        if (!activeAddresses.has(address)) {
+          clearNotification(notifId);
+        } else {
+          updates[address] = notifId;
+        }
+      });
+      
+      return updates;
     });
-  }, [pendingEscrows, notificationMap, clearNotification]);
+  }, [pendingEscrows, clearNotification]);
 
   useEffect(() => {
     if (loading) return;
-    const newEscrows = pendingEscrows.filter(e => 
-      !notificationMap[e.escrowAddress] && !dismissedEscrows.has(e.escrowAddress)
-    );
+    
+    setNotificationMap(prev => {
+      const newEscrows = pendingEscrows.filter(e => 
+        !prev[e.escrowAddress] && !dismissedEscrowsRef.current.has(e.escrowAddress)
+      );
 
-    if (newEscrows.length === 0) {
-      return;
-    }
+      if (newEscrows.length === 0) {
+        return prev;
+      }
 
-    const updates: Record<string, string> = {};
+      const updates: Record<string, string> = { ...prev };
 
-    newEscrows.forEach((escrow) => {
-      const notificationId = showNotification({
-        type: "info",
-        title: "Escrow awaiting your action",
-        message: `Property #${escrow.tokenId} • ${escrow.price} ETH from ${shortAddress(escrow.seller)}`,
-        onClick: () => {
-          setSelectedEscrow(escrow.escrowAddress);
-          onDismiss?.();
-        },
-        onRemove: (reason) => {
-          setNotificationMap(prev => {
-            const { [escrow.escrowAddress]: _removed, ...rest } = prev;
-            return rest;
-          });
-
-          if (reason === "manual") {
-            setDismissedEscrows(prev => {
-              const next = new Set(prev);
-              next.add(escrow.escrowAddress);
-              return next;
+      newEscrows.forEach((escrow) => {
+        const notificationId = showNotification({
+          type: "info",
+          title: "Escrow awaiting your action",
+          message: `Property #${escrow.tokenId} • ${escrow.price} ETH from ${shortAddress(escrow.seller)}`,
+          onClick: () => {
+            setSelectedEscrow(escrow.escrowAddress);
+            onDismiss?.();
+          },
+          onRemove: (reason) => {
+            setNotificationMap(current => {
+              const { [escrow.escrowAddress]: _removed, ...rest } = current;
+              return rest;
             });
+
+            if (reason === "manual") {
+              dismissedEscrowsRef.current.add(escrow.escrowAddress);
+            }
           }
-        }
+        });
+
+        updates[escrow.escrowAddress] = notificationId;
       });
 
-      updates[escrow.escrowAddress] = notificationId;
+      return updates;
     });
-
-    if (Object.keys(updates).length > 0) {
-      setNotificationMap(prev => ({ ...prev, ...updates }));
-    }
-  }, [pendingEscrows, notificationMap, dismissedEscrows, showNotification, loading, onDismiss]);
+  }, [pendingEscrows, showNotification, loading, onDismiss]);
 
   if (!selectedEscrow) {
     return null;

@@ -2,60 +2,138 @@ import background from "../assets/images/backgrounds/home.webp";
 import { useLogin } from "../contexts/LoginContext";
 import { useSignup } from "../contexts/SignupContext";
 
+const heroHighlights = [
+  "Every deed lives in one safe place that you can trust",
+  "Money and approvals move faster because everyone sees the same status",
+  "Important plans, IDs, and agreements stay protected and easy to share",
+];
+
+const platformFeatures = [
+  { 
+    icon: "🔐", 
+    title: "Blockchain Security", 
+    desc: "Every deed is minted as an NFT with on-chain signatures from surveyor, notary, and IVSL" 
+  },
+  { 
+    icon: "📋", 
+    title: "Digital Workflow", 
+    desc: "Submit, review, and approve deeds online without visiting offices" 
+  },
+  { 
+    icon: "💼", 
+    title: "Transaction Ready", 
+    desc: "Once fully signed, deeds unlock for escrow sales, direct transfers, or fractional trading" 
+  },
+];
+
 const HeroSection = () => {
   const { openLogin, user, logout } = useLogin();
   const { openSignup } = useSignup();
 
   return (
     <section
-      className="relative w-full bg-cover bg-center flex flex-col items-start justify-center text-white pb-20 pt-32 px-4 md:px-10"
+      className="relative w-full min-h-[90vh] sm:min-h-screen bg-cover bg-center flex flex-col justify-center text-white pt-24 pb-12 sm:pb-16 md:py-24 px-4 sm:px-6 md:px-10"
       style={{
-        backgroundImage: `linear-gradient(rgba(0,60,10,0.85), rgba(0,60,10,0.85)), url(${background})`,
+        backgroundImage: `linear-gradient(rgba(0,60,10,0.9), rgba(0,60,10,0.92)), url(${background})`,
+        backgroundPosition: "center 25%",
       }}
     >
-      <div className="max-w-boundary mx-auto w-full px-4 md:px-16">
-        <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-6">
-          Simplify property ownership with our secure digital deed registry
-        </h1>
-        <p className="mb-8 leading-relaxed text-sm md:text-base opacity-90">
-          In today's fast-paced world, managing property deeds can feel
-          overwhelming. Our E-Deed Registry System brings transparency,
-          security, and efficiency right to your fingertips. Say goodbye to
-          piles of paperwork and endless queues – we’re revolutionizing how you
-          interact with your most valuable assets.
-        </p>
-        <p className="mb-8 leading-relaxed text-sm md:text-base opacity-90">
-          This system is designed to streamline deed registration, significantly
-          reduce fraud, and provide secure, instant access to your land records.
-          Whether you’re a citizen, a legal professional, or a government
-          stakeholder, you’ll benefit from a system built on trust and
-          cutting-edge technology.
-        </p>
+      <div className="max-w-boundary mx-auto w-full px-4 sm:px-6 md:px-16">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm uppercase tracking-widest text-emerald-200 mb-6">
+          <span className="bg-white/10 border border-white/20 rounded-full px-3 py-1">
+            Blockchain Property Registry
+          </span>
+          <span className="break-words">Digital Deed Management System</span>
+        </div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
-          {!user ? (
-            <>
-              <button
-                onClick={openLogin}
-                className="text-[#00420A] bg-white px-6 py-3 rounded-lg shadow hover:bg-green-100 transition cursor-pointer"
-              >
-                Login
-              </button>
-              <button
-                onClick={openSignup}
-                className="bg-green-600 text-white px-6 py-3 rounded-lg shadow hover:bg-green-700 transition cursor-pointer"
-              >
-                Register
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={logout}
-              className="px-6 py-3 rounded-lg shadow bg-red-600 hover:bg-red-500 transition cursor-pointer text-white"
-            >
-              Logout
-            </button>
-          )}
+        <div className="grid gap-8 md:gap-12 lg:gap-16 lg:grid-cols-[minmax(0,3fr)_minmax(280px,2fr)] items-start lg:items-center">
+          <div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4 sm:mb-6">
+              DeedLink keeps property deeds safe, clear, and easy to transfer for every citizen.
+            </h1>
+            <p className="mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base opacity-90">
+              Instead of piles of paper, you get one guided workspace that shows what has been
+              submitted, who is reviewing it, and when the deed is ready. People trust the process
+              because nothing goes missing and everyone sees the same information.
+            </p>
+
+            <ul className="space-y-3 sm:space-y-4 mb-6 sm:mb-8 text-sm sm:text-base">
+              {heroHighlights.map((highlight) => (
+                <li
+                  key={highlight}
+                  className="flex items-start gap-2 sm:gap-3 bg-white/5 px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-white/10"
+                >
+                  <span className="mt-1.5 inline-flex h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-emerald-300 flex-shrink-0" />
+                  <span className="opacity-95 text-xs sm:text-sm">{highlight}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              {!user ? (
+                <>
+                  <button
+                    onClick={openLogin}
+                    className="text-[#00420A] bg-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg shadow hover:bg-green-100 transition cursor-pointer font-medium text-sm sm:text-base w-full sm:w-auto"
+                  >
+                    Login to your account
+                  </button>
+                  <button
+                    onClick={openSignup}
+                    className="bg-green-500 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg shadow hover:bg-green-400 transition cursor-pointer font-medium border border-white/30 text-sm sm:text-base w-full sm:w-auto"
+                  >
+                    Create account
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={logout}
+                  className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg shadow bg-red-600 hover:bg-red-500 transition cursor-pointer text-white font-medium text-sm sm:text-base w-full sm:w-auto"
+                >
+                  Logout
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white/5 border border-white/15 rounded-2xl p-4 sm:p-6 backdrop-blur mt-8 lg:mt-0">
+            <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-emerald-100 mb-2">
+              Platform capabilities
+            </p>
+            <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">
+              What this platform delivers
+            </h3>
+            <p className="text-xs sm:text-sm opacity-90 mb-4 sm:mb-6">
+              Real-time deed registration, ownership verification, and document
+              collaboration for every stakeholder in the property lifecycle.
+            </p>
+
+            <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+              {platformFeatures.map((feature) => (
+                <div
+                  className="bg-white/10 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 border border-white/10"
+                  key={feature.title}
+                >
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <span className="text-xl sm:text-2xl flex-shrink-0">{feature.icon}</span>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-xs sm:text-sm mb-1">{feature.title}</p>
+                      <p className="text-xs opacity-90 leading-relaxed">{feature.desc}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-white text-[#00420A] rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm shadow">
+              <p className="font-semibold mb-1">Need instant clarity?</p>
+              <p>
+                Use DeedLink to inspect the chain of ownership, confirm property
+                boundaries, and share verified proofs with banks or buyers in
+                minutes.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
