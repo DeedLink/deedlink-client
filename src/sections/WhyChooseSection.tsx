@@ -1,45 +1,49 @@
 import { FaCheckCircle } from "react-icons/fa";
+import { useLanguage } from "../contexts/LanguageContext";
+import { useMemo } from "react";
 
 const WhyChooseSection = () => {
-  const features = [
+  const { t } = useLanguage();
+
+  const features = useMemo(() => [
     {
-      title: "Online Registration",
-      desc: "Send your deeds from any place at any time with a clear online flow.",
+      title: t("whyChoose.feature1Title"),
+      desc: t("whyChoose.feature1Desc"),
     },
     {
-      title: "Secure & Transparent",
-      desc: "Strong security keeps data safe and keeps everyone honest.",
+      title: t("whyChoose.feature2Title"),
+      desc: t("whyChoose.feature2Desc"),
     },
     {
-      title: "Instant Access",
-      desc: "Open key property data in a few clicks whenever you need it.",
+      title: t("whyChoose.feature3Title"),
+      desc: t("whyChoose.feature3Desc"),
     },
     {
-      title: "Digital Documentation",
-      desc: "Every land record stays in digital form so nothing gets lost.",
+      title: t("whyChoose.feature4Title"),
+      desc: t("whyChoose.feature4Desc"),
     },
     {
-      title: "Reduced Paperwork",
-      desc: "Less manual paperwork means shorter lines and fewer delays.",
+      title: t("whyChoose.feature5Title"),
+      desc: t("whyChoose.feature5Desc"),
     },
     {
-      title: "Cost Savings",
-      desc: "Faster reviews and automation cut overall costs for everyone.",
+      title: t("whyChoose.feature6Title"),
+      desc: t("whyChoose.feature6Desc"),
     },
-  ];
+  ], [t]);
 
   return (
     <section className="w-full text-gray-900 px-4 md:px-10">
       <div className="mb-4">
         <span className="text-emerald-600 font-bold text-sm uppercase tracking-wider">
-          Benefits
+          {t("whyChoose.label")}
         </span>
       </div>
       <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
-        Why Choose Our Digital Deed Registry?
+        {t("whyChoose.title")}
       </h2>
       <p className="text-white mb-12 text-lg">
-        See the future of land services with clear and simple tools
+        {t("whyChoose.description")}
       </p>
       
       <div className="grid md:grid-cols-2 gap-6">

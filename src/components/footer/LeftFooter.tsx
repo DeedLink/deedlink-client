@@ -1,7 +1,10 @@
 import logo from "../../assets/images/logo/main1.jpg";
 import { about } from "../../constants/const";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const LeftFooter = () => {
+  const { t } = useLanguage();
+  
   return (
     <div className="flex flex-col gap-4 text-white">
       <div className="flex items-center gap-3">
@@ -12,7 +15,7 @@ const LeftFooter = () => {
         {about.discription}
       </p>
       <p className="text-xs opacity-75">
-        Blockchain-powered property deed management for Sri Lanka
+        {t("footer.tagline")}
       </p>
     </div>
   );

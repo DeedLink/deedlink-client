@@ -1,5 +1,6 @@
 import { useWallet } from "../../contexts/WalletContext";
 import { compressAddress } from "../../utils/format";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface NavLinksProps {
   links: { label: string; href: string }[];
@@ -9,6 +10,7 @@ interface NavLinksProps {
 
 const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
   const { account, connect, disconnect } = useWallet();
+  const { t } = useLanguage();
 
   return (
     <div
@@ -46,7 +48,7 @@ const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
             {compressAddress(account)}
           </span>
           <span className="hidden group-hover:block">
-            Disconnect
+            {t("nav.disconnect")}
           </span>
         </button>
       ) : (
@@ -54,7 +56,7 @@ const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
           onClick={connect}
           className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-2xl text-white font-semibold cursor-pointer w-38"
         >
-          Connect Wallet
+          {t("nav.connectWallet")}
         </button>
       )}
     </div>

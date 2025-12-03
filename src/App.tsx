@@ -18,18 +18,20 @@ import ADeedPage from './pages/ADeedPage';
 import { QRProvider } from './contexts/QRContext';
 import { AlertProvider } from './contexts/AlertContext';
 import { FloatingNotifyProvider } from './contexts/FloatingNotifyContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import BuyerEscrowNotification from './components/adeed/ui/BuyerEscrowNotification';
 
 function App() {
   return (
     <BrowserRouter>
-      <AlertProvider>
-        <ToastProvider>
-          <LoginProvider>
-            <WalletProvider>
-              <SignupProvider>
-                <QRProvider>
-                  <FloatingNotifyProvider>
+      <LanguageProvider>
+        <AlertProvider>
+          <ToastProvider>
+            <LoginProvider>
+              <WalletProvider>
+                <SignupProvider>
+                  <QRProvider>
+                    <FloatingNotifyProvider>
                     <div className="flex flex-col min-h-screen font-spectral text-white bg-black">
                       <div className='w-full'>
                         <NavBar />
@@ -69,13 +71,14 @@ function App() {
                         <Footer />
                       </div>
                     </div>
-                  </FloatingNotifyProvider>
-                </QRProvider>
-              </SignupProvider>
-            </WalletProvider>
-          </LoginProvider>
-        </ToastProvider>
-      </AlertProvider>
+                    </FloatingNotifyProvider>
+                  </QRProvider>
+                </SignupProvider>
+              </WalletProvider>
+            </LoginProvider>
+          </ToastProvider>
+        </AlertProvider>
+      </LanguageProvider>
     </BrowserRouter>
   );
 }
