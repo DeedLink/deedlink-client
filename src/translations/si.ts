@@ -158,6 +158,45 @@ const si = {
   video: {
     browserNotSupported: "ඔබේ බ්‍රවුසරය වීඩියෝ ටැගයට සහාය නොදක්වයි.",
   },
+
+  // DeedRegistrationPage
+  deedRegistration: {
+    title: "ඔප්පු ලියාපදිංචිය",
+    subtitle: "එක් ස්ථානයක සියලුම දේපළ ඔප්පු කළමනාකරණය කර ලුහුබැඳීම",
+    registerNew: "නව ඔප්පුවක් ලියාපදිංචි කරන්න",
+    pending: "පොරොත්තුවෙන්",
+    approved: "අනුමත කරන ලද",
+    rejected: "ප්‍රතික්ෂේප කරන ලද",
+  },
+
+  // DeedsPage
+  deedsPage: {
+    searchPlaceholder: "ඔප්පු අංකය, ලිපිනය, හිමිකරු... මගින් සොයන්න",
+    reset: "යළි සැකසීම",
+    sortNewest: "නවතම",
+    sortValue: "ඉහළම වටිනාකම",
+    sortArea: "විශාලතම ප්‍රදේශය",
+    sortShare: "මගේ කොටස",
+    deedCount: "ඔප්පුව",
+    deedCountPlural: "ඔප්පු",
+    noDeeds: "ඔප්පු හමු නොවීය",
+  },
+
+  // MarketPage
+  marketplace: {
+    title: "වෙළඳපොළ",
+    subtitle: "දේපළ ලැයිස්තු පරීක්ෂා කර මිලදී ගන්න",
+    all: "සියල්ල",
+    available: "ලබා ගත හැකි",
+    sold: "විකුණන ලද",
+    yourListings: "ඔබේ ලැයිස්තු",
+    otherListings: "වෙනත් ලැයිස්තු",
+    sortBy: "වර්ගීකරණය",
+    priceAsc: "මිල: අඩු සිට ඉහළ",
+    priceDesc: "මිල: ඉහළ සිට අඩු",
+    dateDesc: "නවතම",
+    dateAsc: "පැරණි",
+  },
 };
 
 export default si;

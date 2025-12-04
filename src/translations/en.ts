@@ -158,6 +158,45 @@ const en = {
   video: {
     browserNotSupported: "Your browser does not support the video tag.",
   },
+
+  // DeedRegistrationPage
+  deedRegistration: {
+    title: "Deed Registry",
+    subtitle: "Manage and track all your property deeds in one place",
+    registerNew: "Register New Deed",
+    pending: "Pending",
+    approved: "Approved",
+    rejected: "Rejected",
+  },
+
+  // DeedsPage
+  deedsPage: {
+    searchPlaceholder: "Search by deed number, address, owner...",
+    reset: "Reset",
+    sortNewest: "Newest",
+    sortValue: "Highest Value",
+    sortArea: "Largest Area",
+    sortShare: "My Share",
+    deedCount: "deed",
+    deedCountPlural: "deeds",
+    noDeeds: "No deeds found",
+  },
+
+  // MarketPage
+  marketplace: {
+    title: "Marketplace",
+    subtitle: "Browse and purchase property listings",
+    all: "All",
+    available: "Available",
+    sold: "Sold",
+    yourListings: "Your Listings",
+    otherListings: "Other Listings",
+    sortBy: "Sort by",
+    priceAsc: "Price: Low to High",
+    priceDesc: "Price: High to Low",
+    dateDesc: "Newest",
+    dateAsc: "Oldest",
+  },
 };
 
 export default en;
