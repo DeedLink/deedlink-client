@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useMemo, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useMemo } from 'react';
+import type { ReactNode } from 'react';
 import enTranslations from '../translations/en';
 import siTranslations from '../translations/si';
 
