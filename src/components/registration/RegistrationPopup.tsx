@@ -13,6 +13,7 @@ import { getSignature } from "../../web3.0/wallet";
 import { isValidEmail, isValidNIC, isValidPassword } from "../../utils/functions";
 import { useToast } from "../../contexts/ToastContext";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const RegistrationPopup = () => {
   const { isOpen, closeSignup } = useSignup();
@@ -31,6 +32,7 @@ const RegistrationPopup = () => {
   const [userState, setUserState] = useState<string | null>(null);
   const [userPasswordState, setUserPasswordState] = useState<"set" | "unset" | null>(null); 
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const [loadingInPopup, setLoadingInPopup] = useState(false);
 
   const getUserStatus = async () => {
@@ -120,7 +122,7 @@ const RegistrationPopup = () => {
     });
 
     if(!submissionStatus || !submissionStatus.user){
-      showToast("KYC submission failed. Please try again.", "error");
+      showToast(t("registration.kycSubmissionFailed"), "error");
       return;
     }
 
@@ -151,14 +153,14 @@ const RegistrationPopup = () => {
           "confirmPassword": confirm,
           "otp": key
         });
-        showToast("Password set successfully!", "success");
+        showToast(t("registration.passwordSetSuccess"), "success");
         setDone(true);
       } catch (err) {
         console.error(err);
-        showToast("Failed to set password. Please try again.", "error");
+        showToast(t("registration.passwordSetFailed"), "error");
       }
     } else {
-      showToast("Passwords do not match or are invalid.", "error");
+      showToast(t("registration.passwordsMismatch"), "error");
     }
   };
 

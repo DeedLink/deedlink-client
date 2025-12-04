@@ -1,6 +1,7 @@
 import { FaEnvelope, FaWallet, FaCheckCircle } from "react-icons/fa";
 import { useWallet } from "../../contexts/WalletContext";
 import { compressAddress } from "../../utils/format";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 type Props = {
   email: string;
@@ -24,28 +25,29 @@ const StepEmailWallet = ({
   nextStep,
 }: Props) => {
   const { account } = useWallet();
+  const { t } = useLanguage();
 
   return (
     <div className="mt-6">
       <div className="flex items-center gap-2 mb-4">
         <FaEnvelope className="text-green-700" />
-        <h2 className="text-lg font-bold text-[#00420A]">Email, Full Name & Wallet</h2>
+        <h2 className="text-lg font-bold text-[#00420A]">{t("registration.step1Title")}</h2>
       </div>
 
       <input
         type="email"
-        placeholder="Email Address"
+        placeholder={t("registration.emailAddress")}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 focus:ring-2 focus:ring-green-600 outline-none text-[#00420A]"
       />
       <input
         type="text"
-        placeholder="Full Name"
+        placeholder={t("registration.fullName")}
         value={name}
         onChange={(e) => setName(e.target.value)}
         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-600 outline-none text-[#00420A]"
-      />'
+      />
 
       <button
         onClick={() => setWalletConnected(true)}
@@ -62,7 +64,7 @@ const StepEmailWallet = ({
           </>
         ) : (
           <>
-            <FaWallet /> Connect Wallet
+            <FaWallet /> {t("registration.connectWallet")}
           </>
         )}
       </button>
@@ -77,7 +79,7 @@ const StepEmailWallet = ({
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
           }`}
         >
-          Next
+          {t("registration.next")}
         </button>
       </div>
     </div>
