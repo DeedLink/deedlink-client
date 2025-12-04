@@ -9,6 +9,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         spectral: ["Spectral", "serif"],
+        abhaya: ["Abhaya Libre", "serif"],
       },
       animation: {
         'spin-slow': 'spin 20s linear infinite',
