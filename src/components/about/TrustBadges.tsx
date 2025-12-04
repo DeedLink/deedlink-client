@@ -1,13 +1,15 @@
 import React from "react";
 import { FaCheckCircle } from "react-icons/fa";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const TrustBadges: React.FC = () => {
+  const { t } = useLanguage();
   const badges = [
-    'Blockchain Secured',
-    'Government Verified',
-    'ISO Certified',
-    'Smart Contract Audited',
-    '24/7 Support'
+    t("about.trustBadges.blockchainSecured"),
+    t("about.trustBadges.governmentVerified"),
+    t("about.trustBadges.isoCertified"),
+    t("about.trustBadges.smartContractAudited"),
+    t("about.trustBadges.support247")
   ];
 
   return (

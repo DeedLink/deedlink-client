@@ -6,6 +6,7 @@ import { getMarketPlaces } from "../api/api";
 import type { Marketplace } from "../types/marketplace";
 import MarketplaceGrid from "../components/marketplace-components/MarketplaceGrid";
 import { FaSearch } from "react-icons/fa";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const MarketPage: React.FC = () => {
   const [marketplaces, setMarketplaces] = useState<Marketplace[]>([]);
@@ -15,6 +16,7 @@ const MarketPage: React.FC = () => {
   const { showLoader, hideLoader } = useLoader();
   const { showAlert } = useAlert();
   const { account } = useWallet();
+  const { t } = useLanguage();
 
   const fetchMarketplaces = async () => {
     showLoader();
@@ -93,8 +95,8 @@ const MarketPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 pt-20">
       <section className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Marketplace</h1>
-          <p className="text-gray-600">Browse and purchase property listings</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t("marketplace.title")}</h1>
+          <p className="text-gray-600">{t("marketplace.subtitle")}</p>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
@@ -114,10 +116,10 @@ const MarketPage: React.FC = () => {
               onChange={(e) => setSortBy(e.target.value as any)}
               className="px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white text-gray-900"
             >
-              <option value="date_desc">Newest</option>
-              <option value="date_asc">Oldest</option>
-              <option value="price_asc">Price: Low to High</option>
-              <option value="price_desc">Price: High to Low</option>
+              <option value="date_desc">{t("marketplace.dateDesc")}</option>
+              <option value="date_asc">{t("marketplace.dateAsc")}</option>
+              <option value="price_asc">{t("marketplace.priceAsc")}</option>
+              <option value="price_desc">{t("marketplace.priceDesc")}</option>
             </select>
           </div>
         </div>
@@ -125,7 +127,7 @@ const MarketPage: React.FC = () => {
         {userListings.length > 0 && (
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">Your Listings</h2>
+              <h2 className="text-xl font-semibold text-gray-900">{t("marketplace.yourListings")}</h2>
               <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm font-medium">
                 {userListings.length}
               </span>
@@ -150,9 +152,9 @@ const MarketPage: React.FC = () => {
 
           <div className="flex flex-wrap gap-2 mb-6">
             {[
-              { key: "ALL", label: "All", count: marketplaces.length },
-              { key: "AVAILABLE", label: "Available", count: availableCount },
-              { key: "SOLD", label: "Sold", count: soldCount }
+              { key: "ALL", label: t("marketplace.all"), count: marketplaces.length },
+              { key: "AVAILABLE", label: t("marketplace.available"), count: availableCount },
+              { key: "SOLD", label: t("marketplace.sold"), count: soldCount }
             ].map((f) => (
               <button
                 key={f.key}
@@ -185,14 +187,14 @@ const MarketPage: React.FC = () => {
           ) : (
             <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
               <p className="text-gray-500">
-                {searchQuery ? "No listings match your search" : "No listings available"}
+                {searchQuery ? t("messages.noListingsMatchSearch") : t("messages.noListingsAvailable")}
               </p>
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
                   className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
                 >
-                  Clear Search
+                  {t("messages.clearSearch")}
                 </button>
               )}
             </div>

@@ -1,34 +1,37 @@
 import background from "../assets/images/backgrounds/home.webp";
 import { useLogin } from "../contexts/LoginContext";
 import { useSignup } from "../contexts/SignupContext";
-
-const heroHighlights = [
-  "Every deed lives in one safe place that you can trust",
-  "Money and approvals move faster because everyone sees the same status",
-  "Important plans, IDs, and agreements stay protected and easy to share",
-];
-
-const platformFeatures = [
-  { 
-    icon: "🔐", 
-    title: "Blockchain Security", 
-    desc: "Every deed is minted as an NFT with on-chain signatures from surveyor, notary, and IVSL" 
-  },
-  { 
-    icon: "📋", 
-    title: "Digital Workflow", 
-    desc: "Submit, review, and approve deeds online without visiting offices" 
-  },
-  { 
-    icon: "💼", 
-    title: "Transaction Ready", 
-    desc: "Once fully signed, deeds unlock for escrow sales, direct transfers, or fractional trading" 
-  },
-];
+import { useLanguage } from "../contexts/LanguageContext";
+import { useMemo } from "react";
 
 const HeroSection = () => {
   const { openLogin, user, logout } = useLogin();
   const { openSignup } = useSignup();
+  const { t } = useLanguage();
+
+  const heroHighlights = useMemo(() => [
+    t("hero.highlight1"),
+    t("hero.highlight2"),
+    t("hero.highlight3"),
+  ], [t]);
+
+  const platformFeatures = useMemo(() => [
+    { 
+      icon: "🔐", 
+      title: t("hero.blockchainSecurity"), 
+      desc: t("hero.blockchainSecurityDesc")
+    },
+    { 
+      icon: "📋", 
+      title: t("hero.digitalWorkflow"), 
+      desc: t("hero.digitalWorkflowDesc")
+    },
+    { 
+      icon: "💼", 
+      title: t("hero.transactionReady"), 
+      desc: t("hero.transactionReadyDesc")
+    },
+  ], [t]);
 
   return (
     <section
@@ -41,20 +44,18 @@ const HeroSection = () => {
       <div className="max-w-boundary mx-auto w-full px-4 sm:px-6 md:px-16">
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm uppercase tracking-widest text-emerald-200 mb-6">
           <span className="bg-white/10 border border-white/20 rounded-full px-3 py-1">
-            Blockchain Property Registry
+            {t("hero.badge1")}
           </span>
-          <span className="break-words">Digital Deed Management System</span>
+          <span className="break-words">{t("hero.badge2")}</span>
         </div>
 
         <div className="grid gap-8 md:gap-12 lg:gap-16 lg:grid-cols-[minmax(0,3fr)_minmax(280px,2fr)] items-start lg:items-center">
           <div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4 sm:mb-6">
-              DeedLink keeps property deeds safe, clear, and easy to transfer for every citizen.
+              {t("hero.title")}
             </h1>
             <p className="mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base opacity-90">
-              Instead of piles of paper, you get one guided workspace that shows what has been
-              submitted, who is reviewing it, and when the deed is ready. People trust the process
-              because nothing goes missing and everyone sees the same information.
+              {t("hero.description")}
             </p>
 
             <ul className="space-y-3 sm:space-y-4 mb-6 sm:mb-8 text-sm sm:text-base">
@@ -76,13 +77,13 @@ const HeroSection = () => {
                     onClick={openLogin}
                     className="text-[#00420A] bg-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg shadow hover:bg-green-100 transition cursor-pointer font-medium text-sm sm:text-base w-full sm:w-auto"
                   >
-                    Login to your account
+                    {t("hero.loginButton")}
                   </button>
                   <button
                     onClick={openSignup}
                     className="bg-green-500 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg shadow hover:bg-green-400 transition cursor-pointer font-medium border border-white/30 text-sm sm:text-base w-full sm:w-auto"
                   >
-                    Create account
+                    {t("hero.createAccountButton")}
                   </button>
                 </>
               ) : (
@@ -90,7 +91,7 @@ const HeroSection = () => {
                   onClick={logout}
                   className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg shadow bg-red-600 hover:bg-red-500 transition cursor-pointer text-white font-medium text-sm sm:text-base w-full sm:w-auto"
                 >
-                  Logout
+                  {t("hero.logoutButton")}
                 </button>
               )}
             </div>
@@ -98,14 +99,13 @@ const HeroSection = () => {
 
           <div className="bg-white/5 border border-white/15 rounded-2xl p-4 sm:p-6 backdrop-blur mt-8 lg:mt-0">
             <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-emerald-100 mb-2">
-              Platform capabilities
+              {t("hero.platformCapabilities")}
             </p>
             <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">
-              What this platform delivers
+              {t("hero.whatPlatformDelivers")}
             </h3>
             <p className="text-xs sm:text-sm opacity-90 mb-4 sm:mb-6">
-              Real-time deed registration, ownership verification, and document
-              collaboration for every stakeholder in the property lifecycle.
+              {t("hero.platformDescription")}
             </p>
 
             <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
@@ -126,11 +126,9 @@ const HeroSection = () => {
             </div>
 
             <div className="bg-white text-[#00420A] rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm shadow">
-              <p className="font-semibold mb-1">Need instant clarity?</p>
+              <p className="font-semibold mb-1">{t("hero.needInstantClarity")}</p>
               <p>
-                Use DeedLink to inspect the chain of ownership, confirm property
-                boundaries, and share verified proofs with banks or buyers in
-                minutes.
+                {t("hero.instantClarityText")}
               </p>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { FaSearch, FaSortAmountDown, FaSync } from "react-icons/fa";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 type SortKey = "newest" | "value" | "area" | "share";
 
@@ -13,14 +14,15 @@ export interface ToolbarProps {
 }
 
 const DeedsToolbar = ({ query, setQuery, sortBy, setSortBy, onReset, total }: ToolbarProps) => {
+  const { t } = useLanguage();
   const options = useMemo(
     () => [
-      { key: "newest", label: "Newest" },
-      { key: "value", label: "Highest Value" },
-      { key: "area", label: "Largest Area" },
-      { key: "share", label: "My Share" },
+      { key: "newest", label: t("deedsPage.sortNewest") },
+      { key: "value", label: t("deedsPage.sortValue") },
+      { key: "area", label: t("deedsPage.sortArea") },
+      { key: "share", label: t("deedsPage.sortShare") },
     ],
-    []
+    [t]
   );
 
   return (
@@ -31,7 +33,7 @@ const DeedsToolbar = ({ query, setQuery, sortBy, setSortBy, onReset, total }: To
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by deed number, address, owner..."
+            placeholder={t("deedsPage.searchPlaceholder")}
             className="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-[#00420A]"
           />
         </div>
@@ -41,7 +43,7 @@ const DeedsToolbar = ({ query, setQuery, sortBy, setSortBy, onReset, total }: To
             className="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center gap-2 text-[#00420A]"
             title="Reset filters"
           >
-            <FaSync /> Reset
+            <FaSync /> {t("deedsPage.reset")}
           </button>
         )}
       </div>
@@ -59,7 +61,7 @@ const DeedsToolbar = ({ query, setQuery, sortBy, setSortBy, onReset, total }: To
             </option>
           ))}
         </select>
-        <span className="text-sm text-gray-500 ml-2">{total} deed{total === 1 ? "" : "s"}</span>
+        <span className="text-sm text-gray-500 ml-2">{total} {total === 1 ? t("deedsPage.deedCount") : t("deedsPage.deedCountPlural")}</span>
       </div>
     </div>
   );

@@ -2,11 +2,14 @@ import { FaLocationDot } from "react-icons/fa6";
 import { IoMail } from "react-icons/io5";
 import { BsFillTelephoneFill } from "react-icons/bs";
 import { contact } from "../../constants/const";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const RightFooter = () => {
+  const { t } = useLanguage();
+  
   return (
     <div className="flex flex-col gap-4 text-white">
-      <h3 className="font-semibold text-lg">Contact Us</h3>
+      <h3 className="font-semibold text-lg">{t("footer.contactUs")}</h3>
       <div className="space-y-3.5">
         <div className="flex gap-3 items-start">
           <div className="p-2 bg-white/10 rounded-lg flex-shrink-0 mt-0.5">

@@ -8,6 +8,7 @@ import { useWallet } from "../contexts/WalletContext";
 import type { IDeed } from "../types/responseDeed";
 import { FaPlus, FaFileAlt, FaChartLine } from "react-icons/fa";
 import { getSignatures } from "../web3.0/contractService";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const DeedRegistrationPage = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,6 +17,7 @@ const DeedRegistrationPage = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const { showLoader, hideLoader } = useLoader();
   const { account } = useWallet();
+  const { t } = useLanguage();
   const [deeds, setDeeds] = useState<IDeed[]>();
   const [statusCounts, setStatusCounts] = useState({ Pending: 0, Approved: 0, Rejected: 0 });
 
@@ -78,10 +80,10 @@ const DeedRegistrationPage = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-                Deed Registry
+                {t("deedRegistration.title")}
               </h1>
               <p className="text-sm text-gray-600">
-                Manage and track all your property deeds in one place
+                {t("deedRegistration.subtitle")}
               </p>
             </div>
             <button
@@ -89,7 +91,7 @@ const DeedRegistrationPage = () => {
               onClick={() => setIsOpen(true)}
             >
               <FaPlus />
-              <span>Register New Deed</span>
+              <span>{t("deedRegistration.registerNew")}</span>
             </button>
           </div>
 
@@ -98,7 +100,7 @@ const DeedRegistrationPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Pending
+                    {t("deedRegistration.pending")}
                   </p>
                   <p className="text-2xl md:text-3xl font-bold text-yellow-600 mt-2">
                     {statusCounts.Pending}
@@ -114,7 +116,7 @@ const DeedRegistrationPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Approved
+                    {t("deedRegistration.approved")}
                   </p>
                   <p className="text-2xl md:text-3xl font-bold text-green-600 mt-2">
                     {statusCounts.Approved}
@@ -130,7 +132,7 @@ const DeedRegistrationPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Rejected
+                    {t("deedRegistration.rejected")}
                   </p>
                   <p className="text-2xl md:text-3xl font-bold text-red-600 mt-2">
                     {statusCounts.Rejected}
@@ -157,7 +159,7 @@ const DeedRegistrationPage = () => {
                   }`}
                   onClick={() => setActiveTab(tab)}
                 >
-                  <span>{tab}</span>
+                  <span>{tab === "Pending" ? t("deedRegistration.pending") : t("deedRegistration.approved")}</span>
                   <span className="ml-2 text-xs opacity-75">({statusCounts[tab]})</span>
                 </button>
               ))}
@@ -175,16 +177,16 @@ const DeedRegistrationPage = () => {
               <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FaFileAlt className="text-gray-400" size={32} />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Deeds Found</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t("messages.noDeedsFound")}</h3>
               <p className="text-gray-600 mb-6">
-                Get started by registering your first property deed
+                {t("messages.getStartedByRegistering")}
               </p>
               <button
                 className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-3 rounded-md transition inline-flex items-center gap-2"
                 onClick={() => setIsOpen(true)}
               >
                 <FaPlus />
-                <span>Register Your First Deed</span>
+                <span>{t("messages.registerYourFirstDeed")}</span>
               </button>
             </div>
           </div>

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { FaArrowRight, FaPlay, FaBuilding, FaUsers, FaExchangeAlt, FaChartLine } from "react-icons/fa";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const HeroSection: React.FC = () => {
+  const { t } = useLanguage();
   const [stats, setStats] = useState({ properties: 0, users: 0, transactions: 0, value: 0 });
 
   useEffect(() => {
@@ -35,36 +37,36 @@ const HeroSection: React.FC = () => {
 
           <div className="inline-flex items-center gap-2 bg-green-800/50 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-green-600/30">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="text-green-200 text-sm font-medium">Revolutionary Property Registry</span>
+            <span className="text-green-200 text-sm font-medium">{t("about.hero.badge")}</span>
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-            Blockchain-Powered<br />
+            {t("about.hero.title")}<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-emerald-400">
-              Property Registry
+              {t("about.hero.titleHighlight")}
             </span>
           </h1>
 
           <p className="text-green-100 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed mb-8">
-            DeedLink transforms traditional property deed management into a secure, transparent, and efficient digital ecosystem using cutting-edge blockchain technology.
+            {t("about.hero.description")}
           </p>
 
           <div className="flex flex-wrap justify-center gap-4">
             <button className="bg-white text-green-900 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 transition flex items-center gap-2 shadow-lg">
-              Get Started <FaArrowRight />
+              {t("about.hero.getStarted")} <FaArrowRight />
             </button>
             <button className="bg-green-800/50 backdrop-blur-sm text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-800/70 transition flex items-center gap-2 border border-green-600/30">
-              <FaPlay className="text-sm" /> Watch Demo
+              <FaPlay className="text-sm" /> {t("about.hero.watchDemo")}
             </button>
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16">
           {[
-            { label: 'Properties Registered', value: stats.properties, suffix: '+', icon: FaBuilding },
-            { label: 'Active Users', value: stats.users, suffix: '+', icon: FaUsers },
-            { label: 'Total Transactions', value: stats.transactions, suffix: '+', icon: FaExchangeAlt },
-            { label: 'Total Value ($M)', value: stats.value, suffix: 'M+', icon: FaChartLine }
+            { label: t("about.hero.propertiesRegistered"), value: stats.properties, suffix: '+', icon: FaBuilding },
+            { label: t("about.hero.activeUsers"), value: stats.users, suffix: '+', icon: FaUsers },
+            { label: t("about.hero.totalTransactions"), value: stats.transactions, suffix: '+', icon: FaExchangeAlt },
+            { label: t("about.hero.totalValue"), value: stats.value, suffix: 'M+', icon: FaChartLine }
           ].map((stat, idx) => (
             <div 
               key={idx} 
