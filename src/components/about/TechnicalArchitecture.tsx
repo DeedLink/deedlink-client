@@ -1,34 +1,52 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FaLock, FaShieldAlt, FaGlobe } from "react-icons/fa";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const TechnicalArchitecture: React.FC = () => {
-  const layers = [
+  const { t } = useLanguage();
+  
+  const layers = useMemo(() => [
     {
-      title: 'Blockchain Layer',
+      title: t("about.technicalArchitecture.layer1Title"),
       icon: FaLock,
       color: 'from-green-500 to-emerald-600',
-      features: ['Ethereum Compatible', 'Smart Contracts', 'Consensus Protocol', 'Immutable Ledger']
+      features: [
+        t("about.technicalArchitecture.layer1Feature1"),
+        t("about.technicalArchitecture.layer1Feature2"),
+        t("about.technicalArchitecture.layer1Feature3"),
+        t("about.technicalArchitecture.layer1Feature4")
+      ]
     },
     {
-      title: 'Security Layer',
+      title: t("about.technicalArchitecture.layer2Title"),
       icon: FaShieldAlt,
       color: 'from-emerald-500 to-green-600',
-      features: ['End-to-End Encryption', 'Multi-Sig Wallets', 'Audit Trail', 'KYC/AML Compliance']
+      features: [
+        t("about.technicalArchitecture.layer2Feature1"),
+        t("about.technicalArchitecture.layer2Feature2"),
+        t("about.technicalArchitecture.layer2Feature3"),
+        t("about.technicalArchitecture.layer2Feature4")
+      ]
     },
     {
-      title: 'Application Layer',
+      title: t("about.technicalArchitecture.layer3Title"),
       icon: FaGlobe,
       color: 'from-green-600 to-emerald-700',
-      features: ['Web3 Integration', 'RESTful APIs', 'Real-time Updates', 'Mobile Support']
+      features: [
+        t("about.technicalArchitecture.layer3Feature1"),
+        t("about.technicalArchitecture.layer3Feature2"),
+        t("about.technicalArchitecture.layer3Feature3"),
+        t("about.technicalArchitecture.layer3Feature4")
+      ]
     }
-  ];
+  ], [t]);
 
   return (
     <section className="py-20 px-6 md:px-16 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-green-900 mb-4">Technical Architecture</h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">Built on enterprise-grade blockchain infrastructure</p>
+          <h2 className="text-4xl md:text-5xl font-bold text-green-900 mb-4">{t("about.technicalArchitecture.title")}</h2>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">{t("about.technicalArchitecture.subtitle")}</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">

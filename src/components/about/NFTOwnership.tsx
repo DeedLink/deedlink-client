@@ -1,28 +1,31 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FaFileSignature, FaCheckCircle, FaLock, FaGlobe, FaShieldAlt, FaTrophy, FaBuilding, FaIndustry, FaHome } from "react-icons/fa";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const NFTOwnership: React.FC = () => {
-  const benefits = [
-    'Complete ownership rights',
-    'Cryptographic verification',
-    'Fraud elimination',
-    'Direct peer-to-peer transfers',
-    'Immutable ownership history',
-    'No intermediaries required'
-  ];
+  const { t } = useLanguage();
+  
+  const benefits = useMemo(() => [
+    t("about.ownershipModels.nftBenefit1"),
+    t("about.ownershipModels.nftBenefit2"),
+    t("about.ownershipModels.nftBenefit3"),
+    t("about.ownershipModels.nftBenefit4"),
+    t("about.ownershipModels.nftBenefit5"),
+    t("about.ownershipModels.nftBenefit6")
+  ], [t]);
 
-  const properties = [
-    { name: 'Land Deed', icon: FaBuilding, price: '$450K' },
-    { name: 'Commercial', icon: FaIndustry, price: '$1.2M' },
-    { name: 'Residential', icon: FaHome, price: '$320K' }
-  ];
+  const properties = useMemo(() => [
+    { name: t("about.ownershipModels.landDeed"), icon: FaBuilding, price: '$450K' },
+    { name: t("about.ownershipModels.commercial"), icon: FaIndustry, price: '$1.2M' },
+    { name: t("about.ownershipModels.residential"), icon: FaHome, price: '$320K' }
+  ], [t]);
 
-  const features = [
-    { icon: FaLock, title: 'Immutable Records', desc: 'Permanent blockchain storage' },
-    { icon: FaGlobe, title: 'Global Access', desc: 'Trade anywhere, anytime' },
-    { icon: FaShieldAlt, title: 'Legal Protection', desc: 'Full legal recognition' },
-    { icon: FaTrophy, title: 'Asset Proof', desc: 'Verifiable ownership' }
-  ];
+  const features = useMemo(() => [
+    { icon: FaLock, title: t("about.ownershipModels.nftFeature1Title"), desc: t("about.ownershipModels.nftFeature1Desc") },
+    { icon: FaGlobe, title: t("about.ownershipModels.nftFeature2Title"), desc: t("about.ownershipModels.nftFeature2Desc") },
+    { icon: FaShieldAlt, title: t("about.ownershipModels.nftFeature3Title"), desc: t("about.ownershipModels.nftFeature3Desc") },
+    { icon: FaTrophy, title: t("about.ownershipModels.nftFeature4Title"), desc: t("about.ownershipModels.nftFeature4Desc") }
+  ], [t]);
 
   return (
     <div className="grid md:grid-cols-2 gap-8">
@@ -32,13 +35,13 @@ const NFTOwnership: React.FC = () => {
             <FaFileSignature className="text-white text-2xl" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-green-900">NFT Deed Ownership</h3>
-            <p className="text-green-600">Complete & Indivisible</p>
+            <h3 className="text-2xl font-bold text-green-900">{t("about.ownershipModels.nftTitle")}</h3>
+            <p className="text-green-600">{t("about.ownershipModels.nftSubtitle")}</p>
           </div>
         </div>
         
         <p className="text-gray-700 leading-relaxed mb-6">
-          Each property deed is minted as a unique Non-Fungible Token (NFT) on the blockchain, representing complete and indivisible ownership. These immutable digital certificates provide cryptographic proof of ownership.
+          {t("about.ownershipModels.nftDescription")}
         </p>
 
         <div className="space-y-4 mb-6">
@@ -67,7 +70,7 @@ const NFTOwnership: React.FC = () => {
       </div>
 
       <div className="bg-gradient-to-br from-green-600 to-emerald-700 rounded-2xl p-8 text-white shadow-xl">
-        <h4 className="text-2xl font-bold mb-6">Key Features</h4>
+        <h4 className="text-2xl font-bold mb-6">{t("about.ownershipModels.nftKeyFeatures")}</h4>
         <div className="space-y-6">
           {features.map((feature, idx) => (
             <div 

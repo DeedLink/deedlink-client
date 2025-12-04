@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   FaFileSignature,
   FaCubes,
@@ -7,61 +7,73 @@ import {
   FaUserCheck,
   FaExchangeAlt,
 } from "react-icons/fa";
-
-const steps = [
-  {
-    icon: FaUserCheck,
-    title: "Secure Authentication & KYC",
-    description:
-      "Connect your digital wallet and complete comprehensive KYC verification to ensure secure and verified participation in the property registry ecosystem.",
-    features: [
-      "Multi-factor Authentication",
-      "Government ID Verification",
-      "Biometric Security",
-    ],
-  },
-  {
-    icon: FaFileSignature,
-    title: "Digital Deed Registration",
-    description:
-      "Register property deeds on the blockchain with multi-signature verification from government departments including surveyors, notaries, and IVSL officials.",
-    features: [
-      "Multi-Signature Approval",
-      "Document Encryption",
-      "Instant Verification",
-    ],
-  },
-  {
-    icon: FaCubes,
-    title: "Property Tokenization",
-    description:
-      "Convert deeds into NFTs for complete ownership or create fractional tokens (FTs) to enable shared investment and improved liquidity.",
-    features: ["NFT Minting", "Fractional Ownership", "Smart Contract Creation"],
-  },
-  {
-    icon: FaShieldAlt,
-    title: "Escrow-Based Transactions",
-    description:
-      "All property transfers are secured through smart contract escrows, ensuring safe and transparent transactions with QR code verification.",
-    features: ["Automated Escrow", "Fund Protection", "QR Verification"],
-  },
-  {
-    icon: FaExchangeAlt,
-    title: "Marketplace Trading",
-    description:
-      "Buy, sell, or trade tokenized property deeds in a secure marketplace with real-time transaction monitoring and status updates.",
-    features: ["Real-time Trading", "Price Discovery", "Liquidity Pools"],
-  },
-  {
-    icon: FaChartPie,
-    title: "Portfolio Management",
-    description:
-      "Track your property portfolio, view ownership history, manage fractional investments, and access interactive location mapping.",
-    features: ["Analytics Dashboard", "ROI Tracking", "Performance Reports"],
-  },
-];
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const HowItWorks: React.FC = () => {
+  const { t } = useLanguage();
+  
+  const steps = useMemo(() => [
+    {
+      icon: FaUserCheck,
+      title: t("about.howItWorks.step1Title"),
+      description: t("about.howItWorks.step1Desc"),
+      features: [
+        t("about.howItWorks.step1Feature1"),
+        t("about.howItWorks.step1Feature2"),
+        t("about.howItWorks.step1Feature3"),
+      ],
+    },
+    {
+      icon: FaFileSignature,
+      title: t("about.howItWorks.step2Title"),
+      description: t("about.howItWorks.step2Desc"),
+      features: [
+        t("about.howItWorks.step2Feature1"),
+        t("about.howItWorks.step2Feature2"),
+        t("about.howItWorks.step2Feature3"),
+      ],
+    },
+    {
+      icon: FaCubes,
+      title: t("about.howItWorks.step3Title"),
+      description: t("about.howItWorks.step3Desc"),
+      features: [
+        t("about.howItWorks.step3Feature1"),
+        t("about.howItWorks.step3Feature2"),
+        t("about.howItWorks.step3Feature3"),
+      ],
+    },
+    {
+      icon: FaShieldAlt,
+      title: t("about.howItWorks.step4Title"),
+      description: t("about.howItWorks.step4Desc"),
+      features: [
+        t("about.howItWorks.step4Feature1"),
+        t("about.howItWorks.step4Feature2"),
+        t("about.howItWorks.step4Feature3"),
+      ],
+    },
+    {
+      icon: FaExchangeAlt,
+      title: t("about.howItWorks.step5Title"),
+      description: t("about.howItWorks.step5Desc"),
+      features: [
+        t("about.howItWorks.step5Feature1"),
+        t("about.howItWorks.step5Feature2"),
+        t("about.howItWorks.step5Feature3"),
+      ],
+    },
+    {
+      icon: FaChartPie,
+      title: t("about.howItWorks.step6Title"),
+      description: t("about.howItWorks.step6Desc"),
+      features: [
+        t("about.howItWorks.step6Feature1"),
+        t("about.howItWorks.step6Feature2"),
+        t("about.howItWorks.step6Feature3"),
+      ],
+    },
+  ], [t]);
   return (
     <section className="relative py-16 px-4 md:px-10 bg-gradient-to-b from-green-50 via-white to-emerald-50 overflow-hidden">
       {/* Background Pattern */}
@@ -74,10 +86,10 @@ const HowItWorks: React.FC = () => {
       <div className="relative max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold text-green-900 mb-3">
-            How DeedLink Works
+            {t("about.howItWorks.title")}
           </h2>
           <p className="text-gray-700 text-lg max-w-xl mx-auto">
-            A seamless six-step process to revolutionize property ownership
+            {t("about.howItWorks.subtitle")}
           </p>
         </div>
 

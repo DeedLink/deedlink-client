@@ -1,28 +1,31 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FaCubes, FaCheckCircle, FaCoins, FaChartLine, FaUsers, FaClock } from "react-icons/fa";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const FTOwnership: React.FC = () => {
-  const benefits = [
-    'Lower investment barriers',
-    'Enhanced market liquidity',
-    'Portfolio diversification',
-    'Proportional rental income',
-    'Collaborative ownership',
-    'Automated dividend distribution'
-  ];
+  const { t } = useLanguage();
+  
+  const benefits = useMemo(() => [
+    t("about.ownershipModels.ftBenefit1"),
+    t("about.ownershipModels.ftBenefit2"),
+    t("about.ownershipModels.ftBenefit3"),
+    t("about.ownershipModels.ftBenefit4"),
+    t("about.ownershipModels.ftBenefit5"),
+    t("about.ownershipModels.ftBenefit6")
+  ], [t]);
 
-  const fractions = [
+  const fractions = useMemo(() => [
     { share: '25%', tokens: '2,500', price: '$125K' },
     { share: '40%', tokens: '4,000', price: '$200K' },
     { share: '10%', tokens: '1,000', price: '$50K' }
-  ];
+  ], []);
 
-  const investmentBenefits = [
-    { icon: FaCoins, title: 'Micro-Investment', desc: 'Start with as little as $1,000' },
-    { icon: FaChartLine, title: 'High Liquidity', desc: 'Trade tokens on marketplace' },
-    { icon: FaUsers, title: 'Shared Risk', desc: 'Distribute investment risk' },
-    { icon: FaClock, title: 'Passive Income', desc: 'Automatic rental dividends' }
-  ];
+  const investmentBenefits = useMemo(() => [
+    { icon: FaCoins, title: t("about.ownershipModels.ftFeature1Title"), desc: t("about.ownershipModels.ftFeature1Desc") },
+    { icon: FaChartLine, title: t("about.ownershipModels.ftFeature2Title"), desc: t("about.ownershipModels.ftFeature2Desc") },
+    { icon: FaUsers, title: t("about.ownershipModels.ftFeature3Title"), desc: t("about.ownershipModels.ftFeature3Desc") },
+    { icon: FaClock, title: t("about.ownershipModels.ftFeature4Title"), desc: t("about.ownershipModels.ftFeature4Desc") }
+  ], [t]);
 
   return (
     <div className="grid md:grid-cols-2 gap-8">
@@ -32,13 +35,13 @@ const FTOwnership: React.FC = () => {
             <FaCubes className="text-white text-2xl" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-green-900">Fractional Token Investment</h3>
-            <p className="text-green-600">Democratized Ownership</p>
+            <h3 className="text-2xl font-bold text-green-900">{t("about.ownershipModels.ftTitle")}</h3>
+            <p className="text-green-600">{t("about.ownershipModels.ftSubtitle")}</p>
           </div>
         </div>
         
         <p className="text-gray-700 leading-relaxed mb-6">
-          Fractional Tokens (FTs) enable property ownership to be divided into multiple shares, democratizing real estate investment. Each token represents a percentage stake with proportional rights and returns.
+          {t("about.ownershipModels.ftDescription")}
         </p>
 
         <div className="space-y-4 mb-6">
@@ -60,7 +63,7 @@ const FTOwnership: React.FC = () => {
                 <FaCoins className="text-green-600 text-3xl mx-auto" />
               </div>
               <h4 className="font-bold text-green-900 text-lg mb-1">{fraction.share}</h4>
-              <p className="text-gray-600 text-xs mb-1">{fraction.tokens} tokens</p>
+              <p className="text-gray-600 text-xs mb-1">{fraction.tokens} {t("about.ownershipModels.tokens")}</p>
               <p className="text-green-600 font-bold text-xs">{fraction.price}</p>
             </div>
           ))}
@@ -68,7 +71,7 @@ const FTOwnership: React.FC = () => {
       </div>
 
       <div className="bg-gradient-to-br from-emerald-600 to-green-700 rounded-2xl p-8 text-white shadow-xl">
-        <h4 className="text-2xl font-bold mb-6">Investment Benefits</h4>
+        <h4 className="text-2xl font-bold mb-6">{t("about.ownershipModels.ftInvestmentBenefits")}</h4>
         <div className="space-y-6">
           {investmentBenefits.map((benefit, idx) => (
             <div 
