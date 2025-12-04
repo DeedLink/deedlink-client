@@ -17,6 +17,7 @@ import LastWillUI from "../parts/LastWillUI";
 import { getTransactionsByDeedId } from "../../api/api";
 import { useWallet } from "../../contexts/WalletContext";
 import { hasFullOwnership, isPropertyFractionalized } from "../../web3.0/contractService";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface DeedActionBarProps {
   deedNumber: string;
@@ -71,6 +72,7 @@ const DeedActionBar = ({
   const [canDirectTransfer, setCanDirectTransfer] = useState(true);
   const [canSaleEscrow, setCanSaleEscrow] = useState(true);
   const { account } = useWallet();
+  const { t } = useLanguage();
 
   const getTransactions = async () => {
     if (deedId) {
@@ -154,10 +156,10 @@ const DeedActionBar = ({
 
         <div className="flex flex-col gap-2">
           {!isFractionalized ? (
-          <ActionButton
-            icon={<FaEdit size={16} />}
-            label="Create Fractions"
-            onClick={onFractioning}
+              <ActionButton
+                icon={<FaEdit size={16} />}
+                label={t("deedActions.fractionalize")}
+                onClick={onFractioning}
             color={
               numberOfFT !== 0
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
@@ -169,7 +171,7 @@ const DeedActionBar = ({
             onDefractionalize && (
               <ActionButton
                 icon={<FaEdit size={16} />}
-                label="Defractionalize"
+                label={t("deedActions.defractionalize")}
                 onClick={onDefractionalize}
                 color={
                   canDefractionalize
@@ -201,7 +203,7 @@ const DeedActionBar = ({
           {onSaleEscrow && (
             <ActionButton 
               icon={<FaExchangeAlt size={16} />} 
-              label="Sell via Escrow" 
+              label={t("deedActions.sellViaEscrow")} 
               onClick={onSaleEscrow} 
               color={canSaleEscrow ? "bg-white hover:bg-gray-50 text-gray-700 border-gray-300" : "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"}
               disabled={!canSaleEscrow}
@@ -210,7 +212,7 @@ const DeedActionBar = ({
           {onRent && (
             <ActionButton 
               icon={<FaHome size={16} />} 
-              label="Rent the Deed" 
+              label={t("deedActions.rentTheDeed")} 
               onClick={onRent} 
               color={canSetRent ? "bg-white hover:bg-gray-50 text-gray-700 border-gray-300" : "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"}
               disabled={!canSetRent}
@@ -219,29 +221,29 @@ const DeedActionBar = ({
           {onPowerOfAttorney && (
             <ActionButton 
               icon={<FaKey size={16} />} 
-              label="Grant Power of Attorney" 
+              label={t("deedActions.grantPowerOfAttorney")} 
               onClick={onPowerOfAttorney} 
               color={canSetPoA ? "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hidden" : "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200 hidden"}
               disabled={!canSetPoA}
             />
           )}
-          {onOpenMarket && <ActionButton icon={<FaShop size={16} />} label="Add to Open Market" onClick={onOpenMarket} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
+          {onOpenMarket && <ActionButton icon={<FaShop size={16} />} label={t("deedActions.addToOpenMarket")} onClick={onOpenMarket} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
 
           {certificateExists
-            ? onCancelCertificate && <ActionButton icon={<FaGifts size={16} />} label="Cancel Certificate" onClick={onCancelCertificate} color="bg-red-600 hover:bg-red-700 text-white border-red-600" />
-            : onLastWill && <ActionButton icon={<FaGifts size={16} />} label="Create Last Will" onClick={onLastWill} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />
+            ? onCancelCertificate && <ActionButton icon={<FaGifts size={16} />} label={t("deedActions.cancelCertificate")} onClick={onCancelCertificate} color="bg-red-600 hover:bg-red-700 text-white border-red-600" />
+            : onLastWill && <ActionButton icon={<FaGifts size={16} />} label={t("deedActions.createLastWill")} onClick={onLastWill} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />
           }
 
-          {onDownload && <ActionButton icon={<FaFileDownload size={16} />} label="Download PDF" onClick={onDownload} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
-          {onShare && <ActionButton icon={<FaShareAlt size={16} />} label="Share Deed" onClick={onShare} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hidden" />}
-          {tokenId !== undefined && onViewBlockchain && <ActionButton icon={<FaEye size={16} />} label="View on Blockchain" onClick={onViewBlockchain} color="bg-gray-50 hover:bg-gray-100 text-gray-600 border-gray-200 hidden" />}
+          {onDownload && <ActionButton icon={<FaFileDownload size={16} />} label={t("deedActions.downloadPDF")} onClick={onDownload} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
+          {onShare && <ActionButton icon={<FaShareAlt size={16} />} label={t("deedActions.shareDeed")} onClick={onShare} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hidden" />}
+          {tokenId !== undefined && onViewBlockchain && <ActionButton icon={<FaEye size={16} />} label={t("deedActions.viewOnBlockchain")} onClick={onViewBlockchain} color="bg-gray-50 hover:bg-gray-100 text-gray-600 border-gray-200 hidden" />}
         </div>
 
         {tokenId && <div className="mt-6 pt-6 border-t border-gray-200"><RentUI tokenId={tokenId} /></div>}
         {tokenId && <div className="mt-6 pt-6 border-t border-gray-200"><LastWillUI tokenId={tokenId} /></div>}
 
         <div className="mt-6 pt-6 border-t border-gray-200">
-          <div className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-2">Deed Reference</div>
+          <div className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-2">{t("deedActions.deedReference")}</div>
           <div className="font-mono text-sm text-gray-700 bg-gray-50 rounded px-3 py-2 break-all border border-gray-200">{deedNumber}</div>
         </div>
       </div>
@@ -249,8 +251,8 @@ const DeedActionBar = ({
       {isLocked && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-lg z-10">
           <FaLock size={32} className="text-gray-400 mb-3" />
-          <span className="text-gray-600 font-medium text-sm">Actions Locked</span>
-          <span className="text-gray-500 text-xs mt-1">Pending Transaction</span>
+          <span className="text-gray-600 font-medium text-sm">{t("deedActions.actionsLocked")}</span>
+          <span className="text-gray-500 text-xs mt-1">{t("deedActions.pendingTransaction")}</span>
         </div>
       )}
     </div>

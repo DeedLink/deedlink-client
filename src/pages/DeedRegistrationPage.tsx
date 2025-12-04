@@ -177,16 +177,16 @@ const DeedRegistrationPage = () => {
               <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FaFileAlt className="text-gray-400" size={32} />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Deeds Found</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t("messages.noDeedsFound")}</h3>
               <p className="text-gray-600 mb-6">
-                Get started by registering your first property deed
+                {t("messages.getStartedByRegistering")}
               </p>
               <button
                 className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-3 rounded-md transition inline-flex items-center gap-2"
                 onClick={() => setIsOpen(true)}
               >
                 <FaPlus />
-                <span>Register Your First Deed</span>
+                <span>{t("messages.registerYourFirstDeed")}</span>
               </button>
             </div>
           </div>

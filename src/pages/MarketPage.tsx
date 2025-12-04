@@ -187,14 +187,14 @@ const MarketPage: React.FC = () => {
           ) : (
             <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
               <p className="text-gray-500">
-                {searchQuery ? "No listings match your search" : "No listings available"}
+                {searchQuery ? t("messages.noListingsMatchSearch") : t("messages.noListingsAvailable")}
               </p>
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
                   className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
                 >
-                  Clear Search
+                  {t("messages.clearSearch")}
                 </button>
               )}
             </div>

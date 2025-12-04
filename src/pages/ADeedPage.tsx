@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useToast } from "../contexts/ToastContext";
 import { useLoader } from "../contexts/LoaderContext";
+import { useLanguage } from "../contexts/LanguageContext";
 import DeedActionBar from "../components/adeed/deedActionBar";
 import TitleHistory from "../components/parts/TitleHistory";
 import { deleteCertificate, deleteMarketPlacesById, getCertificatesByTokenId } from "../api/api";
@@ -33,6 +34,7 @@ const ADeedPage = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { showLoader, hideLoader } = useLoader();
+  const { t } = useLanguage();
 
   const {
     deed,
@@ -99,16 +101,16 @@ const ADeedPage = () => {
 
   const handleDownload = async () => {
     if (!deed) {
-      showToast("Deed information not available", "error");
+      showToast(t("messages.deedInfoNotAvailable"), "error");
       return;
     }
     try {
       showLoader();
       await generateDeedPDF(deed, plan, signatures, tnx);
-      showToast("PDF downloaded successfully", "success");
+      showToast(t("messages.pdfDownloadedSuccessfully"), "success");
     } catch (error) {
       console.error("Error generating PDF:", error);
-      showToast("Failed to generate PDF", "error");
+      showToast(t("messages.failedToGeneratePDF"), "error");
     } finally {
       hideLoader();
     }
@@ -121,16 +123,16 @@ const ADeedPage = () => {
         text: `Check out this property deed`,
         url: window.location.href,
       }).catch(() => {
-        showToast("Sharing cancelled", "info");
+        showToast(t("messages.sharingCancelled"), "info");
       });
     } else {
       navigator.clipboard.writeText(window.location.href);
-      showToast("Link copied to clipboard", "success");
+      showToast(t("messages.linkCopiedToClipboard"), "success");
     }
   };
 
   const handleViewBlockchain = () => {
-    showToast("Blockchain explorer coming soon", "info");
+    showToast(t("messages.blockchainExplorerComingSoon"), "info");
   };
 
   const handleRemoveMarketListing = async (marketId: string, listingId: string) => {
@@ -141,7 +143,7 @@ const ADeedPage = () => {
       
       if (cancelResult.success) {
         await deleteMarketPlacesById(marketId);
-        showToast("Listing removed successfully", "success");
+        showToast(t("messages.listingRemovedSuccessfully"), "success");
         await getMarketPlaceData();
         
         if (openDefractionalize) {
@@ -149,11 +151,11 @@ const ADeedPage = () => {
           setTimeout(() => setOpenDefractionalize(true), 500);
         }
       } else {
-        showToast("Failed to cancel listing on blockchain", "error");
+        showToast(t("messages.failedToCancelListing"), "error");
       }
     } catch (error: any) {
       console.error("Error removing marketplace listing:", error);
-      showToast(error.message || "Failed to remove listing", "error");
+      showToast(error.message || t("messages.failedToRemoveListing"), "error");
     } finally {
       hideLoader();
     }
@@ -166,7 +168,7 @@ const ADeedPage = () => {
 
   const handleCreateListing = () => {
     if (!deed?.tokenId) {
-      showToast("Cannot create listing: No token ID", "error");
+      showToast(t("messages.cannotCreateListing"), "error");
       return;
     }
     setShowCreateListing(true);
@@ -183,11 +185,11 @@ const ADeedPage = () => {
       showLoader();
       await deleteCertificate(certificate._id);
       setCertificate(null);
-      showToast("Last Will cancelled successfully", "success");
+      showToast(t("messages.lastWillCancelledSuccessfully"), "success");
       setOpenLastWill(false);
     } catch (error) {
       console.error("Error cancelling last will:", error);
-      showToast("Failed to cancel last will", "error");
+      showToast(t("messages.failedToCancelLastWill"), "error");
     } finally {
       hideLoader();
     }
@@ -197,13 +199,13 @@ const ADeedPage = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-2xl font-semibold text-gray-700">Loading deed information...</p>
-          <p className="text-gray-500">If this takes too long, the deed may not exist or there may be a connection issue.</p>
+          <p className="text-2xl font-semibold text-gray-700">{t("messages.loadingDeedInformation")}</p>
+          <p className="text-gray-500">{t("messages.deedMayNotExist")}</p>
           <button
             onClick={() => navigate("/deeds")}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
           >
-            Go to Deeds Page
+            {t("messages.goToDeedsPage")}
           </button>
         </div>
       </div>
@@ -219,7 +221,7 @@ const ADeedPage = () => {
             className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium mb-6 transition"
           >
             <FaArrowLeft />
-            <span>Back</span>
+            <span>{t("common.back")}</span>
           </button>
 
           {deed?._id && (

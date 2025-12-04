@@ -13,6 +13,7 @@ import { useState, useMemo } from "react";
 import { formatCurrency, shortAddress } from "../../utils/format";
 import type { Title } from "../../types/title";
 import type { JSX } from "react/jsx-runtime";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const formatDateWithTime = (date: Date | number) => {
   const dateObj = typeof date === "number" ? new Date(date) : new Date(date);
@@ -94,7 +95,7 @@ const Modal = ({
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
         <div className="flex justify-between items-center p-5 border-b border-gray-200">
-          {header || <h3 className="text-lg font-semibold">Full Title History</h3>}
+          {header || <h3 className="text-lg font-semibold">{t("titleHistory.fullTitleHistory")}</h3>}
           <button onClick={onClose} className="text-gray-600 hover:text-black text-xl">
             ✕
           </button>
@@ -116,6 +117,7 @@ interface OwnerNode {
 }
 
 export const TitleHistory = ({ tnx }: { tnx: Title[] }) => {
+  const { t } = useLanguage();
   const [openModal, setOpenModal] = useState(false);
   const [showTreeView, setShowTreeView] = useState(false);
 
@@ -283,12 +285,12 @@ export const TitleHistory = ({ tnx }: { tnx: Title[] }) => {
       <section className="rounded-xl border border-black/5 p-4">
         <div className="flex items-center gap-2 mb-3">
           <FaLayerGroup className="text-green-700" />
-          <h4 className="font-semibold text-black">Title History</h4>
+          <h4 className="font-semibold text-black">{t("titleHistory.titleHistory")}</h4>
         </div>
 
         <div className="space-y-3 overflow-auto max-h-64 pr-1 py-1">
           {(!tnx || tnx.length === 0) && (
-            <p className="text-gray-500 text-sm">No transfers recorded.</p>
+            <p className="text-gray-500 text-sm">{t("titleHistory.noTransfersRecorded")}</p>
           )}
           {renderRows(tnx.slice(0, 5))}
         </div>
@@ -308,7 +310,7 @@ export const TitleHistory = ({ tnx }: { tnx: Title[] }) => {
         onClose={() => setOpenModal(false)}
         header={
           <div className="flex items-center justify-between w-full">
-            <h3 className="text-lg font-semibold">Full Title History</h3>
+            <h3 className="text-lg font-semibold">{t("titleHistory.fullTitleHistory")}</h3>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowTreeView(!showTreeView)}
@@ -331,7 +333,7 @@ export const TitleHistory = ({ tnx }: { tnx: Title[] }) => {
             <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
               <div className="flex items-center gap-2 mb-4">
                 <FaSitemap className="text-blue-600" />
-                <h4 className="font-semibold text-gray-900">Fractional Ownership Tree</h4>
+                <h4 className="font-semibold text-gray-900">{t("titleHistory.fractionalOwnershipTree")}</h4>
               </div>
               <div className="bg-white rounded-lg p-4 border border-gray-200 overflow-x-auto max-h-[60vh] overflow-y-auto">
                 <div className="text-xs text-gray-500 mb-3 pb-2 border-b border-gray-200">

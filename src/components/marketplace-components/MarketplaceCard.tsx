@@ -6,6 +6,7 @@ import { getDeedById } from "../../api/api";
 import type { IDeed } from "../../types/responseDeed";
 import { useToast } from "../../contexts/ToastContext";
 import BuyMarketplacePopup from "./BuyMarketplacePopup";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface MarketplaceCardProps {
   marketplace: Marketplace;
@@ -20,6 +21,7 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const [deed, setDeed] = useState<IDeed | null>(null);
   const [loading, setLoading] = useState(true);
   const [showBuyPopup, setShowBuyPopup] = useState(false);
@@ -134,15 +136,15 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
               <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg p-4 border-2 border-indigo-200">
                 <div className="flex items-center gap-2 mb-3">
                   <FaCoins className="text-indigo-600" size={16} />
-                  <span className="text-xs font-bold text-indigo-700 uppercase tracking-wide">Fractional Token Listing</span>
+                  <span className="text-xs font-bold text-indigo-700 uppercase tracking-wide">{t("marketplaceCard.fractionalTokenListing")}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-white rounded-lg p-3 border border-indigo-200">
-                    <div className="text-xs text-indigo-600 mb-1 font-medium">Share</div>
+                    <div className="text-xs text-indigo-600 mb-1 font-medium">{t("marketplaceCard.share")}</div>
                     <div className="text-lg font-bold text-gray-900">{marketplace.share.toFixed(4)}%</div>
                   </div>
                   <div className="bg-white rounded-lg p-3 border border-indigo-200">
-                    <div className="text-xs text-indigo-600 mb-1 font-medium">Price/Token</div>
+                    <div className="text-xs text-indigo-600 mb-1 font-medium">{t("marketplaceCard.pricePerToken")}</div>
                     <div className="text-lg font-bold text-gray-900 flex items-center gap-1">
                       <FaEthereum size={14} className="text-indigo-600" />
                       {pricePerToken || marketplace.amount} ETH
@@ -151,7 +153,7 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
                 </div>
                 <div className="mt-3 pt-3 border-t border-indigo-200">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-indigo-600 font-medium">Total Value</span>
+                    <span className="text-xs text-indigo-600 font-medium">{t("marketplaceCard.totalValue")}</span>
                     <span className="text-base font-bold text-gray-900 flex items-center gap-1">
                       <FaEthereum size={14} className="text-indigo-600" />
                       {marketplace.amount} ETH
@@ -163,9 +165,9 @@ const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
           ) : (
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4 border-2 border-purple-200">
-                <div className="text-xs text-purple-600 mb-1 font-medium">Share</div>
+                <div className="text-xs text-purple-600 mb-1 font-medium">{t("marketplaceCard.share")}</div>
                 <div className="text-2xl font-bold text-gray-900">{marketplace.share}%</div>
-                <div className="text-xs text-purple-600 mt-1">Full Property</div>
+                <div className="text-xs text-purple-600 mt-1">{t("marketplaceCard.fullProperty")}</div>
               </div>
               <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4 border-2 border-purple-200">
                 <div className="text-xs text-purple-600 mb-1 font-medium">Price</div>

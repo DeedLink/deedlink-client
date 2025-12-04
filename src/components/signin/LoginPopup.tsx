@@ -7,6 +7,7 @@ import { compressAddress } from "../../utils/format";
 import { loginUser } from "../../api/api";
 import { useToast } from "../../contexts/ToastContext";
 import { isValidEmail, isValidPassword, roleBarier } from "../../utils/functions";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const LoginPopup = () => {
   const { isOpen, closeLogin, setToken, setUser } = useLogin();
@@ -14,6 +15,7 @@ const LoginPopup = () => {
   const [password, setPassword] = useState("");
   const { account, connect } = useWallet();
   const { showToast } = useToast();
+  const { t } = useLanguage();
 
   const handleLogin = async () => {
     try {
@@ -22,17 +24,17 @@ const LoginPopup = () => {
         const res = await loginUser({ email, password, walletAddress });
         if (res) {
           if(roleBarier(res.user.role, ["user"])===false) {
-            showToast("Access denied: Unauthorized role", "error");
+            showToast(t("auth.accessDenied"), "error");
             return;
           }
           setUser(res.user);
           setToken(res.token);
           closeLogin();
-          showToast("Login successful!", "success");
+          showToast(t("auth.loginSuccessful"), "success");
         }
       }
     } catch (err) {
-      showToast("Login failed. Check your credentials.", "error");
+      showToast(t("auth.loginFailed"), "error");
     }
   };
 
@@ -56,12 +58,12 @@ const LoginPopup = () => {
 
         <div className="flex items-center justify-center gap-2 mb-6">
           <FaLock className="text-green-700" />
-          <h2 className="text-xl font-bold text-[#00420A]">Secure Login</h2>
+          <h2 className="text-xl font-bold text-[#00420A]">{t("auth.secureLogin")}</h2>
         </div>
 
         <input
           type="email"
-          placeholder="Email Address"
+          placeholder={t("auth.emailAddress")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 focus:ring-2 focus:ring-green-600 outline-none text-[#00420A]"
@@ -69,7 +71,7 @@ const LoginPopup = () => {
 
         <input
           type="password"
-          placeholder="Password"
+          placeholder={t("auth.password")}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-6 focus:ring-2 focus:ring-green-600 outline-none text-[#00420A]"
@@ -92,7 +94,7 @@ const LoginPopup = () => {
           ) : (
             <>
               <FaWallet />
-              Connect Wallet
+              {t("auth.connectWallet")}
             </>
           )}
         </button>
@@ -106,7 +108,7 @@ const LoginPopup = () => {
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
           }`}
         >
-          Login
+          {t("auth.login")}
         </button>
       </div>
     </div>
