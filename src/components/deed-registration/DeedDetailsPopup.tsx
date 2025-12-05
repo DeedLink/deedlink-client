@@ -6,6 +6,7 @@ import { useToast } from "../../contexts/ToastContext";
 import { useEffect, useState } from "react";
 import { defaultPlan, type Plan } from "../../types/plan";
 import TitleHistory from "../parts/TitleHistory";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface ISignatures {
   surveyor: boolean;
@@ -25,6 +26,7 @@ const DeedDetailsPopup = ({
 }) => {
   if (!isOpen || !deed) return null;
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const [plan, setPlan] = useState<Plan>(defaultPlan);
   const [tnx, setTnx] = useState<any[]>([]);
 
@@ -75,7 +77,7 @@ const DeedDetailsPopup = ({
       }
     }
     else{
-      showToast("Plan number not found", "error");
+      showToast(t("deedDetails.planNumberNotFound"), "error");
     }
   };
 
@@ -91,7 +93,7 @@ const DeedDetailsPopup = ({
         console.log("Transactions:", sortedTnx);
       }
     } else {
-      showToast("Deed ID not found", "error");
+      showToast(t("deedDetails.deedIdNotFound"), "error");
     }
   };
 
@@ -117,7 +119,7 @@ const DeedDetailsPopup = ({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <FaFileSignature className="text-green-700 flex-shrink-0" size={18} />
-                <h3 className="text-lg sm:text-xl font-bold text-[#00420A] truncate">Deed #{deed.deedNumber}</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-[#00420A] truncate">{t("deedDetails.deedNumber")}{deed.deedNumber}</h3>
               </div>
               <p className="text-xs text-gray-600 mt-1 truncate">
                 {deed.deedType.deedType} • {deed.district}, {deed.division}
@@ -133,26 +135,26 @@ const DeedDetailsPopup = ({
               <section className="rounded-lg border border-black/5 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <FaIdCard className="text-green-700" size={16} />
-                  <h4 className="font-semibold text-sm sm:text-base">Owner Information</h4>
+                  <h4 className="font-semibold text-sm sm:text-base">{t("deedDetails.ownerInformation")}</h4>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Full Name</div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">{t("deedDetails.fullName")}</div>
                     <div className="text-sm font-medium text-gray-800 mt-0.5 truncate">{deed.ownerFullName}</div>
                   </div>
                   <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">NIC Number</div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">{t("deedDetails.nicNumber")}</div>
                     <div className="text-sm font-medium text-gray-800 mt-0.5">{deed.ownerNIC}</div>
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide flex items-center gap-1">
-                      <FaPhone size={9} /> Phone
+                      <FaPhone size={9} /> {t("deedDetails.phone")}
                     </div>
                     <div className="text-sm font-medium text-gray-800 mt-0.5">{deed.ownerPhone}</div>
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide flex items-center gap-1">
-                      <FaHome size={9} /> Address
+                      <FaHome size={9} /> {t("deedDetails.address")}
                     </div>
                     <div className="text-sm font-medium text-gray-800 mt-0.5 truncate">{deed.ownerAddress}</div>
                   </div>
@@ -162,7 +164,7 @@ const DeedDetailsPopup = ({
               <section className="rounded-lg border border-black/5 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <FaUserShield className="text-green-700" size={16} />
-                  <h4 className="font-semibold text-sm sm:text-base">Ownership</h4>
+                  <h4 className="font-semibold text-sm sm:text-base">{t("deedDetails.ownership")}</h4>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {deed.owners.map((o, idx) => (
@@ -176,26 +178,26 @@ const DeedDetailsPopup = ({
               <section className="rounded-lg border border-black/5 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <FaMapMarkedAlt className="text-green-700" size={16} />
-                  <h4 className="font-semibold text-sm sm:text-base">Land Details</h4>
+                  <h4 className="font-semibold text-sm sm:text-base">{t("deedDetails.landDetails")}</h4>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Title Number</div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">{t("deedDetails.titleNumber")}</div>
                     <div className="text-sm font-medium text-gray-800 mt-0.5">{deed.landTitleNumber}</div>
                   </div>
                   <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Land Address</div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">{t("deedDetails.landAddress")}</div>
                     <div className="text-sm font-medium text-gray-800 mt-0.5 truncate">{deed.landAddress}</div>
                   </div>
                   {deed.surveyPlanNumber && (
                     <div className="sm:col-span-2">
-                      <div className="text-xs text-gray-500 uppercase tracking-wide">Survey Plan Number</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">{t("deedDetails.surveyPlanNumber")}</div>
                       <div className="text-sm font-medium text-gray-800 mt-0.5">{deed.surveyPlanNumber}</div>
                     </div>
                   )}
                   {deed.boundaries && (
                     <div className="sm:col-span-2">
-                      <div className="text-xs text-gray-500 uppercase tracking-wide">Boundaries</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">{t("deedDetails.boundaries")}</div>
                       <div className="text-sm font-medium text-gray-800 mt-0.5">{deed.boundaries}</div>
                     </div>
                   )}
@@ -206,7 +208,7 @@ const DeedDetailsPopup = ({
                 <section className="rounded-lg border border-black/5 p-3 sm:p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <FaRoute className="text-green-700" size={16} />
-                    <h4 className="font-semibold text-sm sm:text-base">Boundary Deeds</h4>
+                    <h4 className="font-semibold text-sm sm:text-base">{t("deedDetails.boundaryDeeds")}</h4>
                   </div>
                   <ul className="text-xs sm:text-sm text-gray-700 space-y-1.5">
                     {Object.entries(plan?.sides).map(([direction, deedNum]) => (
@@ -224,20 +226,20 @@ const DeedDetailsPopup = ({
               <section className="rounded-lg border border-black/5 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <FaMapMarkedAlt className="text-green-700" size={16} />
-                  <h4 className="font-semibold text-sm sm:text-base">Coordinates</h4>
+                  <h4 className="font-semibold text-sm sm:text-base">{t("deedDetails.coordinates")}</h4>
                 </div>
                 <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 max-h-40 overflow-y-auto">
                   {plan?.coordinates?.length ? (
                     plan.coordinates.map((loc, idx) => (
                       <div key={idx} className="bg-gray-50 rounded-lg p-2 text-xs">
-                        <div className="text-gray-500">Point {idx + 1}</div>
+                        <div className="text-gray-500">{t("deedDetails.point")} {idx + 1}</div>
                         <div className="font-mono text-gray-700 mt-0.5 text-xs">
                           {loc.latitude.toFixed(6)}, {loc.longitude.toFixed(6)}
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="text-gray-400 text-xs italic">No coordinates found</div>
+                    <div className="text-gray-400 text-xs italic">{t("deedDetails.noCoordinatesFound")}</div>
                   )}
 
                 </div>
@@ -246,7 +248,7 @@ const DeedDetailsPopup = ({
 
             <aside className="space-y-4">
               <div className="rounded-lg border border-black/5 p-3 sm:p-4">
-                <div className="text-xs text-gray-500 uppercase tracking-wide">Value</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide">{t("deedDetails.value")}</div>
                 <div className="text-xl sm:text-2xl font-bold text-green-900 mt-0.5">
                 {deed.valuation && deed.valuation.length > 0
                   ? formatCurrency(
@@ -257,12 +259,12 @@ const DeedDetailsPopup = ({
                   : formatCurrency(0)}
                 </div>
                 
-                <div className="mt-4 text-xs text-gray-500 uppercase tracking-wide">Area</div>
+                <div className="mt-4 text-xs text-gray-500 uppercase tracking-wide">{t("deedDetails.area")}</div>
                 <div className="text-xl sm:text-2xl font-bold text-green-900 mt-0.5">
                   {deed.landArea.toLocaleString()} {deed.landSizeUnit || 'Sqm'}
                 </div>
                 
-                <div className="mt-4 text-xs text-gray-500 uppercase tracking-wide">Type</div>
+                <div className="mt-4 text-xs text-gray-500 uppercase tracking-wide">{t("deedDetails.type")}</div>
                 <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full font-semibold text-xs mt-1.5 ${getLandTypeColor(deed.landType)}`}>
                   <span>{getLandTypeIcon(deed.landType)}</span>
                   <span className="capitalize">{deed.landType}</span>
@@ -272,7 +274,7 @@ const DeedDetailsPopup = ({
               <div className="rounded-lg border border-black/5 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <FaCalendarAlt className="text-green-700" size={14} />
-                  <h4 className="font-semibold text-sm">Registered</h4>
+                  <h4 className="font-semibold text-sm">{t("deedDetails.registered")}</h4>
                 </div>
                 <div className="text-xs sm:text-sm text-gray-700">
                   {formatDate(deed.registrationDate)}
@@ -281,12 +283,12 @@ const DeedDetailsPopup = ({
 
               {deed.signatures && (
                 <div className="rounded-lg border border-black/5 p-3 sm:p-4">
-                  <h4 className="font-semibold text-sm mb-3">Signatures</h4>
+                  <h4 className="font-semibold text-sm mb-3">{t("deedDetails.signatures")}</h4>
                   <div className="space-y-2">
                     {[
-                      { label: "Surveyor", value: deed.signatures.surveyor, assigned: deed.surveyAssigned },
-                      { label: "Notary", value: deed.signatures.notary, assigned: deed.notaryAssigned },
-                      { label: "IVSL", value: deed.signatures.ivsl, assigned: deed.ivslAssigned },
+                      { label: t("deedDetails.surveyor"), value: deed.signatures.surveyor, assigned: deed.surveyAssigned },
+                      { label: t("deedDetails.notary"), value: deed.signatures.notary, assigned: deed.notaryAssigned },
+                      { label: t("deedDetails.ivsl"), value: deed.signatures.ivsl, assigned: deed.ivslAssigned },
                     ].map((sig) => (
                       <div key={sig.label}>
                         <div className="flex items-center justify-between">
@@ -308,13 +310,13 @@ const DeedDetailsPopup = ({
 
               {deed.tokenId !== undefined && (
                 <div className="rounded-lg border border-black/5 p-3 sm:p-4">
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Token ID</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">{t("deedDetails.tokenId")}</div>
                   <div className="text-base sm:text-lg font-bold text-green-900 mt-0.5">#{deed.tokenId}</div>
                 </div>
               )}
 
               <div className="rounded-lg border border-black/5 p-3 sm:p-4">
-                <div className="text-xs text-gray-500 uppercase tracking-wide">Created</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide">{t("deedDetails.created")}</div>
                 <div className="text-xs sm:text-sm text-gray-700 mt-1">
                   {formatDate(deed.timestamp)}
                 </div>

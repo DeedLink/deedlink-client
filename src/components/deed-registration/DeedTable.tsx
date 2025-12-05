@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import type { Owner, DeedRegisterStatus } from "../../types/types";
 import { getSignatures } from "../../web3.0/contractService";
 import type { IDeed } from "../../types/responseDeed";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface ISignatures {
   surveyor: boolean;
@@ -30,6 +31,7 @@ const deriveRegisterStatus = (sigs?: ISignatures): "Approved" | "Pending" => {
 };
 
 const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [deedsWithSigs, setDeedsWithSigs] = useState<DeedWithSigs[]>([]);
@@ -95,14 +97,28 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
       ? "bg-emerald-100 text-emerald-700"
       : "bg-red-100 text-red-700";
 
+  const getStatusLabel = (status?: string) => {
+    if (status === "Pending") return t("deedRegistration.pending");
+    if (status === "Approved") return t("deedRegistration.approved");
+    if (status === "Rejected") return t("deedRegistration.rejected");
+    return t("deedRegistration.pending");
+  };
+
+  const getTabLabel = (tab: string) => {
+    if (tab === "Pending") return t("deedRegistration.pending");
+    if (tab === "Approved") return t("deedRegistration.approved");
+    if (tab === "Rejected") return t("deedRegistration.rejected");
+    return tab;
+  };
+
   return (
     <div className="w-full">
       <div className="w-full p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
-          <h2 className="text-xl font-bold text-gray-900">{activeTab} Deeds</h2>
+          <h2 className="text-xl font-bold text-gray-900">{getTabLabel(activeTab)} {t("deedRegistration.deeds")}</h2>
           <input
             type="text"
-            placeholder="Search deeds..."
+            placeholder={t("deedRegistration.searchPlaceholder")}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -117,19 +133,19 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Deed Number
+                  {t("deedRegistration.deedNumber")}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Location
+                  {t("deedRegistration.location")}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Owner
+                  {t("deedRegistration.owner")}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Status
+                  {t("deedRegistration.status")}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Action
+                  {t("deedRegistration.action")}
                 </th>
               </tr>
             </thead>
@@ -142,7 +158,7 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
                     <td className="px-4 py-4 text-gray-700">{deed.ownerFullName}</td>
                     <td className="px-4 py-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadgeClasses(deed.registerStatus)}`}>
-                        {deed.registerStatus || "Pending"}
+                        {getStatusLabel(deed.registerStatus)}
                       </span>
                     </td>
                     <td className="px-4 py-4">
@@ -150,7 +166,7 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
                         onClick={() => onView(deed)} 
                         className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-md transition"
                       >
-                        View
+                        {t("deedRegistration.view")}
                       </button>
                     </td>
                   </tr>
@@ -158,7 +174,7 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
               ) : (
                 <tr>
                   <td colSpan={5} className="text-center py-8 text-gray-500">
-                    No deeds found.
+                    {t("deedRegistration.noDeedsFound")}
                   </td>
                 </tr>
               )}
@@ -173,31 +189,31 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="font-bold text-gray-900">{deed.ownerFullName}</h3>
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadgeClasses(deed.registerStatus)}`}>
-                    {deed.registerStatus || "Pending"}
+                    {getStatusLabel(deed.registerStatus)}
                   </span>
                 </div>
                 <p className="text-sm text-gray-700 mb-1">
-                  <span className="font-semibold">Deed Number:</span> {deed.deedNumber}
+                  <span className="font-semibold">{t("deedRegistration.deedNumber")}:</span> {deed.deedNumber}
                 </p>
                 <p className="text-sm text-gray-700 mb-3">
-                  <span className="font-semibold">Location:</span> {deed.district}
+                  <span className="font-semibold">{t("deedRegistration.location")}:</span> {deed.district}
                 </p>
                 <button 
                   onClick={() => onView(deed)} 
                   className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-md transition"
                 >
-                  View Details
+                  {t("deedRegistration.viewDetails")}
                 </button>
               </div>
             ))
           ) : (
-            <p className="text-center text-gray-500 py-8">No deeds found.</p>
+            <p className="text-center text-gray-500 py-8">{t("deedRegistration.noDeedsFound")}</p>
           )}
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
           <span className="text-sm text-gray-600">
-            Page {currentPage} of {totalPages || 1}
+            {t("deedRegistration.page")} {currentPage} {t("deedRegistration.of")} {totalPages || 1}
           </span>
           <div className="flex gap-2">
             <button
@@ -209,7 +225,7 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
                   : "bg-emerald-500 hover:bg-emerald-600 text-white"
               }`}
             >
-              Prev
+              {t("deedRegistration.prev")}
             </button>
             <button
               disabled={currentPage === totalPages || totalPages === 0}
@@ -220,7 +236,7 @@ const DeedTable = ({ deeds = [], activeTab, onView }: DeedTableProps) => {
                   : "bg-emerald-500 hover:bg-emerald-600 text-white"
               }`}
             >
-              Next
+              {t("deedRegistration.next")}
             </button>
           </div>
         </div>

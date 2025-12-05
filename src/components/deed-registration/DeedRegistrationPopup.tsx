@@ -12,6 +12,7 @@ import {
   SRI_LANKA_DISTRICTS,
   SRI_LANKA_DIVISIONS_BY_DISTRICT
 } from "../../constants/sriLankaLocations";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const LandRegistrationPopup = ({
   isOpen,
@@ -25,6 +26,7 @@ const LandRegistrationPopup = ({
   const { account } = useWallet();
   const { showLoader, hideLoader } = useLoader();
   const { showAlert } = useAlert();
+  const { t } = useLanguage();
   const [user] = useState<User | null>(getItem("session", "user"));
   const [formData, setFormData] = useState({
     ownerWalletAddress: account,
@@ -128,14 +130,14 @@ const LandRegistrationPopup = ({
       // Success: show alert, clear form, refresh page
       showAlert({
         type: "success",
-        title: "Registration Successful",
+        title: t("deedRegistrationForm.registrationSuccessful"),
         htmlContent: (
           <div className="space-y-2">
-            <p>Your deed has been registered successfully!</p>
-            <p className="text-sm text-gray-600">The page will refresh now.</p>
+            <p>{t("deedRegistrationForm.registrationSuccessful")}</p>
+            <p className="text-sm text-gray-600">{t("deedRegistrationForm.pageWillRefresh")}</p>
           </div>
         ),
-        confirmText: "OK",
+        confirmText: t("deedRegistrationForm.ok"),
         onConfirm: () => {
           // Clear form
           setFormData({
@@ -177,16 +179,16 @@ const LandRegistrationPopup = ({
       console.error("Registration failed:", error);
       showAlert({
         type: "error",
-        title: "Registration Failed",
+        title: t("deedRegistrationForm.registrationFailed"),
         htmlContent: (
           <div className="space-y-2">
-            <p>Failed to register deed. Please try again.</p>
+            <p>{t("deedRegistrationForm.registrationFailed")}</p>
             <p className="text-sm text-gray-600 font-mono break-words">
               {error?.message || "Unknown error"}
             </p>
           </div>
         ),
-        confirmText: "OK"
+        confirmText: t("deedRegistrationForm.ok")
       });
     } finally {
       hideLoader();
@@ -233,20 +235,20 @@ const LandRegistrationPopup = ({
             ✕
           </button>
           <h2 className="text-2xl font-bold text-green-900 mb-2 text-center">
-            Register New Land
+            {t("deedRegistrationForm.registerNewLand")}
           </h2>
           <p className="text-gray-700 text-sm mb-6 text-center">
-            Please provide all required details to securely register your property.
+            {t("deedRegistrationForm.provideDetails")}
           </p>
           <form onSubmit={handleSubmit} className="space-y-6 text-gray-700">
             <div>
               <label className="text-lg font-semibold text-green-800 mb-2 flex justify-between items-center">
-                Wallet Address
+                {t("deedRegistrationForm.walletAddress")}
               </label>
               <input
                 type="text"
                 disabled
-                placeholder={account || "Not connected"}
+                placeholder={account || t("deedRegistrationForm.notConnected")}
                 className="w-full border rounded-lg px-4 py-2 bg-gray-100 text-gray-500"
               />
             </div>
@@ -256,7 +258,7 @@ const LandRegistrationPopup = ({
                 onClick={() => toggleSection("owner")}
                 className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center"
               >
-                Owner Details
+                {t("deedRegistrationForm.ownerDetails")}
                 <span>{activeSection === "owner" ? "−" : "+"}</span>
               </h3>
               {activeSection === "owner" && (
@@ -264,7 +266,7 @@ const LandRegistrationPopup = ({
                   <input
                     name="ownerFullName"
                     disabled={true}
-                    placeholder="Full Name"
+                    placeholder={t("deedRegistrationForm.fullName")}
                     value={formData.ownerFullName || user?.name || ""}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 bg-gray-100 text-gray-500"
@@ -273,7 +275,7 @@ const LandRegistrationPopup = ({
                   <input
                     name="ownerNIC"
                     disabled={true}
-                    placeholder="NIC Number"
+                    placeholder={t("deedRegistrationForm.nicNumber")}
                     value={formData.ownerNIC || user?.nic || ""}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 bg-gray-100 text-gray-500"
@@ -281,14 +283,14 @@ const LandRegistrationPopup = ({
                   />
                   <input
                     name="ownerPhone"
-                    placeholder="Phone Number"
+                    placeholder={t("deedRegistrationForm.phoneNumber")}
                     value={formData.ownerPhone}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                   />
                   <input
                     name="ownerAddress"
-                    placeholder="Address"
+                    placeholder={t("deedRegistrationForm.address")}
                     value={formData.ownerAddress}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 sm:col-span-2"
@@ -302,14 +304,14 @@ const LandRegistrationPopup = ({
                 onClick={() => toggleSection("land")}
                 className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center"
               >
-                Land Details
+                {t("deedRegistrationForm.landDetails")}
                 <span>{activeSection === "land" ? "−" : "+"}</span>
               </h3>
               {activeSection === "land" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <input
                     name="landTitleNumber"
-                    placeholder="Title Number"
+                    placeholder={t("deedRegistrationForm.titleNumber")}
                     value={formData.landTitleNumber}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
@@ -317,7 +319,7 @@ const LandRegistrationPopup = ({
                   />
                   <input
                     name="landAddress"
-                    placeholder="Land Address"
+                    placeholder={t("deedRegistrationForm.landAddress")}
                     value={formData.landAddress}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
@@ -325,7 +327,7 @@ const LandRegistrationPopup = ({
                   />
                   <input
                     name="landArea"
-                    placeholder="Land Size"
+                    placeholder={t("deedRegistrationForm.landSize")}
                     value={formData.landArea}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
@@ -348,21 +350,21 @@ const LandRegistrationPopup = ({
                   </select>
                   <input
                     name="surveyPlanNumber"
-                    placeholder="Survey Plan Number"
+                    placeholder={t("deedRegistrationForm.surveyPlanNumber")}
                     value={formData.surveyPlanNumber}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                   />
                   <input
                     name="propertyValue"
-                    placeholder="Property Value"
+                    placeholder={t("deedRegistrationForm.propertyValue")}
                     value={formData.propertyValue}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                   />
                   <textarea
                     name="boundaries"
-                    placeholder="Boundaries (North, South, East, West)"
+                    placeholder={t("deedRegistrationForm.boundaries")}
                     value={formData.boundaries}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 sm:col-span-2"
@@ -374,7 +376,7 @@ const LandRegistrationPopup = ({
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 bg-white"
                     required
                   >
-                    <option value="">Select District</option>
+                    <option value="">{t("deedRegistrationForm.selectDistrict")}</option>
                     {SRI_LANKA_DISTRICTS.map((district) => (
                       <option key={district} value={district}>
                         {district}
@@ -391,8 +393,8 @@ const LandRegistrationPopup = ({
                   >
                     <option value="">
                       {formData.district
-                        ? "Select Division"
-                        : "Select a district first"}
+                        ? t("deedRegistrationForm.selectDivision")
+                        : t("deedRegistrationForm.selectDistrict")}
                     </option>
                     {divisionOptions.map((division) => (
                       <option key={division} value={division}>
@@ -409,14 +411,14 @@ const LandRegistrationPopup = ({
                 onClick={() => toggleSection("support")}
                 className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center"
               >
-                Supporting Details
+                {t("deedRegistrationForm.supportingDetails")}
                 <span>{activeSection === "support" ? "−" : "+"}</span>
               </h3>
               {activeSection === "support" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <input
                     name="deedNumber"
-                    placeholder="Deed Number"
+                    placeholder={t("deedRegistrationForm.deedNumber")}
                     value={formData.deedNumber}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
@@ -431,7 +433,7 @@ const LandRegistrationPopup = ({
 
                   <div className="sm:col-span-2">
                     <label className="block text-sm font-medium mb-1">
-                      Upload Deed Document (optional)
+                      {t("deedRegistrationForm.uploadDeedDocument")}
                     </label>
                     <input
                       type="file"
@@ -446,14 +448,14 @@ const LandRegistrationPopup = ({
                     />
                     {formData.deedDocument && (
                       <p className="text-xs text-gray-500 mt-1">
-                        Selected: {formData.deedDocument.name}
+                        {t("deedRegistrationForm.selected")}: {formData.deedDocument.name}
                       </p>
                     )}
                   </div>
 
                   <div className="sm:col-span-2">
                     <label className="block text-sm font-medium mb-1">
-                      Upload Title Document (optional)
+                      {t("deedRegistrationForm.uploadTitleDocument")}
                     </label>
                     <input
                       type="file"
@@ -468,7 +470,7 @@ const LandRegistrationPopup = ({
                     />
                     {formData.titleDocument && (
                       <p className="text-xs text-gray-500 mt-1">
-                        Selected: {formData.titleDocument.name}
+                        {t("deedRegistrationForm.selected")}: {formData.titleDocument.name}
                       </p>
                     )}
                   </div>
@@ -481,18 +483,18 @@ const LandRegistrationPopup = ({
                 onClick={() => toggleSection("authorities")}
                 className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center"
               >
-                Relevant Authorities
+                {t("deedRegistrationForm.relevantAuthorities")}
                 <span>{activeSection === "authorities" ? "−" : "+"}</span>
               </h3>
               {activeSection === "authorities" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {renderAutocompleteInput(
                     "surveyor",
-                    "Surveyor",
+                    t("deedRegistrationForm.surveyor"),
                     surveyorSuggestions
                   )}
-                  {renderAutocompleteInput("notary", "Notary", notarySuggestions)}
-                  {renderAutocompleteInput("IVSL", "IVSL", ivslSuggestions)}
+                  {renderAutocompleteInput("notary", t("deedRegistrationForm.notary"), notarySuggestions)}
+                  {renderAutocompleteInput("IVSL", t("deedRegistrationForm.ivsl"), ivslSuggestions)}
                 </div>
               )}
             </div>
@@ -503,13 +505,13 @@ const LandRegistrationPopup = ({
                 onClick={onClose}
                 className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg shadow-md transition"
               >
-                Cancel
+                {t("deedRegistrationForm.cancel")}
               </button>
               <button
                 type="submit"
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-md transition"
               >
-                Submit for Registration
+                {t("deedRegistrationForm.submitForRegistration")}
               </button>
             </div>
           </form>
