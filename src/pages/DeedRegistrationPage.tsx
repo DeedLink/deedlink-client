@@ -54,20 +54,34 @@ const DeedRegistrationPage = () => {
 
   useEffect(() => {
     const fetchStatusCounts = async () => {
-      if (!deeds) {
+      if (!deeds || deeds.length === 0) {
         setStatusCounts({ Pending: 0, Approved: 0, Rejected: 0 });
         return;
       }
-      let pending = 0;
-      let approved = 0;
-      for (const d of deeds) {
-        const sigs = await getSignatures(d.tokenId!);
-        if (sigs.fully) {
-          approved++;
-        } else {
-          pending++;
-        }
-      }
+      
+      // Use Promise.all to fetch all signatures in parallel, matching DeedTable's approach
+      const results = await Promise.all(
+        deeds.map(async (d) => {
+          try {
+            if (d.tokenId !== undefined && d.tokenId !== null) {
+              const sigs = await getSignatures(d.tokenId);
+              return sigs.fully ? "Approved" : "Pending";
+            } else {
+              // If no tokenId, it's pending
+              return "Pending";
+            }
+          } catch (err) {
+            // If getSignatures fails, treat as pending (matching DeedTable behavior)
+            console.error("Error fetching signatures for deed:", d.deedNumber, err);
+            return "Pending";
+          }
+        })
+      );
+      
+      // Count the results
+      const pending = results.filter((status) => status === "Pending").length;
+      const approved = results.filter((status) => status === "Approved").length;
+      
       setStatusCounts({ Pending: pending, Approved: approved, Rejected: 0 });
     };
     fetchStatusCounts();
