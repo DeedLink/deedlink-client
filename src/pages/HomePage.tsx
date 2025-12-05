@@ -409,11 +409,11 @@ const HomePage = () => {
         </div>
       </section>
 
-      {user &&  
-      <div className="w-full pt-6 sm:pt-8 md:pt-12 px-4 sm:px-6 md:px-16">
-        <UserDetailsCard user={user}/>
-      </div>
-      }
+      {user && (
+        <section className="w-full py-8 md:py-12">
+          <UserDetailsCard user={user}/>
+        </section>
+      )}
 
       <section className="bg-emerald-900 text-white">
         <div className="max-w-boundary mx-auto px-4 sm:px-6 md:px-16 py-8 sm:py-12 md:py-16">
