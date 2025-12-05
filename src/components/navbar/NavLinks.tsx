@@ -18,7 +18,7 @@ const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
     if (href === "/") {
       return location.pathname === "/";
     }
-    return location.pathname.startsWith(href);
+    return location.pathname===href;
   };
 
   return (
