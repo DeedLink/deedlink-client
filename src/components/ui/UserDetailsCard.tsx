@@ -78,111 +78,109 @@ const UserDetailsCard = ({ user }: any) => {
   //const lastname = userProfile.name.split(" ")[userProfile.name.split(" ").length - 1];
 
   return (
-    <section className="w-full bg-white px-4 md:px-10">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
-            <div className="bg-white border border-gray-300 rounded-lg p-6 md:p-8 h-full">
-              <div className="flex flex-col items-center text-center">
-                <div className="relative mb-4">
-                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gray-200 flex items-center justify-center border-2 border-emerald-500 overflow-hidden">
-                    {profileImage ? (
-                      <img
-                        src={profileImage}
-                        alt="Profile"
-                        className="object-cover w-full h-full"
-                      />
-                    ) : (
-                      <FaUserCircle className="w-16 h-16 md:w-20 md:h-20 text-gray-400" />
-                    )}
-                  </div>
-                  <label className="absolute bottom-0 right-0 p-2 bg-emerald-500 rounded-full cursor-pointer hover:bg-emerald-600 transition border-2 border-white">
-                    <FaUpload className="text-white w-3 h-3 md:w-4 md:h-4" />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleFileChange}
+    <section className="w-full bg-gradient-to-br from-emerald-50 to-green-50 py-8 md:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-2xl shadow-lg border border-emerald-100 overflow-hidden">
+          <div className="grid lg:grid-cols-12 gap-0">
+            {/* Profile Section */}
+            <div className="lg:col-span-4 bg-gradient-to-br from-emerald-600 to-green-700 p-6 md:p-8 flex flex-col items-center justify-center text-center text-white">
+              <div className="relative mb-6">
+                <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-4 border-white/30 overflow-hidden shadow-xl">
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="Profile"
+                      className="object-cover w-full h-full"
                     />
-                  </label>
+                  ) : (
+                    <FaUserCircle className="w-20 h-20 md:w-24 md:h-24 text-white/80" />
+                  )}
                 </div>
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
-                  {userProfile.name}
-                </h2>
-                <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                  <FaShieldAlt className="text-emerald-500" />
-                  <span>KYC Verified</span>
-                </div>
-                {file && (
-                  <button
-                    onClick={handleUpload}
-                    disabled={isUploading}
-                    className="w-full px-6 py-2.5 bg-emerald-500 text-white text-sm font-medium rounded hover:bg-emerald-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isUploading ? "Uploading..." : "Upload Picture"}
-                  </button>
-                )}
+                <label className="absolute bottom-2 right-2 p-2.5 bg-white rounded-full cursor-pointer hover:bg-emerald-50 transition shadow-lg border-2 border-emerald-600">
+                  <FaUpload className="text-emerald-600 w-4 h-4" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                </label>
               </div>
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">
+                {userProfile.name}
+              </h2>
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
+                <FaShieldAlt className="text-white" />
+                <span className="text-sm font-medium">KYC Verified</span>
+              </div>
+              {file && (
+                <button
+                  onClick={handleUpload}
+                  disabled={isUploading}
+                  className="mt-6 w-full px-6 py-3 bg-white text-emerald-600 text-sm font-semibold rounded-lg hover:bg-emerald-50 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                >
+                  {isUploading ? "Uploading..." : "Upload Picture"}
+                </button>
+              )}
             </div>
-          </div>
 
-          <div className="lg:col-span-2">
-            <div className="bg-white border border-gray-300 rounded-lg p-6 md:p-8 h-full">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6 pb-3 border-b border-gray-200">
+            {/* Account Information Section */}
+            <div className="lg:col-span-8 p-6 md:p-8">
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 pb-4 border-b-2 border-emerald-100">
                 Account Information
               </h3>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 bg-emerald-500 rounded flex-shrink-0">
-                    <FaUser className="text-white text-base" />
+              <div className="grid sm:grid-cols-2 gap-6">
+                <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-colors">
+                  <div className="p-3 bg-emerald-500 rounded-lg flex-shrink-0 shadow-md">
+                    <FaUser className="text-white text-lg" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
                       Full Name
                     </p>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-base font-semibold text-gray-900">
                       {userProfile.name}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 bg-emerald-500 rounded flex-shrink-0">
-                    <FaEnvelope className="text-white text-base" />
+                <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-colors">
+                  <div className="p-3 bg-emerald-500 rounded-lg flex-shrink-0 shadow-md">
+                    <FaEnvelope className="text-white text-lg" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
                       Email Address
                     </p>
-                    <p className="text-sm font-medium text-gray-900 break-all">
+                    <p className="text-base font-semibold text-gray-900 break-all">
                       {userProfile.email}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 bg-emerald-500 rounded flex-shrink-0">
-                    <FaWallet className="text-white text-base" />
+                <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-colors">
+                  <div className="p-3 bg-emerald-500 rounded-lg flex-shrink-0 shadow-md">
+                    <FaWallet className="text-white text-lg" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
                       Wallet Address
                     </p>
-                    <p className="text-sm font-mono font-medium text-gray-900 truncate">
+                    <p className="text-base font-mono font-semibold text-gray-900 break-all">
                       {compressAddress(userProfile.walletAddress ?? "")}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 bg-emerald-500 rounded flex-shrink-0">
-                    <FaIdCard className="text-white text-base" />
+                <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-colors">
+                  <div className="p-3 bg-emerald-500 rounded-lg flex-shrink-0 shadow-md">
+                    <FaIdCard className="text-white text-lg" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
                       National ID
                     </p>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-base font-semibold text-gray-900">
                       {userProfile.nic}
                     </p>
                   </div>
