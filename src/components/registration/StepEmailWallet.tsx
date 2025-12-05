@@ -46,7 +46,7 @@ const StepEmailWallet = ({
         placeholder={t("registration.fullName")}
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-600 outline-none text-[#00420A]"
+        className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 focus:ring-2 focus:ring-green-600 outline-none text-[#00420A]"
       />
 
       <button
