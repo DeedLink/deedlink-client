@@ -33,7 +33,7 @@ const NavBar = () => {
           {about.title}
         </div>
 
-      <div className="cursor-pointer flex gap-4 sm:gap-8 items-center justify-center">
+      <div className="flex gap-3 sm:gap-6 items-center justify-center">
           <LanguageSwitcher />
           <NavLinks links={user?.kycStatus==="verified"? navLinks :navLinks.filter((link)=>!link.protected)} />
       </div>

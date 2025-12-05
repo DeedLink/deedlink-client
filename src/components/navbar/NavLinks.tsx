@@ -2,6 +2,8 @@ import { useWallet } from "../../contexts/WalletContext";
 import { compressAddress } from "../../utils/format";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { Link, useLocation } from "react-router-dom";
+import { useLogin } from "../../contexts/LoginContext";
+import { FaUser, FaWallet } from "react-icons/fa";
 
 interface NavLinksProps {
   links: { label: string; href: string }[];
@@ -11,6 +13,7 @@ interface NavLinksProps {
 
 const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
   const { account, connect, disconnect } = useWallet();
+  const { user } = useLogin();
   const { t } = useLanguage();
   const location = useLocation();
 
@@ -66,21 +69,36 @@ const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
         );
       })}
       {account ? (
-        <button
-          onClick={disconnect}
-          className="group px-4 py-2 bg-red-600 hover:bg-red-500 rounded-2xl text-white font-semibold cursor-pointer w-38"
-        >
-          <span className="block group-hover:hidden">
-            {compressAddress(account)}
-          </span>
-          <span className="hidden group-hover:block">
-            {t("nav.disconnect")}
-          </span>
-        </button>
+        <div className={`flex items-center gap-2 ${isMobile ? 'flex-col w-full gap-3' : 'gap-2'}`}>
+          {user?.name && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/15 rounded-lg border border-white/20 transition-all duration-200">
+              <FaUser className="text-sm text-white flex-shrink-0" />
+              <span className="text-sm text-white font-medium whitespace-nowrap hidden xl:inline">
+                {user.name}
+              </span>
+              <span className="text-xs text-white font-medium whitespace-nowrap xl:hidden">
+                {user.name.split(' ')[0]}
+              </span>
+            </div>
+          )}
+          <button
+            onClick={disconnect}
+            className={`group flex items-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-white font-medium cursor-pointer transition-all duration-200 whitespace-nowrap ${isMobile ? 'w-full justify-center' : ''}`}
+            title={compressAddress(account)}
+          >
+            <FaWallet className="text-sm flex-shrink-0" />
+            <span className="block group-hover:hidden text-sm">
+              {compressAddress(account)}
+            </span>
+            <span className="hidden group-hover:block text-sm">
+              {t("nav.disconnect")}
+            </span>
+          </button>
+        </div>
       ) : (
         <button
           onClick={connect}
-          className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-2xl text-white font-semibold cursor-pointer w-38"
+          className={`px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white font-medium cursor-pointer transition-all duration-200 ${isMobile ? 'w-full' : ''}`}
         >
           {t("nav.connectWallet")}
         </button>
