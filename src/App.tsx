@@ -23,7 +23,7 @@ import BuyerEscrowNotification from './components/adeed/ui/BuyerEscrowNotificati
 
 function AppContent() {
   const { language } = useLanguage();
-  const fontClass = language === 'si' ? 'font-abhaya' : 'font-spectral';
+  const fontClass = language === 'si' ? 'font-noto-serif-sinhala' : 'font-spectral';
 
   return (
     <div className={`flex flex-col min-h-screen ${fontClass} text-white bg-black`}>
