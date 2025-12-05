@@ -39,7 +39,7 @@ const DeedCard = ({
   deed,
   currentUser,
   onOpen,
-  currency = "USD",
+  currency = "ETH",
   areaUnit = "m²",
   signatures,
 }: DeedCardProps) => {

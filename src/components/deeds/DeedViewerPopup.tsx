@@ -27,7 +27,7 @@ interface Props {
   signatures?: ISignatures;
 }
 
-const DeedViewerPopup = ({ deed, onClose, currency = "USD", areaUnit = "m²", signatures }: Props) => {
+const DeedViewerPopup = ({ deed, onClose, currency = "ETH", areaUnit = "m²", signatures }: Props) => {
   if (!deed) return null;
   
   const [isMapOpen, setIsMapOpen] = useState(false);
