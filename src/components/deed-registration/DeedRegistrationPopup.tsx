@@ -13,6 +13,8 @@ import {
   SRI_LANKA_DIVISIONS_BY_DISTRICT
 } from "../../constants/sriLankaLocations";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { sendStampFee } from "../../web3.0/stampService";
+import { TOTAL_REGISTRATION_FEE, REGISTRATION_FEES } from "../../constants/const";
 
 const LandRegistrationPopup = ({
   isOpen,
@@ -56,6 +58,8 @@ const LandRegistrationPopup = ({
     titleDocument: null as File | null,
   });
   const [activeSection, setActiveSection] = useState<string | null>("owner");
+  const [isPaying, setIsPaying] = useState(false);
+  const [paymentTxHash, setPaymentTxHash] = useState<string | null>(null);
 
   const [surveyorSuggestions, setSurveyorSuggestions] = useState<User[]>([]);
   const [notarySuggestions, setNotarySuggestions] = useState<User[]>([]);
@@ -78,6 +82,11 @@ const LandRegistrationPopup = ({
     const { name, value } = e.target;
     if (name === "district") {
       setFormData({ ...formData, district: value, division: "" });
+      return;
+    }
+    if (name === "propertyValue") {
+      const numValue = parseFloat(value) || 0;
+      setFormData({ ...formData, [name]: numValue });
       return;
     }
     setFormData({ ...formData, [name]: value });
@@ -119,10 +128,65 @@ const LandRegistrationPopup = ({
       setActiveField(null);
   };
 
+  // Registration fee is constant: gov fee + IVSL fee + survey fee + notary fee
+  const registrationFee = TOTAL_REGISTRATION_FEE;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Land Registration Data:", formData);
     
+    // Step 1: Pay registration fee
+    if (!paymentTxHash) {
+      setIsPaying(true);
+      showLoader();
+      try {
+        const paymentResult = await sendStampFee(registrationFee.toFixed(4));
+        if (!paymentResult.success) {
+          throw new Error(paymentResult.error || "Payment failed");
+        }
+        setPaymentTxHash(paymentResult.txHash || null);
+        showAlert({
+          type: "success",
+          title: t("deedRegistrationForm.paymentSuccessful"),
+          htmlContent: (
+            <div className="space-y-2">
+              <p>{t("deedRegistrationForm.paymentSuccessful")}</p>
+              {paymentResult.txHash && (
+                <p className="text-xs text-gray-600 font-mono break-words">
+                  TX: {paymentResult.txHash}
+                </p>
+              )}
+            </div>
+          ),
+          confirmText: t("deedRegistrationForm.continue"),
+          onConfirm: () => {
+            hideLoader();
+            setIsPaying(false);
+          }
+        });
+        return; // User needs to confirm and submit again
+      } catch (error: any) {
+        console.error("Payment failed:", error);
+        setIsPaying(false);
+        hideLoader();
+        showAlert({
+          type: "error",
+          title: t("deedRegistrationForm.paymentFailed"),
+          htmlContent: (
+            <div className="space-y-2">
+              <p>{t("deedRegistrationForm.paymentFailed")}</p>
+              <p className="text-sm text-gray-600 font-mono break-words">
+                {error?.message || "Unknown error"}
+              </p>
+            </div>
+          ),
+          confirmText: t("deedRegistrationForm.ok")
+        });
+        return;
+      }
+    }
+    
+    // Step 2: Register deed after payment
     showLoader();
     try {
       await reg_mintNFT(account || "", formData);
@@ -167,6 +231,8 @@ const LandRegistrationPopup = ({
             deedDocument: null,
             titleDocument: null,
           });
+          setPaymentTxHash(null);
+          setIsPaying(false);
           
           // Close popup and refresh
           onClose();
@@ -356,9 +422,12 @@ const LandRegistrationPopup = ({
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                   />
                   <input
+                    type="number"
+                    step="0.01"
+                    min="0"
                     name="propertyValue"
-                    placeholder={t("deedRegistrationForm.propertyValue")}
-                    value={formData.propertyValue}
+                    placeholder={t("deedRegistrationForm.propertyValue") + " (ETH)"}
+                    value={formData.propertyValue || ""}
                     onChange={handleChange}
                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                   />
@@ -499,6 +568,55 @@ const LandRegistrationPopup = ({
               )}
             </div>
 
+            <div>
+              <h3
+                onClick={() => toggleSection("payment")}
+                className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center"
+              >
+                {t("deedRegistrationForm.registrationFee")}
+                <span>{activeSection === "payment" ? "−" : "+"}</span>
+              </h3>
+              {activeSection === "payment" && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium">{t("deedRegistrationForm.govFee")}:</span>
+                      <span className="text-gray-900">{REGISTRATION_FEES.GOVERNMENT_FEE.toFixed(4)} ETH</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium">{t("deedRegistrationForm.ivslFee")}:</span>
+                      <span className="text-gray-900">{REGISTRATION_FEES.IVSL_FEE.toFixed(4)} ETH</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium">{t("deedRegistrationForm.surveyFee")}:</span>
+                      <span className="text-gray-900">{REGISTRATION_FEES.SURVEY_FEE.toFixed(4)} ETH</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium">{t("deedRegistrationForm.notaryFee")}:</span>
+                      <span className="text-gray-900">{REGISTRATION_FEES.NOTARY_FEE.toFixed(4)} ETH</span>
+                    </div>
+                    <div className="border-t border-yellow-300 pt-2 mt-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-700 font-bold">{t("deedRegistrationForm.totalRegistrationFee")}:</span>
+                        <span className="text-green-700 font-bold text-lg">{registrationFee.toFixed(4)} ETH</span>
+                      </div>
+                    </div>
+                  </div>
+                  {paymentTxHash && (
+                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                      <p className="text-xs text-green-700 font-medium mb-1">{t("deedRegistrationForm.paymentCompleted")}</p>
+                      <p className="text-xs text-gray-600 font-mono break-words">TX: {paymentTxHash}</p>
+                    </div>
+                  )}
+                  {!paymentTxHash && (
+                    <p className="text-sm text-gray-600 italic">
+                      {t("deedRegistrationForm.paymentRequired")}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="flex flex-col sm:flex-row justify-between mt-6 gap-3">
               <button
                 type="button"
@@ -509,9 +627,14 @@ const LandRegistrationPopup = ({
               </button>
               <button
                 type="submit"
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-md transition"
+                disabled={isPaying}
+                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg shadow-md transition"
               >
-                {t("deedRegistrationForm.submitForRegistration")}
+                {isPaying
+                  ? t("deedRegistrationForm.processingPayment")
+                  : paymentTxHash
+                  ? t("deedRegistrationForm.submitForRegistration")
+                  : t("deedRegistrationForm.payAndRegister")}
               </button>
             </div>
           </form>
