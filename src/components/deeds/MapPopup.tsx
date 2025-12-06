@@ -24,7 +24,7 @@ const FitBounds: React.FC<{ coords: [number, number][] }> = ({ coords }) => {
       const bounds = L.latLngBounds(coords);
       map.fitBounds(bounds, { 
         padding: [50, 50],
-        maxZoom: 21
+        maxZoom: 25
       });
     }
   }, [coords, map]);
@@ -66,14 +66,17 @@ const MapPopup: React.FC<MapPopupProps> = ({ points, isOpen, onClose }) => {
           center={center}
           zoom={13}
           minZoom={1}
-          maxZoom={21}
+          maxZoom={25}
           scrollWheelZoom={true}
           className="w-full h-full"
+          zoomControl={true}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            maxZoom={21}
+            maxZoom={25}
+            maxNativeZoom={19}
+            zoomOffset={0}
           />
           <FitBounds coords={coords} />
           {coords.map((c, i) => (
