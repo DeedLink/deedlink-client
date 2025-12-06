@@ -64,6 +64,21 @@ export const about = {
     "Streamlining Deeds with Digital Security for easy access and reliable records.",
 };
 
+// Registration Fees (in ETH)
+export const REGISTRATION_FEES = {
+  GOVERNMENT_FEE: 0.01, // Government fee
+  IVSL_FEE: 0.005,      // IVSL fee
+  SURVEY_FEE: 0.005,    // Survey fee
+  NOTARY_FEE: 0.005,    // Notary fee
+};
+
+// Total registration fee
+export const TOTAL_REGISTRATION_FEE = 
+  REGISTRATION_FEES.GOVERNMENT_FEE +
+  REGISTRATION_FEES.IVSL_FEE +
+  REGISTRATION_FEES.SURVEY_FEE +
+  REGISTRATION_FEES.NOTARY_FEE;
+
 export const SAMPLE_DEEDS: Deed[] = [
   {
     _id: "1",
