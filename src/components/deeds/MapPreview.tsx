@@ -16,12 +16,15 @@ const MapPreview: React.FC<MapPreviewProps> = ({ points, zoom = 16 }) => {
     <MapContainer
       center={center}
       zoom={zoom}
+      minZoom={1}
+      maxZoom={21}
       scrollWheelZoom={false}
       className="h-28 w-full rounded-lg z-0"
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        maxZoom={21}
       />
       <Polygon
         positions={polygonCoords}
