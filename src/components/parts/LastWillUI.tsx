@@ -31,40 +31,74 @@ const LastWillUI = ({ tokenId }: Props) => {
     loadCertificate();
   }, [tokenId]);
 
-  if (loading) return <div>{t("adeedPage.loadingCertificate")}</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
-  if (!certificate) return <div className="text-gray-500">{t("adeedPage.noLastWillCertificate")}</div>;
+  if (loading) return <div className="p-4 text-center text-gray-600">{t("messages.loadingCertificate")}</div>;
+  if (error) return <div className="p-4 text-red-500 text-center">{error}</div>;
+  if (!certificate) return <div className="p-4 text-gray-500 text-center">{t("messages.noLastWillCertificate")}</div>;
 
   return (
-    <div className="p-4 text-black">
-      <h2 className="text-xl font-bold">{t("adeedPage.lastWillCertificate")}</h2>
+    <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-emerald-200">
+        {t("messages.lastWillCertificate")}
+      </h2>
 
-      <div className="mt-4">
-        {certificate.title ? <p><strong>{t("adeedPage.title")}:</strong> {certificate.title}</p> : null}
-        {certificate.description ? <p><strong>{t("adeedPage.description")}:</strong> {certificate.description}</p> : null}
-        {certificate.type ? <p><strong>{t("adeedPage.type")}:</strong> {certificate.type}</p> : null}
+      <div className="space-y-5">
+        {certificate.title && (
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">{t("messages.title")}</p>
+            <p className="text-base font-medium text-gray-900">{certificate.title}</p>
+          </div>
+        )}
+        {certificate.description && (
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">{t("messages.description")}</p>
+            <p className="text-base text-gray-900 leading-relaxed">{certificate.description}</p>
+          </div>
+        )}
+        {certificate.type && (
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">{t("messages.type")}</p>
+            <p className="text-base font-medium text-gray-900">{certificate.type}</p>
+          </div>
+        )}
 
-        <h3 className="text-lg font-semibold mt-4">{t("adeedPage.parties")}</h3>
-        {certificate.parties?.length ? (
-          certificate.parties.map((p, i) => (
-            <div key={i} className="border p-2 mt-2 rounded">
-              <p><strong>{t("adeedPage.name")}:</strong> {p.name}</p>
-              <p><strong>{t("adeedPage.role")}:</strong> {p.role}</p>
-              <p><strong>{t("adeedPage.contact")}:</strong> {shortAddress(p.contact)}</p>
+        <div className="mt-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-emerald-200">{t("messages.parties")}</h3>
+          {certificate.parties?.length ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {certificate.parties.map((p, i) => (
+                <div key={i} className="bg-gradient-to-br from-emerald-50 to-green-50 border-2 border-emerald-200 p-4 rounded-lg hover:shadow-md transition-shadow">
+                  <p className="mb-2">
+                    <strong className="text-gray-700 text-sm">{t("messages.name")}:</strong> 
+                    <span className="text-gray-900 font-semibold ml-2">{p.name}</span>
+                  </p>
+                  <p className="mb-2">
+                    <strong className="text-gray-700 text-sm">{t("messages.role")}:</strong> 
+                    <span className="text-gray-900 capitalize font-medium ml-2">{p.role}</span>
+                  </p>
+                  <p>
+                    <strong className="text-gray-700 text-sm">{t("messages.contact")}:</strong> 
+                    <span className="text-gray-900 font-mono text-sm ml-2">{shortAddress(p.contact)}</span>
+                  </p>
+                </div>
+              ))}
             </div>
-          ))
-        ) : (
-          <p className="text-gray-500">{t("adeedPage.noPartiesListed")}</p>
-        )}
+          ) : (
+            <p className="text-gray-500 italic text-center py-4">{t("messages.noPartiesListed")}</p>
+          )}
+        </div>
 
-        <h3 className="text-lg font-semibold mt-4">{t("adeedPage.data")}</h3>
-        {certificate.data && typeof certificate.data === 'object' && Object.keys(certificate.data).length > 0 ? (
-          <pre className="bg-gray-100 p-2 rounded mt-1">
-            {JSON.stringify(certificate.data, null, 2)}
-          </pre>
-        ) : (
-          <p className="text-gray-500">{t("adeedPage.noAdditionalData")}</p>
-        )}
+        <div className="mt-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-emerald-200">{t("messages.data")}</h3>
+          {certificate.data && typeof certificate.data === 'object' && Object.keys(certificate.data).length > 0 ? (
+            <div className="bg-gray-50 border-2 border-gray-200 p-4 rounded-lg overflow-x-auto">
+              <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono">
+                {JSON.stringify(certificate.data, null, 2)}
+              </pre>
+            </div>
+          ) : (
+            <p className="text-gray-500 italic text-center py-4">{t("messages.noAdditionalData")}</p>
+          )}
+        </div>
       </div>
     </div>
   );
