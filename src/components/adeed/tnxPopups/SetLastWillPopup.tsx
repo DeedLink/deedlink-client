@@ -8,6 +8,7 @@ import { shortAddress } from "../../../utils/format";
 import { IoCheckmarkCircle, IoSearchOutline } from "react-icons/io5";
 import { createWill, hasActiveWill } from "../../../web3.0/lastWillIntegration";
 import { getAddress } from "ethers";
+import { useLanguage } from "../../../contexts/LanguageContext";
 
 interface SetLastWillPopupProps {
   isOpen: boolean;
@@ -17,10 +18,11 @@ interface SetLastWillPopupProps {
 }
 
 const STAMP_DUTY_RATE = 0.03;
-const GOV_FEE_FIXED = 500;
+const GOV_FEE_FIXED = 0.01; // Fixed fee in ETH
 
 const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, tokenId, deedNumber }) => {
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const [users, setUsers] = useState<User[]>([]);
   const [witnesses, setWitnesses] = useState<User[]>([]);
   const [searchBeneficiary, setSearchBeneficiary] = useState("");
@@ -36,8 +38,8 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
   const [filteredWitnesses2, setFilteredWitnesses2] = useState<User[]>([]);
   const { account } = useWallet();
 
-  const stampDuty = estimatedValue ? (estimatedValue * STAMP_DUTY_RATE).toFixed(2) : "0.00";
-  const totalGovFee = estimatedValue ? (estimatedValue * STAMP_DUTY_RATE + GOV_FEE_FIXED).toFixed(2) : "0.00";
+  const stampDuty = estimatedValue ? (estimatedValue * STAMP_DUTY_RATE).toFixed(4) : "0.0000";
+  const totalGovFee = estimatedValue ? (estimatedValue * STAMP_DUTY_RATE + GOV_FEE_FIXED).toFixed(4) : GOV_FEE_FIXED.toFixed(4);
 
   if (!isOpen) return null;
 
@@ -273,12 +275,14 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
         </button>
 
         <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-          Set Last Will
+          {t("messages.createLastWill")}
         </h2>
 
         <div className="space-y-5">
           <div>
-            <label className="text-sm font-semibold text-gray-600">Beneficiary (Verified User)</label>
+            <label className="text-sm font-semibold text-gray-600 mb-2 block">
+              {t("messages.beneficiary")} ({t("messages.verifiedUser")})
+            </label>
             <div className="mt-1">
               <div className="relative mb-2">
                 <IoSearchOutline
@@ -287,7 +291,7 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
                 />
                 <input
                   type="text"
-                  placeholder="Search by name or address"
+                  placeholder={t("messages.searchByNameOrAddress")}
                   value={searchBeneficiary}
                   onChange={(e) => setSearchBeneficiary(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-gray-800 placeholder-gray-400"
@@ -325,7 +329,7 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
                   ))
                 ) : (
                   <div className="p-5 text-center text-gray-400 text-sm">
-                    No verified users found
+                    {t("messages.noVerifiedUsersFound")}
                   </div>
                 )}
               </div>
@@ -333,7 +337,9 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-600">Witness 1 (Verified User)</label>
+            <label className="text-sm font-semibold text-gray-600 mb-2 block">
+              {t("messages.witness")} 1 ({t("messages.verifiedUser")})
+            </label>
             <div className="mt-1">
               <div className="relative mb-2">
                 <IoSearchOutline
@@ -342,7 +348,7 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
                 />
                 <input
                   type="text"
-                  placeholder="Search witness by name or address"
+                  placeholder={t("messages.searchWitnessByNameOrAddress")}
                   value={searchWitness1}
                   onChange={(e) => setSearchWitness1(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-gray-800 placeholder-gray-400"
@@ -380,7 +386,7 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
                   ))
                 ) : (
                   <div className="p-5 text-center text-gray-400 text-sm">
-                    No verified users found
+                    {t("messages.noVerifiedUsersFound")}
                   </div>
                 )}
               </div>
@@ -388,7 +394,9 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-600">Witness 2 (Verified User)</label>
+            <label className="text-sm font-semibold text-gray-600 mb-2 block">
+              {t("messages.witness")} 2 ({t("messages.verifiedUser")})
+            </label>
             <div className="mt-1">
               <div className="relative mb-2">
                 <IoSearchOutline
@@ -397,7 +405,7 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
                 />
                 <input
                   type="text"
-                  placeholder="Search witness by name or address"
+                  placeholder={t("messages.searchWitnessByNameOrAddress")}
                   value={searchWitness2}
                   onChange={(e) => setSearchWitness2(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-gray-800 placeholder-gray-400"
@@ -435,7 +443,7 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
                   ))
                 ) : (
                   <div className="p-5 text-center text-gray-400 text-sm">
-                    No verified users found
+                    {t("messages.noVerifiedUsersFound")}
                   </div>
                 )}
               </div>
@@ -443,45 +451,49 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-600">Property Valuation (ETH)</label>
-            <div className="mt-1 p-4 bg-gray-50 border border-gray-200 rounded-xl text-center">
+            <label className="text-sm font-semibold text-gray-600 mb-2 block">
+              {t("messages.propertyValuation")} (ETH)
+            </label>
+            <div className="mt-1 p-4 bg-gradient-to-br from-gray-50 to-emerald-50 border-2 border-gray-200 rounded-xl text-center">
               <div className="text-2xl font-bold text-emerald-700">
-                ETH {estimatedValue.toLocaleString()}
+                ETH {estimatedValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
               </div>
-              <div className="text-xs text-gray-500 mt-1">Latest valuation from deed</div>
+              <div className="text-xs text-gray-500 mt-1">{t("messages.latestValuationFromDeed")}</div>
             </div>
           </div>
 
-          <div className="bg-emerald-50 rounded-xl p-4 space-y-2 border border-emerald-200">
-            <h3 className="text-sm font-semibold text-emerald-800">Government Fees (Stamp Duty)</h3>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Stamp Duty (3%):</span>
-              <span className="font-medium text-emerald-700">ETH {stampDuty}</span>
+          <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-5 space-y-3 border-2 border-emerald-200 shadow-sm">
+            <h3 className="text-sm font-bold text-emerald-800 uppercase tracking-wide">
+              {t("messages.governmentFeesStampDuty")}
+            </h3>
+            <div className="flex justify-between items-center text-sm py-1">
+              <span className="text-gray-700">{t("messages.stampDuty")} (3%):</span>
+              <span className="font-semibold text-emerald-700">ETH {stampDuty}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Fixed Fee:</span>
-              <span className="font-medium text-emerald-700">ETH {GOV_FEE_FIXED.toLocaleString()}</span>
+            <div className="flex justify-between items-center text-sm py-1">
+              <span className="text-gray-700">{t("messages.fixedFee")}:</span>
+              <span className="font-semibold text-emerald-700">ETH {GOV_FEE_FIXED.toFixed(4)}</span>
             </div>
-            <div className="border-t border-emerald-200 pt-2 flex justify-between font-bold text-emerald-900">
-              <span>Total Payable:</span>
-              <span>ETH {totalGovFee}</span>
+            <div className="border-t-2 border-emerald-300 pt-3 mt-2 flex justify-between items-center font-bold text-emerald-900 text-base">
+              <span>{t("messages.totalPayable")}:</span>
+              <span className="text-lg">ETH {totalGovFee}</span>
             </div>
           </div>
 
           <button
             disabled={isSubmitting || !beneficiaryAddress || !witness1Address || !witness2Address}
             onClick={handleSetLastWill}
-            className={`w-full mt-4 py-3 rounded-lg text-white font-semibold transition text-base shadow-lg ${
+            className={`w-full mt-4 py-3.5 rounded-xl text-white font-bold transition-all duration-300 text-base shadow-lg transform ${
               isSubmitting || !beneficiaryAddress || !witness1Address || !witness2Address
                 ? "bg-emerald-400 cursor-not-allowed"
-                : "bg-emerald-600 hover:bg-emerald-700"
+                : "bg-emerald-600 hover:bg-emerald-700 hover:scale-[1.02] active:scale-[0.98]"
             }`}
           >
-            {isSubmitting ? "Setting Last Will..." : "Set Last Will"}
+            {isSubmitting ? t("messages.settingLastWill") : t("messages.createLastWill")}
           </button>
 
-          <p className="text-xs text-center text-gray-500 mt-3">
-            Government fees will be deducted from your wallet upon execution.
+          <p className="text-xs text-center text-gray-500 mt-3 leading-relaxed">
+            {t("messages.governmentFeesDeductedNotice")}
           </p>
         </div>
       </div>
