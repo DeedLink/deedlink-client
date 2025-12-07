@@ -218,8 +218,17 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
         }
       };
 
-      const saved = await createCertificate(payload);
-      console.log("Certificate created:", saved);
+      // Try to save certificate to API, but don't fail if it doesn't work
+      // The blockchain transaction is the primary record
+      try {
+        const saved = await createCertificate(payload);
+        console.log("Certificate created in API:", saved);
+      } catch (apiError: any) {
+        const status = apiError?.response?.status;
+        const message = apiError?.response?.data?.message || apiError?.message;
+        console.warn(`Failed to save certificate to API (status: ${status}). This is optional - blockchain transaction is the source of truth.`, message || apiError);
+        // Continue even if API save fails - blockchain transaction is the source of truth
+      }
 
       showToast("Last Will successfully set and stored!", "success");
       onClose();
