@@ -4,7 +4,7 @@ import { getCertificatesByTokenId, deleteCertificate } from "../../api/api";
 import { normalizeCertificateResponse } from "../../utils/certificateHelpers";
 import { shortAddress } from "../../utils/format";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { getWill, hasActiveWill, getDeathVerification, revokeWill } from "../../web3.0/lastWillIntegration";
+import { getWill, hasActiveWill, getDeathVerification, revokeWill, witnessWill } from "../../web3.0/lastWillIntegration";
 import { useWallet } from "../../contexts/WalletContext";
 import { useLoader } from "../../contexts/LoaderContext";
 import { useToast } from "../../contexts/ToastContext";
@@ -38,6 +38,7 @@ const LastWillUI = ({ tokenId }: Props) => {
   const [error, setError] = useState<string | null>(null);
   const [hasWill, setHasWill] = useState(false);
   const [isRevoking, setIsRevoking] = useState(false);
+  const [isWitnessing, setIsWitnessing] = useState(false);
 
   useEffect(() => {
     const loadLastWill = async () => {
@@ -156,13 +157,60 @@ const LastWillUI = ({ tokenId }: Props) => {
     return new Date(timestamp * 1000).toLocaleString();
   };
 
-  // Helper function to get witness status
+  const handleWitnessSign = async (approve: boolean) => {
+    if (!tokenId || !account) return;
+    
+    if (!window.confirm(
+      approve 
+        ? "Are you sure you want to approve this Last Will? This action cannot be undone."
+        : "Are you sure you want to reject this Last Will? This action cannot be undone."
+    )) {
+      return;
+    }
+
+    setIsWitnessing(true);
+    showLoader();
+    try {
+      const result = await witnessWill(tokenId, approve);
+      showToast(result.message, "success");
+      
+      const willData = await getWill(tokenId);
+      setBlockchainWill(willData);
+    } catch (error: any) {
+      console.error("Error witnessing will:", error);
+      const errorMessage = error?.message || error?.reason || "Failed to witness will";
+      showToast(errorMessage, "error");
+    } finally {
+      setIsWitnessing(false);
+      hideLoader();
+    }
+  };
+
+  const isCurrentUserWitness = () => {
+    if (!blockchainWill || !account) return { isWitness: false, witnessNumber: 0, status: -1 };
+    
+    const accountLower = account.toLowerCase();
+    const witness1Lower = blockchainWill.witness1.toLowerCase();
+    const witness2Lower = blockchainWill.witness2.toLowerCase();
+    
+    if (accountLower === witness1Lower) {
+      return { isWitness: true, witnessNumber: 1, status: blockchainWill.witness1Status };
+    }
+    if (accountLower === witness2Lower) {
+      return { isWitness: true, witnessNumber: 2, status: blockchainWill.witness2Status };
+    }
+    
+    return { isWitness: false, witnessNumber: 0, status: -1 };
+  };
+
   const getWitnessStatus = (status: number) => {
     if (status === 0) return "Pending";
-    if (status === 1) return "Approved";
+    if (status === 1) return "Signed";
     if (status === 2) return "Rejected";
     return "Unknown";
   };
+
+  const witnessInfo = isCurrentUserWitness();
 
   return (
     <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-200">
@@ -269,6 +317,70 @@ const LastWillUI = ({ tokenId }: Props) => {
                       <span className="text-green-700 font-semibold ml-2">Yes</span>
                     </div>
                   )}
+                </div>
+              </div>
+            )}
+
+            {witnessInfo.isWitness && witnessInfo.status === 0 && (
+              <div className="bg-yellow-50 border-2 border-yellow-300 p-4 rounded-lg">
+                <h4 className="text-lg font-bold text-yellow-900 mb-3">You are a Witness</h4>
+                <p className="text-sm text-yellow-800 mb-4">
+                  You have been designated as Witness {witnessInfo.witnessNumber} for this Last Will. 
+                  Please review and sign the will to proceed.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleWitnessSign(true)}
+                    disabled={isWitnessing}
+                    className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg shadow-md transition"
+                  >
+                    {isWitnessing ? "Signing..." : "Approve & Sign"}
+                  </button>
+                  <button
+                    onClick={() => handleWitnessSign(false)}
+                    disabled={isWitnessing}
+                    className="px-6 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg shadow-md transition"
+                  >
+                    {isWitnessing ? "Rejecting..." : "Reject"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {witnessInfo.isWitness && witnessInfo.status !== 0 && (
+              <div className={`border-2 p-4 rounded-lg ${
+                witnessInfo.status === 1 
+                  ? "bg-green-50 border-green-300" 
+                  : "bg-red-50 border-red-300"
+              }`}>
+                <h4 className={`text-lg font-bold mb-2 ${
+                  witnessInfo.status === 1 ? "text-green-900" : "text-red-900"
+                }`}>
+                  Your Witness Status: {getWitnessStatus(witnessInfo.status)}
+                </h4>
+                <p className={`text-sm ${
+                  witnessInfo.status === 1 ? "text-green-800" : "text-red-800"
+                }`}>
+                  {witnessInfo.status === 1 
+                    ? "You have signed this Last Will. Waiting for the other witness to sign."
+                    : "You have rejected this Last Will."}
+                </p>
+              </div>
+            )}
+
+            {blockchainWill && 
+             !blockchainWill.isExecuted && 
+             blockchainWill.witness1Status === 0 && 
+             blockchainWill.witness2Status === 0 && 
+             !witnessInfo.isWitness && (
+              <div className="bg-blue-50 border-2 border-blue-200 p-4 rounded-lg">
+                <h4 className="text-lg font-bold text-blue-900 mb-2">Waiting for Witness Signatures</h4>
+                <p className="text-sm text-blue-800">
+                  Both witnesses must sign the will before it can be executed.
+                </p>
+                <div className="mt-3 text-xs text-blue-700 space-y-1">
+                  <p>Witness 1: {getWitnessStatus(blockchainWill.witness1Status)}</p>
+                  <p>Witness 2: {getWitnessStatus(blockchainWill.witness2Status)}</p>
                 </div>
               </div>
             )}
