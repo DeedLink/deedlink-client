@@ -26,6 +26,7 @@ import type { Certificate } from "../types/certificate";
 import { cancelListing } from "../web3.0/marketService";
 import { generateDeedPDF } from "../utils/generateDeedPDF";
 import { normalizeCertificateResponse } from "../utils/certificateHelpers";
+import { revokeWill } from "../web3.0/lastWillIntegration";
 
 const PROPERTY_NFT_ADDRESS = import.meta.env.VITE_PROPERTY_NFT_ADDRESS as string;
 
@@ -180,16 +181,42 @@ const ADeedPage = () => {
   };
 
   const handleCancelLastWill = async () => {
-    if (!certificate) return;
+    if (!deed?.tokenId) {
+      showToast("Token ID not found", "error");
+      return;
+    }
     try {
       showLoader();
-      await deleteCertificate(certificate._id);
+      
+      // First revoke from blockchain
+      const revokeResult = await revokeWill(deed.tokenId);
+      
+      if (!revokeResult.success) {
+        throw new Error("Failed to revoke will on blockchain");
+      }
+      
+      // Then delete certificate from API if it exists
+      if (certificate?._id) {
+        try {
+          await deleteCertificate(certificate._id);
+        } catch (apiError) {
+          console.warn("Failed to delete certificate from API:", apiError);
+          // Continue even if API deletion fails, blockchain revocation is more important
+        }
+      }
+      
       setCertificate(null);
       showToast(t("messages.lastWillCancelledSuccessfully"), "success");
       setOpenLastWill(false);
-    } catch (error) {
+      
+      // Refresh the page to update the UI
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error: any) {
       console.error("Error cancelling last will:", error);
-      showToast(t("messages.failedToCancelLastWill"), "error");
+      const errorMessage = error?.message || error?.reason || t("messages.failedToCancelLastWill");
+      showToast(errorMessage, "error");
     } finally {
       hideLoader();
     }
