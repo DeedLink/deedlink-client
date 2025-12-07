@@ -59,6 +59,7 @@ const ADeedPage = () => {
   const [openFractionalize, setOpenFractionalize] = useState(false);
   const [openDefractionalize, setOpenDefractionalize] = useState(false);
   const [certificate, setCertificate] = useState<Certificate | null>(null);
+  const [hasActiveLastWill, setHasActiveLastWill] = useState(false);
   const [ownershipRefreshTrigger, setOwnershipRefreshTrigger] = useState(0);
   const [selectedEscrowAddress, setSelectedEscrowAddress] = useState<string | undefined>(undefined);
   const openMarketplaceListings = Array.isArray(marketPlaceData)
@@ -68,12 +69,33 @@ const ADeedPage = () => {
 
   useEffect(() => {
     const loadCertificate = async () => {
-      if (!deed?.tokenId) return;
+      if (!deed?.tokenId) {
+        setCertificate(null);
+        setHasActiveLastWill(false);
+        return;
+      }
       try {
         const res = await getCertificatesByTokenId(deed.tokenId);
-        setCertificate(normalizeCertificateResponse(res));
+        const cert = normalizeCertificateResponse(res);
+        setCertificate(cert);
+        
+        // Check if there's an active last will on blockchain
+        try {
+          const { hasActiveWill, getWill } = await import("../web3.0/lastWillIntegration");
+          const willExists = await hasActiveWill(deed.tokenId);
+          if (willExists) {
+            const willData = await getWill(deed.tokenId);
+            setHasActiveLastWill(willData.isActive && !willData.isExecuted);
+          } else {
+            setHasActiveLastWill(false);
+          }
+        } catch (error) {
+          console.error("Error checking active last will:", error);
+          setHasActiveLastWill(false);
+        }
       } catch {
         setCertificate(null);
+        setHasActiveLastWill(false);
       }
     };
     loadCertificate();
@@ -172,6 +194,10 @@ const ADeedPage = () => {
       showToast(t("messages.cannotCreateListing"), "error");
       return;
     }
+    if (hasActiveLastWill) {
+      showToast(t("messages.cannotSellWithActiveLastWill") || "Cannot sell property with an active Last Will. Please revoke the Last Will first.", "error");
+      return;
+    }
     setShowCreateListing(true);
   };
 
@@ -206,6 +232,7 @@ const ADeedPage = () => {
       }
       
       setCertificate(null);
+      setHasActiveLastWill(false);
       showToast(t("messages.lastWillCancelledSuccessfully"), "success");
       setOpenLastWill(false);
       
@@ -351,8 +378,20 @@ const ADeedPage = () => {
               tokenId={deed.tokenId}
               actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
               onTransfer={() => setOpenTransact(true)}
-              onDirectTransfer={() => setOpenDirectTransfer(true)}
-              onSaleEscrow={() => setOpenSaleEscrow(true)}
+              onDirectTransfer={() => {
+                if (hasActiveLastWill) {
+                  showToast(t("messages.cannotSellWithActiveLastWill") || "Cannot transfer property with an active Last Will. Please revoke the Last Will first.", "error");
+                  return;
+                }
+                setOpenDirectTransfer(true);
+              }}
+              onSaleEscrow={() => {
+                if (hasActiveLastWill) {
+                  showToast(t("messages.cannotSellWithActiveLastWill") || "Cannot sell property with an active Last Will. Please revoke the Last Will first.", "error");
+                  return;
+                }
+                setOpenSaleEscrow(true);
+              }}
               onDownload={handleDownload}
               onShare={handleShare}
               onViewBlockchain={handleViewBlockchain}
@@ -363,6 +402,7 @@ const ADeedPage = () => {
               certificateExists={!!certificate}
               onCancelCertificate={handleCancelLastWill}
               onLastWill={() => setOpenLastWill(true)}
+              hasActiveLastWill={hasActiveLastWill}
             />
           )}
         </div>

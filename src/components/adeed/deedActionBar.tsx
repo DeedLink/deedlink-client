@@ -40,6 +40,7 @@ interface DeedActionBarProps {
   onOpenMarket: () => void;
   onLastWill: () => void;
   onCancelCertificate?: () => void;
+  hasActiveLastWill?: boolean;
 }
 
 const DeedActionBar = ({
@@ -62,6 +63,7 @@ const DeedActionBar = ({
   onLastWill,
   certificateExists,
   onCancelCertificate,
+  hasActiveLastWill = false,
 }: DeedActionBarProps) => {
   const [state, setState] = useState<"pending" | "completed" | "failed">("completed");
   const [titles, setTitles] = useState<any[]>([]);
@@ -126,8 +128,9 @@ const DeedActionBar = ({
           setCanSetRent(true);
           setCanSetPoA(true);
           setCanDefractionalize(false);
-          setCanDirectTransfer(true);
-          setCanSaleEscrow(true);
+          // Disable selling if active last will exists
+          setCanDirectTransfer(!hasActiveLastWill);
+          setCanSaleEscrow(!hasActiveLastWill);
         }
       } catch (error) {
         console.error("Error checking ownership:", error);
@@ -135,13 +138,13 @@ const DeedActionBar = ({
         setCanSetPoA(false);
         setIsFractionalized(false);
         setCanDefractionalize(false);
-        setCanDirectTransfer(true);
-        setCanSaleEscrow(true);
+        setCanDirectTransfer(!hasActiveLastWill);
+        setCanSaleEscrow(!hasActiveLastWill);
       }
     };
 
     checkOwnership();
-  }, [tokenId, account]);
+  }, [tokenId, account, hasActiveLastWill]);
 
   const isLocked = state === "pending";
 
@@ -227,7 +230,15 @@ const DeedActionBar = ({
               disabled={!canSetPoA}
             />
           )}
-          {onOpenMarket && <ActionButton icon={<FaShop size={16} />} label={t("deedActions.addToOpenMarket")} onClick={onOpenMarket} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
+          {onOpenMarket && (
+            <ActionButton 
+              icon={<FaShop size={16} />} 
+              label={t("deedActions.addToOpenMarket")} 
+              onClick={onOpenMarket} 
+              color={hasActiveLastWill ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200" : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300"}
+              disabled={hasActiveLastWill}
+            />
+          )}
 
           {certificateExists
             ? onCancelCertificate && <ActionButton icon={<FaGifts size={16} />} label={t("deedActions.cancelCertificate")} onClick={onCancelCertificate} color="bg-red-600 hover:bg-red-700 text-white border-red-600" />
