@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { FaTimes } from "react-icons/fa";
 import { useToast } from "../../../contexts/ToastContext";
 import type { User } from "../../../types/types";
 import { createCertificate, getDeedByDeedNumber, getUsers } from "../../../api/api";
@@ -36,7 +35,12 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
   const [filteredBeneficiaries, setFilteredBeneficiaries] = useState<User[]>([]);
   const [filteredWitnesses1, setFilteredWitnesses1] = useState<User[]>([]);
   const [filteredWitnesses2, setFilteredWitnesses2] = useState<User[]>([]);
+  const [activeSection, setActiveSection] = useState<string | null>("beneficiary");
   const { account } = useWallet();
+
+  const toggleSection = (section: string) => {
+    setActiveSection(activeSection === section ? null : section);
+  };
 
   const stampDuty = estimatedValue ? (estimatedValue * STAMP_DUTY_RATE).toFixed(4) : "0.0000";
   const totalGovFee = estimatedValue ? (estimatedValue * STAMP_DUTY_RATE + GOV_FEE_FIXED).toFixed(4) : GOV_FEE_FIXED.toFixed(4);
@@ -64,7 +68,7 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
             u.walletAddress &&
             u.walletAddress !== account &&
             u.kycStatus === "verified" &&
-            (u.role === "user" || u.role === "notary")
+            u.role === "notary"
         );
 
         setUsers(currentUserBeneficiaries);
@@ -265,236 +269,277 @@ const SetLastWillPopup: React.FC<SetLastWillPopupProps> = ({ isOpen, onClose, to
 
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50 text-black">
-      <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-md p-6 relative max-h-[90vh] overflow-y-auto">
-        <button
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 z-10"
-          onClick={onClose}
-        >
-          <FaTimes size={20} />
-        </button>
-
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-          {t("messages.createLastWill")}
-        </h2>
-
-        <div className="space-y-5">
-          <div>
-            <label className="text-sm font-semibold text-gray-600 mb-2 block">
-              {t("messages.beneficiary")} ({t("messages.verifiedUser")})
-            </label>
-            <div className="mt-1">
-              <div className="relative mb-2">
-                <IoSearchOutline
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  size={18}
-                />
-                <input
-                  type="text"
-                  placeholder={t("messages.searchByNameOrAddress")}
-                  value={searchBeneficiary}
-                  onChange={(e) => setSearchBeneficiary(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-gray-800 placeholder-gray-400"
-                />
-              </div>
-              <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-100">
-                {filteredBeneficiaries.length > 0 ? (
-                  filteredBeneficiaries.map((user) => (
-                    <div
-                      key={user.walletAddress}
-                      onClick={() => setBeneficiaryAddress(user.walletAddress!)}
-                      className={`px-4 py-3 cursor-pointer transition ${
-                        beneficiaryAddress === user.walletAddress
-                          ? "bg-emerald-50"
-                          : "hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="min-w-0">
-                          <div className="font-semibold text-sm text-gray-900 truncate">
-                            {user.name || "Unnamed User"}
-                          </div>
-                          <div className="text-xs text-gray-500 font-mono">
-                            {shortAddress(user.walletAddress!)}
-                          </div>
-                        </div>
-                        {beneficiaryAddress === user.walletAddress && (
-                          <IoCheckmarkCircle
-                            className="text-emerald-600 flex-shrink-0 ml-2"
-                            size={20}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-5 text-center text-gray-400 text-sm">
-                    {t("messages.noVerifiedUsersFound")}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-semibold text-gray-600 mb-2 block">
-              {t("messages.witness")} 1 ({t("messages.verifiedUser")})
-            </label>
-            <div className="mt-1">
-              <div className="relative mb-2">
-                <IoSearchOutline
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  size={18}
-                />
-                <input
-                  type="text"
-                  placeholder={t("messages.searchWitnessByNameOrAddress")}
-                  value={searchWitness1}
-                  onChange={(e) => setSearchWitness1(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-gray-800 placeholder-gray-400"
-                />
-              </div>
-              <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-100">
-                {filteredWitnesses1.length > 0 ? (
-                  filteredWitnesses1.map((witness) => (
-                    <div
-                      key={witness.walletAddress}
-                      onClick={() => setWitness1Address(witness.walletAddress!)}
-                      className={`px-4 py-3 cursor-pointer transition ${
-                        witness1Address === witness.walletAddress
-                          ? "bg-emerald-50"
-                          : "hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="min-w-0">
-                          <div className="font-semibold text-sm text-gray-900 truncate">
-                            {witness.name || "Unnamed User"}
-                          </div>
-                          <div className="text-xs text-gray-500 font-mono">
-                            {shortAddress(witness.walletAddress!)}
-                          </div>
-                        </div>
-                        {witness1Address === witness.walletAddress && (
-                          <IoCheckmarkCircle
-                            className="text-emerald-600 flex-shrink-0 ml-2"
-                            size={20}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-5 text-center text-gray-400 text-sm">
-                    {t("messages.noVerifiedUsersFound")}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-semibold text-gray-600 mb-2 block">
-              {t("messages.witness")} 2 ({t("messages.verifiedUser")})
-            </label>
-            <div className="mt-1">
-              <div className="relative mb-2">
-                <IoSearchOutline
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  size={18}
-                />
-                <input
-                  type="text"
-                  placeholder={t("messages.searchWitnessByNameOrAddress")}
-                  value={searchWitness2}
-                  onChange={(e) => setSearchWitness2(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-gray-800 placeholder-gray-400"
-                />
-              </div>
-              <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-100">
-                {filteredWitnesses2.length > 0 ? (
-                  filteredWitnesses2.map((witness) => (
-                    <div
-                      key={witness.walletAddress}
-                      onClick={() => setWitness2Address(witness.walletAddress!)}
-                      className={`px-4 py-3 cursor-pointer transition ${
-                        witness2Address === witness.walletAddress
-                          ? "bg-emerald-50"
-                          : "hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="min-w-0">
-                          <div className="font-semibold text-sm text-gray-900 truncate">
-                            {witness.name || "Unnamed User"}
-                          </div>
-                          <div className="text-xs text-gray-500 font-mono">
-                            {shortAddress(witness.walletAddress!)}
-                          </div>
-                        </div>
-                        {witness2Address === witness.walletAddress && (
-                          <IoCheckmarkCircle
-                            className="text-emerald-600 flex-shrink-0 ml-2"
-                            size={20}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-5 text-center text-gray-400 text-sm">
-                    {t("messages.noVerifiedUsersFound")}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-semibold text-gray-600 mb-2 block">
-              {t("messages.propertyValuation")} (ETH)
-            </label>
-            <div className="mt-1 p-4 bg-gradient-to-br from-gray-50 to-emerald-50 border-2 border-gray-200 rounded-xl text-center">
-              <div className="text-2xl font-bold text-emerald-700">
-                ETH {estimatedValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
-              </div>
-              <div className="text-xs text-gray-500 mt-1">{t("messages.latestValuationFromDeed")}</div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-5 space-y-3 border-2 border-emerald-200 shadow-sm">
-            <h3 className="text-sm font-bold text-emerald-800 uppercase tracking-wide">
-              {t("messages.governmentFeesStampDuty")}
-            </h3>
-            <div className="flex justify-between items-center text-sm py-1">
-              <span className="text-gray-700">{t("messages.stampDuty")} (3%):</span>
-              <span className="font-semibold text-emerald-700">ETH {stampDuty}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm py-1">
-              <span className="text-gray-700">{t("messages.fixedFee")}:</span>
-              <span className="font-semibold text-emerald-700">ETH {GOV_FEE_FIXED.toFixed(4)}</span>
-            </div>
-            <div className="border-t-2 border-emerald-300 pt-3 mt-2 flex justify-between items-center font-bold text-emerald-900 text-base">
-              <span>{t("messages.totalPayable")}:</span>
-              <span className="text-lg">ETH {totalGovFee}</span>
-            </div>
-          </div>
-
+    <div className="w-full h-full fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md">
+      <div className="bg-white rounded-2xl shadow-2xl w-[95%] sm:w-[90%] max-w-3xl overflow-hidden">
+        <div className="rounded-2xl overflow-y-auto max-h-[90vh] p-6 sm:p-8 relative">
           <button
-            disabled={isSubmitting || !beneficiaryAddress || !witness1Address || !witness2Address}
-            onClick={handleSetLastWill}
-            className={`w-full mt-4 py-3.5 rounded-xl text-white font-bold transition-all duration-300 text-base shadow-lg transform ${
-              isSubmitting || !beneficiaryAddress || !witness1Address || !witness2Address
-                ? "bg-emerald-400 cursor-not-allowed"
-                : "bg-emerald-600 hover:bg-emerald-700 hover:scale-[1.02] active:scale-[0.98]"
-            }`}
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-600 hover:text-red-600 transition cursor-pointer"
           >
-            {isSubmitting ? t("messages.settingLastWill") : t("messages.createLastWill")}
+            ✕
           </button>
-
-          <p className="text-xs text-center text-gray-500 mt-3 leading-relaxed">
-            {t("messages.governmentFeesDeductedNotice")}
+          <h2 className="text-2xl font-bold text-green-900 mb-2 text-center">
+            {t("messages.createLastWill")}
+          </h2>
+          <p className="text-gray-700 text-sm mb-6 text-center">
+            {t("messages.provideLastWillDetails") || "Provide details for creating a Last Will"}
           </p>
+
+          <div className="space-y-6 text-gray-700">
+            <div>
+              <h3
+                onClick={() => toggleSection("beneficiary")}
+                className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center"
+              >
+                {t("messages.beneficiary")} ({t("messages.verifiedUser")})
+                <span>{activeSection === "beneficiary" ? "−" : "+"}</span>
+              </h3>
+              {activeSection === "beneficiary" && (
+                <div className="space-y-3">
+                  <div className="relative">
+                    <IoSearchOutline
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                      size={18}
+                    />
+                    <input
+                      type="text"
+                      placeholder={t("messages.searchByNameOrAddress")}
+                      value={searchBeneficiary}
+                      onChange={(e) => setSearchBeneficiary(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto border rounded-lg divide-y divide-gray-100">
+                    {filteredBeneficiaries.length > 0 ? (
+                      filteredBeneficiaries.map((user) => (
+                        <div
+                          key={user.walletAddress}
+                          onClick={() => setBeneficiaryAddress(user.walletAddress!)}
+                          className={`px-4 py-3 cursor-pointer transition ${
+                            beneficiaryAddress === user.walletAddress
+                              ? "bg-green-100"
+                              : "hover:bg-gray-50"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="min-w-0">
+                              <div className="font-semibold text-sm text-gray-900 truncate">
+                                {user.name || "Unnamed User"}
+                              </div>
+                              <div className="text-xs text-gray-500 font-mono">
+                                {shortAddress(user.walletAddress!)}
+                              </div>
+                            </div>
+                            {beneficiaryAddress === user.walletAddress && (
+                              <IoCheckmarkCircle
+                                className="text-green-600 flex-shrink-0 ml-2"
+                                size={20}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-5 text-center text-gray-400 text-sm">
+                        {t("messages.noVerifiedUsersFound")}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h3
+                onClick={() => toggleSection("witnesses")}
+                className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center"
+              >
+                {t("messages.witnesses") || "Witnesses"} ({t("messages.notaryOnly") || "Notary Only"})
+                <span>{activeSection === "witnesses" ? "−" : "+"}</span>
+              </h3>
+              {activeSection === "witnesses" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-gray-700">
+                      {t("messages.witness")} 1 ({t("messages.notary") || "Notary"})
+                    </label>
+                    <div className="relative">
+                      <IoSearchOutline
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={18}
+                      />
+                      <input
+                        type="text"
+                        placeholder={t("messages.searchWitnessByNameOrAddress")}
+                        value={searchWitness1}
+                        onChange={(e) => setSearchWitness1(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                      />
+                    </div>
+                    <div className="max-h-40 overflow-y-auto border rounded-lg divide-y divide-gray-100">
+                      {filteredWitnesses1.length > 0 ? (
+                        filteredWitnesses1.map((witness) => (
+                          <div
+                            key={witness.walletAddress}
+                            onClick={() => setWitness1Address(witness.walletAddress!)}
+                            className={`px-4 py-3 cursor-pointer transition ${
+                              witness1Address === witness.walletAddress
+                                ? "bg-green-100"
+                                : "hover:bg-gray-50"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="min-w-0">
+                                <div className="font-semibold text-sm text-gray-900 truncate">
+                                  {witness.name || "Unnamed User"}
+                                </div>
+                                <div className="text-xs text-gray-500 font-mono">
+                                  {shortAddress(witness.walletAddress!)}
+                                </div>
+                              </div>
+                              {witness1Address === witness.walletAddress && (
+                                <IoCheckmarkCircle
+                                  className="text-green-600 flex-shrink-0 ml-2"
+                                  size={20}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-5 text-center text-gray-400 text-sm">
+                          {t("messages.noVerifiedNotariesFound") || "No verified notaries found"}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-gray-700">
+                      {t("messages.witness")} 2 ({t("messages.notary") || "Notary"})
+                    </label>
+                    <div className="relative">
+                      <IoSearchOutline
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={18}
+                      />
+                      <input
+                        type="text"
+                        placeholder={t("messages.searchWitnessByNameOrAddress")}
+                        value={searchWitness2}
+                        onChange={(e) => setSearchWitness2(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                      />
+                    </div>
+                    <div className="max-h-40 overflow-y-auto border rounded-lg divide-y divide-gray-100">
+                      {filteredWitnesses2.length > 0 ? (
+                        filteredWitnesses2.map((witness) => (
+                          <div
+                            key={witness.walletAddress}
+                            onClick={() => setWitness2Address(witness.walletAddress!)}
+                            className={`px-4 py-3 cursor-pointer transition ${
+                              witness2Address === witness.walletAddress
+                                ? "bg-green-100"
+                                : "hover:bg-gray-50"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="min-w-0">
+                                <div className="font-semibold text-sm text-gray-900 truncate">
+                                  {witness.name || "Unnamed User"}
+                                </div>
+                                <div className="text-xs text-gray-500 font-mono">
+                                  {shortAddress(witness.walletAddress!)}
+                                </div>
+                              </div>
+                              {witness2Address === witness.walletAddress && (
+                                <IoCheckmarkCircle
+                                  className="text-green-600 flex-shrink-0 ml-2"
+                                  size={20}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-5 text-center text-gray-400 text-sm">
+                          {t("messages.noVerifiedNotariesFound") || "No verified notaries found"}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h3
+                onClick={() => toggleSection("valuation")}
+                className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center"
+              >
+                {t("messages.propertyValuation")} (ETH)
+                <span>{activeSection === "valuation" ? "−" : "+"}</span>
+              </h3>
+              {activeSection === "valuation" && (
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-green-700">
+                    ETH {estimatedValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">{t("messages.latestValuationFromDeed")}</div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h3
+                onClick={() => toggleSection("payment")}
+                className="text-lg font-semibold text-green-800 mb-2 cursor-pointer flex justify-between items-center"
+              >
+                {t("messages.governmentFeesStampDuty")}
+                <span>{activeSection === "payment" ? "−" : "+"}</span>
+              </h3>
+              {activeSection === "payment" && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium">{t("messages.stampDuty")} (3%):</span>
+                      <span className="text-gray-900">ETH {stampDuty}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium">{t("messages.fixedFee")}:</span>
+                      <span className="text-gray-900">ETH {GOV_FEE_FIXED.toFixed(4)}</span>
+                    </div>
+                    <div className="border-t border-yellow-300 pt-2 mt-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-700 font-bold">{t("messages.totalPayable")}:</span>
+                        <span className="text-green-700 font-bold text-lg">ETH {totalGovFee}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 italic">
+                    {t("messages.governmentFeesDeductedNotice")}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-between mt-6 gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg shadow-md transition"
+              >
+                {t("common.cancel") || "Cancel"}
+              </button>
+              <button
+                type="button"
+                disabled={isSubmitting || !beneficiaryAddress || !witness1Address || !witness2Address}
+                onClick={handleSetLastWill}
+                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg shadow-md transition"
+              >
+                {isSubmitting ? t("messages.settingLastWill") : t("messages.createLastWill")}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
