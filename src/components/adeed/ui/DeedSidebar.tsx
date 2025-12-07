@@ -37,7 +37,7 @@ const DeedSidebar = ({ deed, plan, signatures }: DeedSidebarProps) => {
 
   return (
     <>
-      <aside className="w-full space-y-6">
+      <aside className="space-y-6">
         <DeedStats deed={deed} />
 
         <div className="rounded-xl border border-gray-200 p-5 bg-white">

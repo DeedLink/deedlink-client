@@ -149,9 +149,9 @@ const DeedActionBar = ({
   const isLocked = state === "pending";
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full max-w-[460px] md:max-w-full">
       <div
-        className={`rounded-lg border border-gray-200 bg-white shadow-sm p-6 transition-all duration-300 ${
+        className={`rounded-lg border border-gray-200 bg-white shadow-sm p-6 h-full transition-all duration-300 ${
           isLocked ? "opacity-50 blur-[1px] pointer-events-none" : ""
         }`}
       >

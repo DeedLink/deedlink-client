@@ -267,69 +267,68 @@ const ADeedPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-boundary mx-auto w-full">
-        <div className="flex flex-col lg:flex-row gap-6 px-4 py-6 lg:px-6">
-          {/* Main Content Area */}
-          <div className="flex-1 min-w-0">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium mb-6 transition"
-            >
-              <FaArrowLeft />
-              <span>{t("common.back")}</span>
-            </button>
+    <div className="min-h-screen bg-gray-50 pt-20 relative">
+      <div className="flex max-w-boundary mx-auto w-full min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 py-8 min-h-full w-full">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium mb-6 transition"
+          >
+            <FaArrowLeft />
+            <span>{t("common.back")}</span>
+          </button>
 
-            {deed?._id && (
-              <div className="lg:hidden mb-6 w-full">
-                <PendingEscrowBanner 
-                  deedId={deed._id}
-                  onOpenEscrow={(escrowAddress) => {
-                    setSelectedEscrowAddress(escrowAddress);
-                    setOpenSaleEscrow(true);
-                  }}
-                />
-              </div>
-            )}
-            {hasOpenMarketplaceListings && (
-              <div className="lg:hidden mb-6 w-full">
-                <MarketplaceBanner 
-                  marketPlaceData={marketPlaceData} 
-                  onRemoveListing={handleRemoveMarketListing}
-                />
-              </div>
-            )}
-            {!hasOpenMarketplaceListings && (
-              <div className="lg:hidden mb-6 w-full flex justify-center">
-                <DeedActionBar
-                  onFractioning={handleFractionalize}
-                  onDefractionalize={() => setOpenDefractionalize(true)}
-                  deedNumber={deed.deedNumber}
-                  deedId={deed._id}
-                  tokenId={deed.tokenId}
-                  actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
-                  onTransfer={() => setOpenTransact(true)}
-                  onDirectTransfer={() => setOpenDirectTransfer(true)}
-                  onSaleEscrow={() => setOpenSaleEscrow(true)}
-                  onDownload={handleDownload}
-                  onShare={handleShare}
-                  onViewBlockchain={handleViewBlockchain}
-                  onOpenMarket={handleCreateListing}
-                  numberOfFT={numberOfFT}
-                  onRent={() => setOpenGiveRent(true)}
-                  onPowerOfAttorney={() => {}}
-                  certificateExists={!!certificate}
-                  onCancelCertificate={handleCancelLastWill}
-                  onLastWill={() => setOpenLastWill(true)}
-                />
-              </div>
-            )}
+          {deed?._id && (
+            <div className="lg:hidden mb-6 w-full">
+              <PendingEscrowBanner 
+                deedId={deed._id}
+                onOpenEscrow={(escrowAddress) => {
+                  setSelectedEscrowAddress(escrowAddress);
+                  setOpenSaleEscrow(true);
+                }}
+              />
+            </div>
+          )}
+          {hasOpenMarketplaceListings && (
+            <div className="lg:hidden mb-6 w-full">
+              <MarketplaceBanner 
+                marketPlaceData={marketPlaceData} 
+                onRemoveListing={handleRemoveMarketListing}
+              />
+            </div>
+          )}
+          {!hasOpenMarketplaceListings && (
+            <div className="lg:hidden mb-6 w-full flex justify-center">
+              <DeedActionBar
+                onFractioning={handleFractionalize}
+                onDefractionalize={() => setOpenDefractionalize(true)}
+                deedNumber={deed.deedNumber}
+                deedId={deed._id}
+                tokenId={deed.tokenId}
+                actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
+                onTransfer={() => setOpenTransact(true)}
+                onDirectTransfer={() => setOpenDirectTransfer(true)}
+                onSaleEscrow={() => setOpenSaleEscrow(true)}
+                onDownload={handleDownload}
+                onShare={handleShare}
+                onViewBlockchain={handleViewBlockchain}
+                onOpenMarket={handleCreateListing}
+                numberOfFT={numberOfFT}
+                onRent={() => setOpenGiveRent(true)}
+                onPowerOfAttorney={() => {}}
+                certificateExists={!!certificate}
+                onCancelCertificate={handleCancelLastWill}
+                onLastWill={() => setOpenLastWill(true)}
+              />
+            </div>
+          )}
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <DeedHeader deed={deed} numberOfFT={numberOfFT} />
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
+            <DeedHeader deed={deed} numberOfFT={numberOfFT} />
 
-              <div className="p-6">
-                <div className="space-y-6">
+            <div className="p-6">
+              <div className="grid lg:grid-cols-4 gap-6">
+                <div className="lg:col-span-3 space-y-6">
                   {hasOpenMarketplaceListings && (
                     <MarketplaceBanner 
                       marketPlaceData={marketPlaceData} 
@@ -349,65 +348,63 @@ const ADeedPage = () => {
                   <BoundaryDeeds plan={plan} />
                   <TitleHistory tnx={tnx} />
                 </div>
+
+                <DeedSidebar deed={deed} plan={plan} signatures={signatures} />
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Sidebar - Right Side */}
-          <div className="lg:w-80 xl:w-96 flex-shrink-0">
-            <div className="sticky top-24 space-y-6">
-              {deed?._id && (
-                <PendingEscrowBanner 
-                  deedId={deed._id}
-                  onOpenEscrow={(escrowAddress) => {
-                    setSelectedEscrowAddress(escrowAddress);
-                    setOpenSaleEscrow(true);
-                  }}
-                />
-              )}
-              <MarketplaceBanner 
-                marketPlaceData={marketPlaceData} 
-                onRemoveListing={handleRemoveMarketListing}
-              />
-              {!hasOpenMarketplaceListings && (
-                <DeedActionBar
-                  onFractioning={handleFractionalize}
-                  onDefractionalize={() => setOpenDefractionalize(true)}
-                  deedNumber={deed.deedNumber}
-                  deedId={deed._id}
-                  tokenId={deed.tokenId}
-                  actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
-                  onTransfer={() => setOpenTransact(true)}
-                  onDirectTransfer={() => {
-                    if (hasActiveLastWill) {
-                      showToast(t("messages.cannotSellWithActiveLastWill") || "Cannot transfer property with an active Last Will. Please revoke the Last Will first.", "error");
-                      return;
-                    }
-                    setOpenDirectTransfer(true);
-                  }}
-                  onSaleEscrow={() => {
-                    if (hasActiveLastWill) {
-                      showToast(t("messages.cannotSellWithActiveLastWill") || "Cannot sell property with an active Last Will. Please revoke the Last Will first.", "error");
-                      return;
-                    }
-                    setOpenSaleEscrow(true);
-                  }}
-                  onDownload={handleDownload}
-                  onShare={handleShare}
-                  onViewBlockchain={handleViewBlockchain}
-                  onOpenMarket={handleCreateListing}
-                  numberOfFT={numberOfFT}
-                  onRent={() => setOpenGiveRent(true)}
-                  onPowerOfAttorney={() => {}}
-                  certificateExists={!!certificate}
-                  onCancelCertificate={handleCancelLastWill}
-                  onLastWill={() => setOpenLastWill(true)}
-                  hasActiveLastWill={hasActiveLastWill}
-                />
-              )}
-              <DeedSidebar deed={deed} plan={plan} signatures={signatures} />
-            </div>
-          </div>
+        <div className="hidden lg:block py-14 min-h-full pt-20 max-w-full mx-auto lg:sticky lg:top-24 lg:h-fit">
+          {deed?._id && (
+            <PendingEscrowBanner 
+              deedId={deed._id}
+              onOpenEscrow={(escrowAddress) => {
+                setSelectedEscrowAddress(escrowAddress);
+                setOpenSaleEscrow(true);
+              }}
+            />
+          )}
+          <MarketplaceBanner 
+            marketPlaceData={marketPlaceData} 
+            onRemoveListing={handleRemoveMarketListing}
+          />
+          {!hasOpenMarketplaceListings && (
+            <DeedActionBar
+              onFractioning={handleFractionalize}
+              onDefractionalize={() => setOpenDefractionalize(true)}
+              deedNumber={deed.deedNumber}
+              deedId={deed._id}
+              tokenId={deed.tokenId}
+              actionHappened={openDirectTransfer || openSaleEscrow || openTransact}
+              onTransfer={() => setOpenTransact(true)}
+              onDirectTransfer={() => {
+                if (hasActiveLastWill) {
+                  showToast(t("messages.cannotSellWithActiveLastWill") || "Cannot transfer property with an active Last Will. Please revoke the Last Will first.", "error");
+                  return;
+                }
+                setOpenDirectTransfer(true);
+              }}
+              onSaleEscrow={() => {
+                if (hasActiveLastWill) {
+                  showToast(t("messages.cannotSellWithActiveLastWill") || "Cannot sell property with an active Last Will. Please revoke the Last Will first.", "error");
+                  return;
+                }
+                setOpenSaleEscrow(true);
+              }}
+              onDownload={handleDownload}
+              onShare={handleShare}
+              onViewBlockchain={handleViewBlockchain}
+              onOpenMarket={handleCreateListing}
+              numberOfFT={numberOfFT}
+              onRent={() => setOpenGiveRent(true)}
+              onPowerOfAttorney={() => {}}
+              certificateExists={!!certificate}
+              onCancelCertificate={handleCancelLastWill}
+              onLastWill={() => setOpenLastWill(true)}
+              hasActiveLastWill={hasActiveLastWill}
+            />
+          )}
         </div>
       </div>
 
