@@ -65,6 +65,11 @@ const PendingEscrowBanner: React.FC<PendingEscrowBannerProps> = ({
                 getEscrowStatus(tx.blockchain_identification)
               ]);
               
+              // Skip if escrow doesn't exist or is invalid
+              if (!details || !status) {
+                return null;
+              }
+              
               return {
                 escrowAddress: tx.blockchain_identification,
                 buyer: details.buyer,
@@ -73,8 +78,11 @@ const PendingEscrowBanner: React.FC<PendingEscrowBannerProps> = ({
                 isBuyerDeposited: status.isBuyerDeposited,
                 transactionId: tx._id
               };
-            } catch (error) {
-              console.error("Failed to fetch escrow details:", error);
+            } catch (error: any) {
+              // Only log non-decode errors to avoid console spam
+              if (error?.code !== "BAD_DATA" && !error?.message?.includes("could not decode")) {
+                console.error("Failed to fetch escrow details:", error);
+              }
               return null;
             }
           })

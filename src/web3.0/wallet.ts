@@ -6,6 +6,9 @@ const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID);
 const WEB_RPC = import.meta.env.VITE_RPC_URL_WEB as string;
 const MOBILE_RPC = import.meta.env.VITE_RPC_URL_MOBILE as string;
 
+// Singleton for WalletConnect provider to prevent multiple initializations
+let wcProviderInstance: EthereumProvider | null = null;
+
 export async function connectWallet() {
   try {
     if ((window as any).ethereum) {
@@ -60,18 +63,37 @@ export async function connectWallet() {
     }
 
     //WalletConnect (mobile MetaMask or others)
-    console.log("Initializing WalletConnect...");
-    const wcProvider = await EthereumProvider.init({
-      projectId,
-      chains: [CHAIN_ID],
-      showQrModal: true,
-      optionalChains: [CHAIN_ID],
-      rpcMap: {
-        [CHAIN_ID]: MOBILE_RPC,
-      },
-    } as any);
+    // Use singleton to prevent multiple initializations
+    if (!wcProviderInstance) {
+      console.log("Initializing WalletConnect...");
+      wcProviderInstance = await EthereumProvider.init({
+        projectId,
+        chains: [CHAIN_ID],
+        showQrModal: true,
+        optionalChains: [CHAIN_ID],
+        rpcMap: {
+          [CHAIN_ID]: MOBILE_RPC,
+        },
+      } as any);
+    } else {
+      console.log("Using existing WalletConnect instance");
+    }
 
-    await wcProvider.enable();
+    const wcProvider = wcProviderInstance;
+    
+    // Only enable if not already enabled/connected
+    try {
+      if (!wcProvider.session || !wcProvider.connected) {
+        await wcProvider.enable();
+      }
+    } catch (error: any) {
+      // If enable fails, try to reconnect
+      if (error.message?.includes("already enabled") || error.message?.includes("session")) {
+        // Session exists, continue
+      } else {
+        throw error;
+      }
+    }
 
     const provider = new BrowserProvider(wcProvider as any);
     const signer = await provider.getSigner();

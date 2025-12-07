@@ -365,15 +365,33 @@ export async function getEscrowStatus(escrowAddress: string): Promise<{
   isBuyerDeposited: boolean;
   isSellerDeposited: boolean;
   isFinalized: boolean;
-}> {
-  const escrow = await getEscrowContract(escrowAddress);
-  const status = await escrow.getStatus();
-  
-  return {
-    isBuyerDeposited: status._isBuyerDeposited,
-    isSellerDeposited: status._isSellerDeposited,
-    isFinalized: status._isFinalized
-  };
+} | null> {
+  try {
+    const escrow = await getEscrowContract(escrowAddress);
+    
+    // Check if contract exists
+    const code = await escrow.runner?.provider?.getCode(escrowAddress);
+    if (!code || code === "0x") {
+      return null;
+    }
+    
+    const status = await escrow.getStatus().catch(() => null);
+    if (!status) {
+      return null;
+    }
+    
+    return {
+      isBuyerDeposited: status._isBuyerDeposited,
+      isSellerDeposited: status._isSellerDeposited,
+      isFinalized: status._isFinalized
+    };
+  } catch (error: any) {
+    // Silently return null for invalid escrow addresses
+    if (error?.code === "BAD_DATA" || error?.message?.includes("could not decode")) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 // Get complete escrow details
@@ -387,29 +405,54 @@ export async function getEscrowDetails(escrowAddress: string): Promise<{
   isBuyerDeposited: boolean;
   isSellerDeposited: boolean;
   isFinalized: boolean;
-}> {
-  const escrow = await getEscrowContract(escrowAddress);
-  
-  const [buyer, seller, price, escrowType, tokenId, status] = await Promise.all([
-    escrow.buyer(),
-    escrow.seller(),
-    escrow.price(),
-    escrow.escrowType(),
-    escrow.tokenId(),
-    escrow.getStatus()
-  ]);
+} | null> {
+  try {
+    const escrow = await getEscrowContract(escrowAddress);
+    
+    // Check if contract exists by trying to read code
+    const code = await escrow.runner?.provider?.getCode(escrowAddress);
+    if (!code || code === "0x") {
+      // Contract doesn't exist at this address
+      return null;
+    }
+    
+    const [buyer, seller, price, escrowType, tokenId, status] = await Promise.all([
+      escrow.buyer().catch(() => "0x0000000000000000000000000000000000000000"),
+      escrow.seller().catch(() => "0x0000000000000000000000000000000000000000"),
+      escrow.price().catch(() => BigInt(0)),
+      escrow.escrowType().catch(() => 0),
+      escrow.tokenId().catch(() => BigInt(0)),
+      escrow.getStatus().catch(() => ({
+        _isBuyerDeposited: false,
+        _isSellerDeposited: false,
+        _isFinalized: false
+      }))
+    ]);
 
-  return {
-    buyer,
-    seller,
-    price: ethers.formatEther(price),
-    priceRaw: price.toString(),
-    tokenId: tokenId.toString(),
-    escrowType: escrowType === 0 ? "NFT" : "FRACTIONAL",
-    isBuyerDeposited: status._isBuyerDeposited,
-    isSellerDeposited: status._isSellerDeposited,
-    isFinalized: status._isFinalized
-  };
+    // Validate that we got valid data
+    if (buyer === "0x0000000000000000000000000000000000000000" || 
+        seller === "0x0000000000000000000000000000000000000000") {
+      return null;
+    }
+
+    return {
+      buyer,
+      seller,
+      price: ethers.formatEther(price),
+      priceRaw: price.toString(),
+      tokenId: tokenId.toString(),
+      escrowType: escrowType === 0 ? "NFT" : "FRACTIONAL",
+      isBuyerDeposited: status._isBuyerDeposited,
+      isSellerDeposited: status._isSellerDeposited,
+      isFinalized: status._isFinalized
+    };
+  } catch (error: any) {
+    // Silently return null for invalid escrow addresses instead of throwing
+    if (error?.code === "BAD_DATA" || error?.message?.includes("could not decode")) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 // Get all escrows for a user

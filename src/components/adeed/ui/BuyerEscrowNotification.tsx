@@ -53,8 +53,18 @@ const BuyerEscrowNotification: React.FC<BuyerEscrowNotificationProps> = ({ onDis
             try {
               const details = await getEscrowDetails(escrowAddress);
               
+              // Skip if escrow doesn't exist or is invalid
+              if (!details) {
+                return;
+              }
+              
               if (details.buyer.toLowerCase() === account.toLowerCase()) {
                 const status = await getEscrowStatus(escrowAddress);
+                
+                // Skip if status is invalid
+                if (!status) {
+                  return;
+                }
                 
                 if (!status.isFinalized) {
                   buyerEscrowTxs.push({
@@ -104,6 +114,11 @@ const BuyerEscrowNotification: React.FC<BuyerEscrowNotificationProps> = ({ onDis
                 getEscrowStatus(tx.blockchain_identification)
               ]);
 
+              // Skip if escrow doesn't exist or is invalid
+              if (!details || !status) {
+                return null;
+              }
+
               if (status.isFinalized) {
                 return null;
               }
@@ -118,8 +133,11 @@ const BuyerEscrowNotification: React.FC<BuyerEscrowNotificationProps> = ({ onDis
                 isBuyerDeposited: status.isBuyerDeposited,
                 isFinalized: status.isFinalized
               };
-            } catch (error) {
-              console.error("Failed to fetch escrow details:", error);
+            } catch (error: any) {
+              // Only log non-decode errors to avoid console spam
+              if (error?.code !== "BAD_DATA" && !error?.message?.includes("could not decode")) {
+                console.error("Failed to fetch escrow details:", error);
+              }
               return null;
             }
           });
