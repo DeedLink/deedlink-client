@@ -463,6 +463,10 @@ const si = {
       registerProperty: "ඔබේ දේපළ ලියාපදිංචි කරන්න",
       exploreMarketplace: "වෙළඳපොළ ගවේෂණය කරන්න",
     },
+    developers: {
+      title: "කණ්ඩායම හමුවන්න",
+      description: "DeedLink හි පසුව ඇති දක්ෂ සංවර්ධකයන් දේපළ කළමනාකරණයේ අනාගතය ගොඩනඟනවා.",
+    },
   },
 
   // Registration

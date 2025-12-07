@@ -4,6 +4,7 @@ import HowItWorks from "../components/about/HowItWorks";
 import OwnershipModels from "../components/about/OwnershipModels";
 import TechnicalArchitecture from "../components/about/TechnicalArchitecture";
 import CTASection from "../components/about/CTASection";
+import DevelopersSection from "../components/about/DevelopersSection";
 import { useLoader } from "../contexts/LoaderContext";
 import HeroSection from "../components/about/HeroSection";
 
@@ -20,12 +21,13 @@ const AboutPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="text-gray-800">
+    <div className="text-gray-800 overflow-x-hidden">
       <HeroSection />
       <TrustBadges />
       <HowItWorks />
       <OwnershipModels />
       <TechnicalArchitecture />
+      <DevelopersSection />
       <CTASection />
     </div>
   );

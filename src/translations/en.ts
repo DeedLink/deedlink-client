@@ -463,6 +463,10 @@ const en = {
       registerProperty: "Register Your Property",
       exploreMarketplace: "Explore Marketplace",
     },
+    developers: {
+      title: "Meet the Team",
+      description: "The talented developers behind DeedLink who are building the future of property management.",
+    },
   },
 
   // Registration

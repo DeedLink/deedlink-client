@@ -62,6 +62,12 @@ export const about = {
   title: "DEED LINK",
   discription:
     "Streamlining Deeds with Digital Security for easy access and reliable records.",
+  stats: {
+    properties: 1247,
+    users: 3856,
+    transactions: 2193,
+    value: 450, // in millions
+  },
 };
 
 // Registration Fees (in ETH)
@@ -78,6 +84,38 @@ export const TOTAL_REGISTRATION_FEE =
   REGISTRATION_FEES.IVSL_FEE +
   REGISTRATION_FEES.SURVEY_FEE +
   REGISTRATION_FEES.NOTARY_FEE;
+
+// Developers information
+export const DEVELOPERS = [
+  {
+    id: "1",
+    name: "Rasindu Dulshan Siriwardhana",
+    role: "Full Stack Developer & System Architect",
+    bio: "Created the complete DeedLink platform including backend services, smart contracts, and frontend applications. Led system architecture, Web3 integration, microservices, and API development from conception to implementation.",
+    github: "https://github.com/DulshanSiriwardhana",
+  },
+  {
+    id: "2",
+    name: "Seran Vishwa Sovis",
+    role: "Smart Contract & Backend Developer",
+    bio: "Developed smart contracts and notification services while implementing key features across client applications. Focused on creating secure blockchain solutions that enhance platform functionality and user experience.",
+    github: "https://github.com/VishSeran",
+  },
+  {
+    id: "3",
+    name: "Udeshi Imasha",
+    role: "UI/UX Designer & Frontend Developer",
+    bio: "Designed intuitive user interfaces and implemented frontend features for enhanced user experience. Specialized in creating responsive and accessible designs that simplify complex blockchain interactions for all users.",
+    github: "https://github.com/Udeshiimasha",
+  },
+  {
+    id: "4",
+    name: "Madhavi Hindagoda",
+    role: "UI/UX Designer & Frontend Developer",
+    bio: "Created beautiful and functional user interfaces while developing client application features. Committed to delivering exceptional user experiences through thoughtful design and seamless frontend implementation.",
+    github: "https://github.com/MadhaviHindagoda",
+  },
+];
 
 export const SAMPLE_DEEDS: Deed[] = [
   {
