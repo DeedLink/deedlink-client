@@ -322,6 +322,7 @@ const en = {
     revokeLastWill: "Revoke Last Will",
     revoking: "Revoking...",
     confirmRevokeLastWill: "Are you sure you want to revoke this Last Will? This action cannot be undone.",
+    cannotSellWithActiveLastWill: "Cannot sell or transfer property with an active Last Will. Please revoke the Last Will first.",
     title: "Title",
     description: "Description",
     type: "Type",
