@@ -270,7 +270,7 @@ const QRDeedViewPage = () => {
             <strong>Note:</strong> This is a read-only view of the deed information accessed via QR code. 
             For full access and management features, please log in as the deed owner.
           </p>
-          {deed.deedNumber && (
+          {deed.deedNumber && user && (
             <div className="flex gap-3">
               <button
                 onClick={() => {
