@@ -145,7 +145,7 @@ const DeedQRGenerator: React.FC<DeedQRGeneratorProps> = ({ deed, isOpen, onClose
             <label className="block text-sm font-semibold text-gray-700 mb-3">
               Permission Type
             </label>
-            <div className="space-y-2">
+            <div className="space-y-2 text-black">
               <label className="flex items-center p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition">
                 <input
                   type="radio"
