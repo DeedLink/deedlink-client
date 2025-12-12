@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { FaShieldAlt, FaMapMarkerAlt, FaCalendarAlt, FaFileAlt, FaUser, FaHome, FaArrowLeft } from "react-icons/fa";
+import { FaShieldAlt, FaMapMarkerAlt, FaCalendarAlt, FaFileAlt, FaUser, FaHome, FaArrowLeft, FaStore } from "react-icons/fa";
 import { getDeedByQR } from "../api/api";
 import { useToast } from "../contexts/ToastContext";
 import { useLoader } from "../contexts/LoaderContext";
+import { useWallet } from "../contexts/WalletContext";
+import { useLogin } from "../contexts/LoginContext";
 import type { IDeed } from "../types/responseDeed";
 import { shortAddress } from "../utils/format";
 
@@ -16,6 +18,8 @@ const QRDeedViewPage = () => {
   const [error, setError] = useState<string | null>(null);
   const { showToast } = useToast();
   const { showLoader, hideLoader } = useLoader();
+  const { account } = useWallet();
+  const { user } = useLogin();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -262,10 +266,34 @@ const QRDeedViewPage = () => {
         </div>
 
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-800">
+          <p className="text-sm text-blue-800 mb-4">
             <strong>Note:</strong> This is a read-only view of the deed information accessed via QR code. 
             For full access and management features, please log in as the deed owner.
           </p>
+          {deed.deedNumber && (
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  if (user && account) {
+                    navigate(`/deed/${deed.deedNumber}?action=escrow`);
+                  } else {
+                    showToast("Please log in to create an escrow", "info");
+                    navigate(`/deed/${deed.deedNumber}`);
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition"
+              >
+                <FaStore className="w-4 h-4" />
+                Create Escrow Sale
+              </button>
+              <button
+                onClick={() => navigate(`/deed/${deed.deedNumber}`)}
+                className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition"
+              >
+                View Full Deed
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useToast } from "../contexts/ToastContext";
@@ -37,6 +37,7 @@ const ADeedPage = () => {
   const { showToast } = useToast();
   const { showLoader, hideLoader } = useLoader();
   const { t } = useLanguage();
+  const [searchParams] = useSearchParams();
 
   const {
     deed,
@@ -68,6 +69,14 @@ const ADeedPage = () => {
     ? marketPlaceData.filter((listing) => listing.status === "open_to_sale")
     : [];
   const hasOpenMarketplaceListings = openMarketplaceListings.length > 0;
+
+  useEffect(() => {
+    const action = searchParams.get("action");
+    if (action === "escrow" && deed) {
+      setOpenSaleEscrow(true);
+      navigate(`/deed/${deed.deedNumber}`, { replace: true });
+    }
+  }, [searchParams, deed, navigate]);
 
   useEffect(() => {
     const loadCertificate = async () => {
