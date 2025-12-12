@@ -262,7 +262,7 @@ const QRManagement: React.FC<QRManagementProps> = ({ deed, isOpen, onClose }) =>
                             <label className="block text-sm font-semibold text-gray-700 mb-3">
                               Permission Type
                             </label>
-                            <div className="space-y-2">
+                            <div className="space-y-2 text-black">
                               {(["public", "restricted", "owner_only"] as QRPermissionType[]).map((type) => (
                                 <label 
                                   key={type} 
