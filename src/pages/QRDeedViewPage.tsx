@@ -1,9 +1,8 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { FaShieldAlt, FaMapMarkerAlt, FaCalendarAlt, FaFileAlt, FaUser, FaHome, FaArrowLeft, FaStore } from "react-icons/fa";
 import { getDeedByQR } from "../api/api";
 import { useToast } from "../contexts/ToastContext";
-import { useLoader } from "../contexts/LoaderContext";
 import { useWallet } from "../contexts/WalletContext";
 import { useLogin } from "../contexts/LoginContext";
 import type { IDeed } from "../types/responseDeed";
@@ -12,12 +11,11 @@ import { shortAddress } from "../utils/format";
 const QRDeedViewPage = () => {
   const { qrId } = useParams<{ qrId: string }>();
   const [searchParams] = useSearchParams();
-  const scannerAddress = searchParams.get("scannerAddress");
+  const scannerAddress = useMemo(() => searchParams.get("scannerAddress"), [searchParams]);
   const [deed, setDeed] = useState<IDeed | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { showToast } = useToast();
-  const { showLoader, hideLoader } = useLoader();
   const { account } = useWallet();
   const { user } = useLogin();
   const navigate = useNavigate();
@@ -45,7 +43,6 @@ const QRDeedViewPage = () => {
       setError(null);
       setDeed(null);
       fetchingRef.current = true;
-      showLoader();
       
       try {
         const response = await getDeedByQR(qrId, scannerAddress || undefined);
@@ -61,7 +58,6 @@ const QRDeedViewPage = () => {
         showToast(err?.response?.data?.message || err?.message || "Failed to load deed", "error");
       } finally {
         setLoading(false);
-        hideLoader();
         fetchingRef.current = false;
       }
     };

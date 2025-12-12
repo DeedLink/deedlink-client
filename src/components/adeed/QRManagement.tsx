@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { FaTimes, FaTrash, FaEdit, FaCopy, FaCheckCircle, FaQrcode, FaGlobe, FaLock, FaUsers } from "react-icons/fa";
+import { FaTimes, FaTrash, FaEdit, FaCopy, FaCheckCircle, FaQrcode, FaGlobe, FaLock, FaUsers, FaDownload, FaEye, FaEyeSlash } from "react-icons/fa";
+import { QRCodeCanvas } from "qrcode.react";
 import { getQRCodesByDeed, deleteQRCode, updateQRPermissions } from "../../api/api";
 import { useToast } from "../../contexts/ToastContext";
 import type { QRPermissionType } from "../../types/qr";
@@ -20,6 +21,7 @@ interface QRCodeItem {
   deedNumber: string;
   permissionType: QRPermissionType;
   allowedAddresses: string[];
+  encryptedData?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -34,6 +36,7 @@ const QRManagement: React.FC<QRManagementProps> = ({ deed, isOpen, onClose }) =>
   const [showGenerator, setShowGenerator] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [expandedQR, setExpandedQR] = useState<string | null>(null);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -120,6 +123,22 @@ const QRManagement: React.FC<QRManagementProps> = ({ deed, isOpen, onClose }) =>
     setCopiedId(qrId);
     showToast("QR ID copied to clipboard", "success");
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleDownloadQR = (qrId: string) => {
+    const canvas = document.getElementById(`qr-canvas-${qrId}`) as HTMLCanvasElement;
+    if (!canvas) return;
+
+    const url = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.download = `deed-qr-${qrId}-${Date.now()}.png`;
+    link.href = url;
+    link.click();
+    showToast("QR code downloaded", "success");
+  };
+
+  const toggleQRDisplay = (qrId: string) => {
+    setExpandedQR(expandedQR === qrId ? null : qrId);
   };
 
   const getPermissionIcon = (type: QRPermissionType) => {
@@ -263,62 +282,101 @@ const QRManagement: React.FC<QRManagementProps> = ({ deed, isOpen, onClose }) =>
                         </div>
                       </div>
                     ) : (
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            {getPermissionIcon(qr.permissionType)}
-                            <span className="font-semibold text-gray-900">
-                              {getPermissionLabel(qr.permissionType)}
-                            </span>
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              {getPermissionIcon(qr.permissionType)}
+                              <span className="font-semibold text-gray-900">
+                                {getPermissionLabel(qr.permissionType)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                              <span className="font-mono break-all">{qr.qrId}</span>
+                              <button
+                                onClick={() => handleCopyQRId(qr.qrId)}
+                                className="p-1 hover:bg-gray-100 rounded transition"
+                                title="Copy QR ID"
+                              >
+                                {copiedId === qr.qrId ? (
+                                  <FaCheckCircle className="w-4 h-4 text-green-600" />
+                                ) : (
+                                  <FaCopy className="w-4 h-4" />
+                                )}
+                              </button>
+                            </div>
+                            {qr.permissionType === "restricted" && qr.allowedAddresses.length > 0 && (
+                              <div className="mt-2">
+                                <p className="text-xs font-semibold text-gray-600 uppercase mb-1">
+                                  Allowed Addresses ({qr.allowedAddresses.length})
+                                </p>
+                                <div className="space-y-1">
+                                  {qr.allowedAddresses.map((addr, idx) => (
+                                    <p key={idx} className="text-xs font-mono text-gray-700">
+                                      {addr}
+                                    </p>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            <p className="text-xs text-gray-500 mt-2">
+                              Created: {new Date(qr.createdAt).toLocaleString()}
+                            </p>
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                            <span className="font-mono break-all">{qr.qrId}</span>
+                          <div className="flex gap-2 ml-4">
+                            {qr.encryptedData && (
+                              <button
+                                onClick={() => toggleQRDisplay(qr.qrId)}
+                                className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
+                                title={expandedQR === qr.qrId ? "Hide QR Code" : "Show QR Code"}
+                              >
+                                {expandedQR === qr.qrId ? (
+                                  <FaEyeSlash className="w-5 h-5" />
+                                ) : (
+                                  <FaEye className="w-5 h-5" />
+                                )}
+                              </button>
+                            )}
                             <button
-                              onClick={() => handleCopyQRId(qr.qrId)}
-                              className="p-1 hover:bg-gray-100 rounded transition"
-                              title="Copy QR ID"
+                              onClick={() => handleStartEdit(qr)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                              title="Edit permissions"
                             >
-                              {copiedId === qr.qrId ? (
-                                <FaCheckCircle className="w-4 h-4 text-green-600" />
-                              ) : (
-                                <FaCopy className="w-4 h-4" />
-                              )}
+                              <FaEdit className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(qr.qrId)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                              title="Delete QR code"
+                            >
+                              <FaTrash className="w-5 h-5" />
                             </button>
                           </div>
-                          {qr.permissionType === "restricted" && qr.allowedAddresses.length > 0 && (
-                            <div className="mt-2">
-                              <p className="text-xs font-semibold text-gray-600 uppercase mb-1">
-                                Allowed Addresses ({qr.allowedAddresses.length})
+                        </div>
+                        
+                        {qr.encryptedData && expandedQR === qr.qrId && (
+                          <div className="border-t border-gray-200 pt-4">
+                            <div className="flex flex-col items-center p-4 bg-gray-50 rounded-lg border-2 border-emerald-200">
+                              <QRCodeCanvas
+                                id={`qr-canvas-${qr.qrId}`}
+                                value={qr.encryptedData}
+                                size={200}
+                                includeMargin={true}
+                                level="M"
+                              />
+                              <p className="text-xs text-gray-600 mt-3 text-center font-mono break-all">
+                                {qr.deedNumber}
                               </p>
-                              <div className="space-y-1">
-                                {qr.allowedAddresses.map((addr, idx) => (
-                                  <p key={idx} className="text-xs font-mono text-gray-700">
-                                    {addr}
-                                  </p>
-                                ))}
-                              </div>
+                              <button
+                                onClick={() => handleDownloadQR(qr.qrId)}
+                                className="mt-3 flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition"
+                              >
+                                <FaDownload className="w-4 h-4" />
+                                Download QR Code
+                              </button>
                             </div>
-                          )}
-                          <p className="text-xs text-gray-500 mt-2">
-                            Created: {new Date(qr.createdAt).toLocaleString()}
-                          </p>
-                        </div>
-                        <div className="flex gap-2 ml-4">
-                          <button
-                            onClick={() => handleStartEdit(qr)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                            title="Edit permissions"
-                          >
-                            <FaEdit className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(qr.qrId)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                            title="Delete QR code"
-                          >
-                            <FaTrash className="w-5 h-5" />
-                          </button>
-                        </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

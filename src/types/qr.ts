@@ -59,6 +59,7 @@ export interface MyQRCodesResponse {
     deedNumber: string;
     permissionType: QRPermissionType;
     allowedAddresses: string[];
+    encryptedData?: string;
     createdAt: string;
     updatedAt?: string;
   }>;
