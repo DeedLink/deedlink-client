@@ -21,6 +21,7 @@ import { AlertProvider } from './contexts/AlertContext';
 import { FloatingNotifyProvider } from './contexts/FloatingNotifyContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import BuyerEscrowNotification from './components/adeed/ui/BuyerEscrowNotification';
+import RextroVideo from './pages/Rextro-video';
 
 function AppContent() {
   const { language } = useLanguage();
@@ -60,6 +61,7 @@ function AppContent() {
               </ProtectedRoute>
               } />
             <Route path="/qr/deed/:qrId" element={<QRDeedViewPage />} />
+            <Route path="/rextro" element={<RextroVideo />} />
           </Routes>
         </div>
       </LoaderProvider>
