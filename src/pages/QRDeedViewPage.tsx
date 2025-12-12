@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { FaShieldAlt, FaMapMarkerAlt, FaCalendarAlt, FaFileAlt, FaUser, FaHome, FaArrowLeft, FaStore } from "react-icons/fa";
 import { getDeedByQR } from "../api/api";
@@ -21,6 +21,8 @@ const QRDeedViewPage = () => {
   const { account } = useWallet();
   const { user } = useLogin();
   const navigate = useNavigate();
+  const hasFetchedRef = useRef<string | null>(null);
+  const fetchingRef = useRef(false);
 
   useEffect(() => {
     const fetchDeed = async () => {
@@ -30,11 +32,26 @@ const QRDeedViewPage = () => {
         return;
       }
 
+      // Create a unique key for this fetch based on qrId and scannerAddress
+      const fetchKey = `${qrId}-${scannerAddress || 'none'}`;
+
+      // Prevent multiple simultaneous fetches for the same key
+      if (fetchingRef.current || hasFetchedRef.current === fetchKey) {
+        return;
+      }
+
+      // Reset state for new fetch
+      setLoading(true);
+      setError(null);
+      setDeed(null);
+      fetchingRef.current = true;
       showLoader();
+      
       try {
         const response = await getDeedByQR(qrId, scannerAddress || undefined);
         if (response.success && response.deed) {
           setDeed(response.deed);
+          hasFetchedRef.current = fetchKey;
         } else {
           setError("Failed to load deed information");
         }
@@ -45,11 +62,13 @@ const QRDeedViewPage = () => {
       } finally {
         setLoading(false);
         hideLoader();
+        fetchingRef.current = false;
       }
     };
 
     fetchDeed();
-  }, [qrId, scannerAddress, showLoader, hideLoader, showToast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qrId, scannerAddress]);
 
   if (loading) {
     return (
