@@ -298,7 +298,7 @@ const QRManagement: React.FC<QRManagementProps> = ({ deed, isOpen, onClose }) =>
                                 value={editAllowedAddresses}
                                 onChange={(e) => setEditAllowedAddresses(e.target.value)}
                                 placeholder="Enter wallet addresses separated by commas (e.g., 0x123..., 0x456...)"
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-emerald-500 focus:outline-none font-mono text-sm bg-white"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-emerald-500 focus:outline-none font-mono text-sm bg-white text-black"
                                 rows={4}
                               />
                               <p className="text-xs text-gray-500 mt-2">Separate multiple addresses with commas</p>
