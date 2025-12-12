@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaTimes, FaTrash, FaEdit, FaCopy, FaCheckCircle, FaQrcode, FaGlobe, FaLock, FaUsers } from "react-icons/fa";
 import { getQRCodesByDeed, deleteQRCode, updateQRPermissions } from "../../api/api";
 import { useToast } from "../../contexts/ToastContext";
-import { QRPermissionType } from "../../types/qr";
+import type { QRPermissionType } from "../../types/qr";
 import DeedQRGenerator from "../qr/DeedQRGenerator";
 import type { IDeed } from "../../types/responseDeed";
 

@@ -4,7 +4,6 @@ import { FaShieldAlt, FaMapMarkerAlt, FaCalendarAlt, FaFileAlt, FaUser, FaHome, 
 import { getDeedByQR } from "../api/api";
 import { useToast } from "../contexts/ToastContext";
 import { useLoader } from "../contexts/LoaderContext";
-import { useNavigate } from "react-router-dom";
 import type { IDeed } from "../types/responseDeed";
 import { shortAddress } from "../utils/format";
 
