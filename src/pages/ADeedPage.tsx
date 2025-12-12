@@ -412,10 +412,11 @@ const ADeedPage = () => {
               onRent={() => setOpenGiveRent(true)}
               onPowerOfAttorney={() => {}}
               certificateExists={!!certificate}
-              onCancelCertificate={handleCancelLastWill}
-              onLastWill={() => setOpenLastWill(true)}
-              hasActiveLastWill={hasActiveLastWill}
-            />
+                onCancelCertificate={handleCancelLastWill}
+                onLastWill={() => setOpenLastWill(true)}
+                hasActiveLastWill={hasActiveLastWill}
+                onQRCode={() => setOpenQRManagement(true)}
+              />
           )}
         </div>
       </div>

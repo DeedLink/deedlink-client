@@ -4,6 +4,7 @@ import { getQRCodesByDeed, deleteQRCode, updateQRPermissions } from "../../api/a
 import { useToast } from "../../contexts/ToastContext";
 import type { QRPermissionType } from "../../types/qr";
 import DeedQRGenerator from "../qr/DeedQRGenerator";
+import DeedQRScanner from "../qr/DeedQRScanner";
 import type { IDeed } from "../../types/responseDeed";
 
 interface QRManagementProps {
@@ -31,6 +32,7 @@ const QRManagement: React.FC<QRManagementProps> = ({ deed, isOpen, onClose }) =>
   const [editAllowedAddresses, setEditAllowedAddresses] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const [showGenerator, setShowGenerator] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { showToast } = useToast();
 
@@ -157,6 +159,13 @@ const QRManagement: React.FC<QRManagementProps> = ({ deed, isOpen, onClose }) =>
           <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-700 px-6 py-4 flex items-center justify-between z-10">
             <h2 className="text-xl font-bold text-white">QR Code Management</h2>
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowScanner(true)}
+                className="px-4 py-2 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-400 transition flex items-center gap-2"
+              >
+                <FaQrcode className="w-4 h-4" />
+                Scan QR
+              </button>
               <button
                 onClick={() => setShowGenerator(true)}
                 className="px-4 py-2 bg-white text-emerald-600 font-semibold rounded-lg hover:bg-emerald-50 transition flex items-center gap-2"
@@ -326,6 +335,12 @@ const QRManagement: React.FC<QRManagementProps> = ({ deed, isOpen, onClose }) =>
             setShowGenerator(false);
             fetchQRCodes();
           }}
+        />
+      )}
+
+      {showScanner && (
+        <DeedQRScanner
+          onClose={() => setShowScanner(false)}
         />
       )}
     </>
