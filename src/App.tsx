@@ -15,6 +15,7 @@ import DeedRegistrationPage from './pages/DeedRegistrationPage';
 import ProtectedRoute from './contexts/ProtectedRoute';
 import { ToastProvider } from './contexts/ToastContext';
 import ADeedPage from './pages/ADeedPage';
+import QRDeedViewPage from './pages/QRDeedViewPage';
 import { QRProvider } from './contexts/QRContext';
 import { AlertProvider } from './contexts/AlertContext';
 import { FloatingNotifyProvider } from './contexts/FloatingNotifyContext';
@@ -58,6 +59,7 @@ function AppContent() {
                 <ADeedPage/>
               </ProtectedRoute>
               } />
+            <Route path="/qr/deed/:qrId" element={<QRDeedViewPage />} />
           </Routes>
         </div>
       </LoaderProvider>

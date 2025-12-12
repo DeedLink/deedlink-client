@@ -22,6 +22,7 @@ import TransferFractionalTokensPopup from "../components/adeed/tnxPopups/Transfe
 import FractionalizePopup from "../components/adeed/tnxPopups/FractionalizePopup";
 import DefractionalizePopup from "../components/adeed/tnxPopups/DefractionalizePopup";
 import PendingEscrowBanner from "../components/adeed/ui/PendingEscrowBanner";
+import QRManagement from "../components/adeed/QRManagement";
 import type { Certificate } from "../types/certificate";
 import { cancelListing } from "../web3.0/marketService";
 import { generateDeedPDF } from "../utils/generateDeedPDF";
@@ -62,6 +63,7 @@ const ADeedPage = () => {
   const [hasActiveLastWill, setHasActiveLastWill] = useState(false);
   const [ownershipRefreshTrigger, setOwnershipRefreshTrigger] = useState(0);
   const [selectedEscrowAddress, setSelectedEscrowAddress] = useState<string | undefined>(undefined);
+  const [openQRManagement, setOpenQRManagement] = useState(false);
   const openMarketplaceListings = Array.isArray(marketPlaceData)
     ? marketPlaceData.filter((listing) => listing.status === "open_to_sale")
     : [];
@@ -319,6 +321,7 @@ const ADeedPage = () => {
                 certificateExists={!!certificate}
                 onCancelCertificate={handleCancelLastWill}
                 onLastWill={() => setOpenLastWill(true)}
+                onQRCode={() => setOpenQRManagement(true)}
               />
             </div>
           )}
@@ -469,6 +472,14 @@ const ADeedPage = () => {
             }}
           />
         </>
+      )}
+
+      {deed && (
+        <QRManagement
+          deed={deed}
+          isOpen={openQRManagement}
+          onClose={() => setOpenQRManagement(false)}
+        />
       )}
     </div>
   );
