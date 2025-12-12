@@ -156,8 +156,8 @@ const DeedQRGenerator: React.FC<DeedQRGeneratorProps> = ({ deed, isOpen, onClose
                   className="mr-3"
                 />
                 <div>
-                  <p className="font-medium text-gray-900">Anyone can scan</p>
-                  <p className="text-xs text-gray-600">Public access - no restrictions</p>
+                  <p className="font-medium text-black">Anyone can scan</p>
+                  <p className="text-xs text-black">Public access - no restrictions</p>
                 </div>
               </label>
 
@@ -171,8 +171,8 @@ const DeedQRGenerator: React.FC<DeedQRGeneratorProps> = ({ deed, isOpen, onClose
                   className="mr-3"
                 />
                 <div>
-                  <p className="font-medium text-gray-900">Given people only</p>
-                  <p className="text-xs text-gray-600">Only specified addresses can scan</p>
+                  <p className="font-medium text-black">Given people only</p>
+                  <p className="text-xs text-black">Only specified addresses can scan</p>
                 </div>
               </label>
 
@@ -186,8 +186,8 @@ const DeedQRGenerator: React.FC<DeedQRGeneratorProps> = ({ deed, isOpen, onClose
                   className="mr-3"
                 />
                 <div>
-                  <p className="font-medium text-gray-900">Only I can scan</p>
-                  <p className="text-xs text-gray-600">Only deed owners can scan</p>
+                  <p className="font-medium text-black">Only I can scan</p>
+                  <p className="text-xs text-black">Only deed owners can scan</p>
                 </div>
               </label>
             </div>
@@ -195,7 +195,7 @@ const DeedQRGenerator: React.FC<DeedQRGeneratorProps> = ({ deed, isOpen, onClose
 
           {permissionType === "restricted" && (
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-black mb-2">
                 Allowed Wallet Addresses
               </label>
               <textarea
@@ -205,7 +205,7 @@ const DeedQRGenerator: React.FC<DeedQRGeneratorProps> = ({ deed, isOpen, onClose
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-emerald-500 focus:outline-none font-mono text-sm"
                 rows={4}
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-black mt-1">
                 Separate multiple addresses with commas
               </p>
             </div>
