@@ -202,7 +202,7 @@ const DeedQRGenerator: React.FC<DeedQRGeneratorProps> = ({ deed, isOpen, onClose
                 value={allowedAddresses}
                 onChange={(e) => setAllowedAddresses(e.target.value)}
                 placeholder="Enter wallet addresses separated by commas&#10;Example: 0x123..., 0x456..."
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-emerald-500 focus:outline-none font-mono text-sm"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-emerald-500 focus:outline-none font-mono text-sm text-black"
                 rows={4}
               />
               <p className="text-xs text-black mt-1">
