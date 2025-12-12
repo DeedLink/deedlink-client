@@ -153,7 +153,7 @@ const DeedQRGenerator: React.FC<DeedQRGeneratorProps> = ({ deed, isOpen, onClose
                   value="public"
                   checked={permissionType === "public"}
                   onChange={(e) => setPermissionType(e.target.value as QRPermissionType)}
-                  className="mr-3"
+                  className="mr-3 text-black"
                 />
                 <div>
                   <p className="font-medium text-black">Anyone can scan</p>
@@ -168,7 +168,7 @@ const DeedQRGenerator: React.FC<DeedQRGeneratorProps> = ({ deed, isOpen, onClose
                   value="restricted"
                   checked={permissionType === "restricted"}
                   onChange={(e) => setPermissionType(e.target.value as QRPermissionType)}
-                  className="mr-3"
+                  className="mr-3 text-black"
                 />
                 <div>
                   <p className="font-medium text-black">Given people only</p>
@@ -183,7 +183,7 @@ const DeedQRGenerator: React.FC<DeedQRGeneratorProps> = ({ deed, isOpen, onClose
                   value="owner_only"
                   checked={permissionType === "owner_only"}
                   onChange={(e) => setPermissionType(e.target.value as QRPermissionType)}
-                  className="mr-3"
+                  className="mr-3 text-black"
                 />
                 <div>
                   <p className="font-medium text-black">Only I can scan</p>
