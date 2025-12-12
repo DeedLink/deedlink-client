@@ -1,5 +1,4 @@
 import NavLinks from "./NavLinks";
-import LanguageSwitcher from "./LanguageSwitcher";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -15,9 +14,6 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, links, onClose }) => {
       }`}
     >
       <div className="flex flex-col gap-4 p-4">
-        <div className="flex justify-center">
-          <LanguageSwitcher />
-        </div>
         <NavLinks links={links} onClick={onClose} isMobile />
       </div>
     </div>

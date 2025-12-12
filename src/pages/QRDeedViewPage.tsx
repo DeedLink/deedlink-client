@@ -1,20 +1,27 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { FaShieldAlt, FaMapMarkerAlt, FaCalendarAlt, FaFileAlt, FaUser, FaHome, FaArrowLeft, FaStore } from "react-icons/fa";
-import { getDeedByQR } from "../api/api";
+import { FaShieldAlt, FaMapMarkerAlt, FaCalendarAlt, FaFileAlt, FaUser, FaHome, FaArrowLeft, FaStore, FaRoute, FaMapMarkedAlt, FaExpand } from "react-icons/fa";
+import { getDeedByQR, getPlanByPlanNumber } from "../api/api";
 import { useToast } from "../contexts/ToastContext";
 import { useWallet } from "../contexts/WalletContext";
 import { useLogin } from "../contexts/LoginContext";
 import type { IDeed } from "../types/responseDeed";
+import type { Plan } from "../types/plan";
+import { defaultPlan } from "../types/plan";
 import { shortAddress } from "../utils/format";
+import BoundaryDeeds from "../components/adeed/ui/BoundaryDeeds";
+import MapPreview from "../components/deeds/MapPreview";
+import MapPopup from "../components/deeds/MapPopup";
 
 const QRDeedViewPage = () => {
   const { qrId } = useParams<{ qrId: string }>();
   const [searchParams] = useSearchParams();
   const scannerAddress = useMemo(() => searchParams.get("scannerAddress"), [searchParams]);
   const [deed, setDeed] = useState<IDeed | null>(null);
+  const [plan, setPlan] = useState<Plan>(defaultPlan);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMapOpen, setIsMapOpen] = useState(false);
   const { showToast } = useToast();
   const { account } = useWallet();
   const { user } = useLogin();
@@ -49,6 +56,19 @@ const QRDeedViewPage = () => {
         if (response.success && response.deed) {
           setDeed(response.deed);
           hasFetchedRef.current = fetchKey;
+          
+          // Fetch plan if surveyPlanNumber exists
+          if (response.deed.surveyPlanNumber) {
+            try {
+              const planResponse = await getPlanByPlanNumber(response.deed.surveyPlanNumber);
+              if (planResponse.data) {
+                setPlan(planResponse.data);
+              }
+            } catch (planErr) {
+              console.error("Error fetching plan:", planErr);
+              // Don't show error toast for plan, as it's optional
+            }
+          }
         } else {
           setError("Failed to load deed information");
         }
@@ -277,6 +297,113 @@ const QRDeedViewPage = () => {
                 </div>
               </div>
             )}
+
+            {/* Survey Plan Section */}
+            {plan && plan.planId && (
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <FaMapMarkedAlt className="w-5 h-5 text-emerald-600" />
+                  Survey Plan
+                </h3>
+                
+                <div className="space-y-4">
+                  {/* Plan Details */}
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {plan.planId && (
+                        <div>
+                          <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Plan ID</p>
+                          <p className="text-gray-900 font-mono text-sm">{plan.planId}</p>
+                        </div>
+                      )}
+                      {plan.areaSize > 0 && (
+                        <div>
+                          <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Plan Area</p>
+                          <p className="text-gray-900 font-medium">
+                            {plan.areaSize} {plan.areaType}
+                          </p>
+                        </div>
+                      )}
+                      {plan.status && (
+                        <div>
+                          <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Status</p>
+                          <p className="text-gray-900 capitalize">{plan.status}</p>
+                        </div>
+                      )}
+                      {plan.createdBy && (
+                        <div>
+                          <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Created By</p>
+                          <p className="text-gray-900">{plan.createdBy}</p>
+                        </div>
+                      )}
+                    </div>
+                    {plan.details && (
+                      <div className="mt-4 pt-4 border-t border-gray-300">
+                        <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Details</p>
+                        <p className="text-gray-900 text-sm">{plan.details}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Map View */}
+                  {plan.coordinates && plan.coordinates.length > 0 && (
+                    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <FaMapMarkedAlt className="w-5 h-5 text-emerald-600" />
+                          <h4 className="font-semibold text-gray-900">Plan Map View</h4>
+                        </div>
+                        <button
+                          onClick={() => setIsMapOpen(true)}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition text-sm font-semibold"
+                        >
+                          <FaExpand className="w-4 h-4" />
+                          Expand Map
+                        </button>
+                      </div>
+                      <div className="relative h-64 w-full">
+                        <MapPreview points={plan.coordinates} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Boundary Deeds */}
+                  {plan.sides && Object.keys(plan.sides).length > 0 && (
+                    <BoundaryDeeds plan={plan} />
+                  )}
+
+                  {/* Coordinates List */}
+                  {plan.coordinates && plan.coordinates.length > 0 && (
+                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <div className="flex items-center gap-2 mb-3">
+                        <FaRoute className="w-5 h-5 text-emerald-600" />
+                        <h4 className="font-semibold text-gray-900">Boundary Coordinates</h4>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-gray-300">
+                              <th className="text-left py-2 px-2 font-semibold text-gray-700">Point</th>
+                              <th className="text-left py-2 px-2 font-semibold text-gray-700">Latitude</th>
+                              <th className="text-left py-2 px-2 font-semibold text-gray-700">Longitude</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {plan.coordinates.map((coord, idx) => (
+                              <tr key={idx} className="border-b border-gray-200">
+                                <td className="py-2 px-2 font-medium text-gray-800">Point {idx + 1}</td>
+                                <td className="py-2 px-2 font-mono text-gray-700">{coord.latitude.toFixed(6)}</td>
+                                <td className="py-2 px-2 font-mono text-gray-700">{coord.longitude.toFixed(6)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -311,6 +438,15 @@ const QRDeedViewPage = () => {
           )}
         </div>
       </div>
+
+      {/* Map Popup */}
+      {plan && plan.coordinates && plan.coordinates.length > 0 && (
+        <MapPopup
+          points={plan.coordinates}
+          isOpen={isMapOpen}
+          onClose={() => setIsMapOpen(false)}
+        />
+      )}
     </div>
   );
 };
