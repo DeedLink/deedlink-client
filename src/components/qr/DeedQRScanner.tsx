@@ -23,113 +23,180 @@ const DeedQRScanner: React.FC<DeedQRScannerProps> = ({ onClose }) => {
 
   const stopScanner = async () => {
     try {
-      if (html5QrCodeRef.current?.isScanning) {
-        await html5QrCodeRef.current.stop();
+      if (html5QrCodeRef.current) {
+        if (html5QrCodeRef.current.isScanning()) {
+          await html5QrCodeRef.current.stop();
+        }
+        await html5QrCodeRef.current.clear();
       }
-      await html5QrCodeRef.current?.clear();
     } catch (err) {
       console.error("QR scanner stop failed:", err);
     }
+    startedRef.current = false;
   };
 
   useEffect(() => {
-    if (startedRef.current) return;
-    startedRef.current = true;
+    let isMounted = true;
+    let scannerInstance: Html5Qrcode | null = null;
+    let checkingRef = false;
 
-    html5QrCodeRef.current = new Html5Qrcode(qrCodeRegionId, {
-      verbose: false,
-      formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-    });
-
-    const qrCodeSuccessCallback = async (decodedText: string) => {
+    const initializeScanner = async () => {
       try {
-        if (!decodedText || decodedText.trim().length === 0) {
-          console.warn("QR code contains empty data");
-          return;
-        }
+        scannerInstance = new Html5Qrcode(qrCodeRegionId, {
+          verbose: false,
+          formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+        });
 
-        if (isChecking) return;
-        setIsChecking(true);
+        html5QrCodeRef.current = scannerInstance;
 
-        const decryptedData = Decrypting(decodedText);
-        
-        if (!decryptedData || typeof decryptedData !== "object") {
-          showToast("Invalid QR code format", "error");
-          setIsChecking(false);
-          return;
-        }
-
-        const qrData = decryptedData as DeedQRData;
-        
-        if (!qrData.qrId) {
-          showToast("QR code missing QR ID", "error");
-          setIsChecking(false);
-          return;
-        }
-
-        await stopScanner();
-
-        try {
-          const permissionCheck = await checkQRPermissions(qrData.qrId, account || undefined);
-          
-          if (permissionCheck.hasAccess) {
-            navigate(`/qr/deed/${qrData.qrId}${account ? `?scannerAddress=${account}` : ""}`);
-          } else {
-            showToast(permissionCheck.reason || "Access denied", "error");
-            setIsChecking(false);
-            setTimeout(() => {
-              startedRef.current = false;
-              startScanner();
-            }, 2000);
+        const qrCodeErrorCallback = (errorMessage: string) => {
+          if (!errorMessage.includes("NotFoundException") && !errorMessage.includes("No MultiFormat Readers")) {
+            console.warn("QR code scan error:", errorMessage);
           }
-        } catch (error: any) {
-          console.error("Permission check error:", error);
-          showToast(error?.message || "Failed to check permissions", "error");
-          setIsChecking(false);
-          setTimeout(() => {
-            startedRef.current = false;
-            startScanner();
-          }, 2000);
-        }
+        };
+
+        const qrCodeSuccessCallback = async (decodedText: string) => {
+          if (!isMounted || checkingRef) return;
+
+          try {
+            if (!decodedText || decodedText.trim().length === 0) {
+              console.warn("QR code contains empty data");
+              return;
+            }
+
+            checkingRef = true;
+            setIsChecking(true);
+
+            const decryptedData = Decrypting(decodedText);
+            
+            if (!decryptedData || typeof decryptedData !== "object") {
+              showToast("Invalid QR code format", "error");
+              checkingRef = false;
+              setIsChecking(false);
+              return;
+            }
+
+            const qrData = decryptedData as DeedQRData;
+            
+            if (!qrData.qrId) {
+              showToast("QR code missing QR ID", "error");
+              checkingRef = false;
+              setIsChecking(false);
+              return;
+            }
+
+            if (scannerInstance && scannerInstance.isScanning()) {
+              await scannerInstance.stop();
+            }
+
+            try {
+              const permissionCheck = await checkQRPermissions(qrData.qrId, account || undefined);
+              
+              if (permissionCheck.hasAccess) {
+                navigate(`/qr/deed/${qrData.qrId}${account ? `?scannerAddress=${account}` : ""}`);
+              } else {
+                showToast(permissionCheck.reason || "Access denied", "error");
+                checkingRef = false;
+                setIsChecking(false);
+                if (isMounted && scannerInstance) {
+                  setTimeout(async () => {
+                    if (scannerInstance && !scannerInstance.isScanning() && isMounted) {
+                      try {
+                        await scannerInstance.start(
+                          { facingMode: "environment" },
+                          {
+                            fps: 10,
+                            qrbox: { width: 250, height: 250 },
+                            aspectRatio: 1.0,
+                          },
+                          qrCodeSuccessCallback,
+                          qrCodeErrorCallback
+                        );
+                      } catch (err: any) {
+                        if (!err?.message?.includes("Already scanning")) {
+                          console.error("QR scanner restart failed:", err);
+                        }
+                      }
+                    }
+                  }, 2000);
+                }
+              }
+            } catch (error: any) {
+              console.error("Permission check error:", error);
+              showToast(error?.message || "Failed to check permissions", "error");
+              checkingRef = false;
+              setIsChecking(false);
+              if (isMounted && scannerInstance) {
+                setTimeout(async () => {
+                  if (scannerInstance && !scannerInstance.isScanning() && isMounted) {
+                    try {
+                      await scannerInstance.start(
+                        { facingMode: "environment" },
+                        {
+                          fps: 10,
+                          qrbox: { width: 250, height: 250 },
+                          aspectRatio: 1.0,
+                        },
+                        qrCodeSuccessCallback,
+                        qrCodeErrorCallback
+                      );
+                    } catch (err: any) {
+                      if (!err?.message?.includes("Already scanning")) {
+                        console.error("QR scanner restart failed:", err);
+                      }
+                    }
+                  }
+                }, 2000);
+              }
+            }
+          } catch (err) {
+            console.error("QR code decrypt error:", err);
+            showToast("Failed to decrypt QR code", "error");
+            checkingRef = false;
+            setIsChecking(false);
+          }
+        };
+
+        const startScanner = async () => {
+          if (!isMounted || !scannerInstance) return;
+          try {
+            await scannerInstance.start(
+              { facingMode: "environment" },
+              {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0,
+              },
+              qrCodeSuccessCallback,
+              qrCodeErrorCallback
+            );
+          } catch (err: any) {
+            if (err?.message?.includes("Already scanning")) {
+              return;
+            }
+            console.error("QR scanner start failed:", err);
+          }
+        };
+
+        await startScanner();
       } catch (err) {
-        console.error("QR code decrypt error:", err);
-        showToast("Failed to decrypt QR code", "error");
-        setIsChecking(false);
+        console.error("Failed to initialize scanner:", err);
       }
     };
 
-    const qrCodeErrorCallback = (errorMessage: string) => {
-      if (!errorMessage.includes("NotFoundException")) {
-        console.warn("QR code scan error:", errorMessage);
-      }
-    };
-
-    const startScanner = async () => {
-      try {
-        await html5QrCodeRef.current?.start(
-          { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
-          },
-          qrCodeSuccessCallback,
-          qrCodeErrorCallback
-        );
-      } catch (err) {
-        console.error("QR scanner start failed:", err);
-      }
-    };
-
-    startScanner();
+    initializeScanner();
 
     return () => {
+      isMounted = false;
+      checkingRef = false;
       stopScanner();
+      startedRef.current = false;
     };
-  }, [account, navigate, showToast, isChecking]);
+  }, [account, navigate, showToast]);
 
   const handleClose = async () => {
     await stopScanner();
+    startedRef.current = false;
     onClose();
   };
 

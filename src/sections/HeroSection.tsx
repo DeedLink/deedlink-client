@@ -2,12 +2,15 @@ import background from "../assets/images/backgrounds/home.webp";
 import { useLogin } from "../contexts/LoginContext";
 import { useSignup } from "../contexts/SignupContext";
 import { useLanguage } from "../contexts/LanguageContext";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import DeedQRScanner from "../components/qr/DeedQRScanner";
+import { FaQrcode } from "react-icons/fa";
 
 const HeroSection = () => {
   const { openLogin, user, logout } = useLogin();
   const { openSignup } = useSignup();
   const { t } = useLanguage();
+  const [showQRScanner, setShowQRScanner] = useState(false);
 
   const heroHighlights = useMemo(() => [
     t("hero.highlight1"),
@@ -71,6 +74,13 @@ const HeroSection = () => {
             </ul>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <button
+                onClick={() => setShowQRScanner(true)}
+                className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg shadow hover:bg-emerald-500 transition cursor-pointer font-medium text-sm sm:text-base w-full sm:w-auto border border-white/30"
+              >
+                <FaQrcode className="w-4 h-4" />
+                Scan Deed QR
+              </button>
               {!user ? (
                 <>
                   <button
@@ -134,6 +144,10 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
+
+      {showQRScanner && (
+        <DeedQRScanner onClose={() => setShowQRScanner(false)} />
+      )}
     </section>
   );
 };
