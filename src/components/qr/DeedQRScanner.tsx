@@ -202,14 +202,16 @@ const DeedQRScanner: React.FC<DeedQRScannerProps> = ({ onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
       onClick={handleClose}
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-md w-full mx-4"
+        className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-lg w-full mx-auto my-auto"
         onClick={(e) => e.stopPropagation()}
+        style={{ maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
       >
-        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 px-6 py-4 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 px-6 py-4 flex items-center justify-between flex-shrink-0">
           <div>
             <h2 className="text-xl font-bold text-white">Scan Deed QR Code</h2>
             <p className="text-emerald-50 text-sm mt-1">
@@ -218,18 +220,18 @@ const DeedQRScanner: React.FC<DeedQRScannerProps> = ({ onClose }) => {
           </div>
           <button
             onClick={handleClose}
-            className="text-white hover:bg-white/20 rounded-full p-2 transition"
+            className="text-white hover:bg-white/20 rounded-full p-2 transition flex-shrink-0"
           >
             <FaTimes className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6">
-          <div className="relative">
+        <div className="p-6 flex-1 flex flex-col items-center justify-center overflow-auto">
+          <div className="relative w-full max-w-md">
             <div
               id={qrCodeRegionId}
               className="w-full rounded-lg overflow-hidden border-4 border-emerald-500"
-              style={{ aspectRatio: "1/1" }}
+              style={{ aspectRatio: "1/1", minHeight: '300px' }}
             />
             <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
               <div className="absolute top-4 left-4 w-8 h-8 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg"></div>
@@ -248,7 +250,7 @@ const DeedQRScanner: React.FC<DeedQRScannerProps> = ({ onClose }) => {
 
           <button
             onClick={handleClose}
-            className="mt-6 w-full px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg"
+            className="mt-6 w-full max-w-md px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg"
           >
             Close Scanner
           </button>

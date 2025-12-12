@@ -41,26 +41,33 @@ const DeedQRGenerator: React.FC<DeedQRGeneratorProps> = ({ deed, isOpen, onClose
         ? allowedAddresses.split(",").map(addr => addr.trim()).filter(addr => addr.length > 0)
         : [];
 
-      const qrData = {
-        qrId: "",
+      const tempEncryptedData = Encryting({
+        qrId: "temp",
         deedId: deed._id,
         tokenId: deed.tokenId,
         deedNumber: deed.deedNumber,
         permissionType,
         allowedAddresses: addressesArray,
-        encryptedData: "",
-      };
-
-      const encryptedData = Encryting(qrData);
+      });
 
       const response = await generateDeedQR({
         deedId: deed._id,
         permissionType,
         allowedAddresses: addressesArray,
-        encryptedData,
+        encryptedData: tempEncryptedData,
       });
 
-      if (response.success) {
+      if (response.success && response.qrCode.qrId) {
+        const qrData = {
+          qrId: response.qrCode.qrId,
+          deedId: deed._id,
+          tokenId: deed.tokenId,
+          deedNumber: deed.deedNumber,
+          permissionType,
+          allowedAddresses: addressesArray,
+        };
+
+        const encryptedData = Encryting(qrData);
         setGeneratedQR(encryptedData);
         setQrId(response.qrCode.qrId);
         showToast("QR code generated successfully", "success");
