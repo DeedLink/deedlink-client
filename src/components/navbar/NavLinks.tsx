@@ -99,18 +99,19 @@ const NavLinks: React.FC<NavLinksProps> = ({ links, onClick, isMobile }) => {
         >
           {t("nav.connectWallet")}
         </button>
-        {isMobile && (
-          <button
-            onClick={() => {
-              setShowQRScanner(true);
-              onClick?.();
-            }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-white font-medium transition"
-          >
-            <FaQrcode className="w-4 h-4" />
-            Scan Deed QR
-          </button>
-        )}
+      )}
+      {isMobile && (
+        <button
+          onClick={() => {
+            setShowQRScanner(true);
+            onClick?.();
+          }}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-white font-medium transition"
+        >
+          <FaQrcode className="w-4 h-4" />
+          Scan Deed QR
+        </button>
+      )}
       </div>
 
       {showQRScanner && (
