@@ -22,6 +22,7 @@ import { FloatingNotifyProvider } from './contexts/FloatingNotifyContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import BuyerEscrowNotification from './components/adeed/ui/BuyerEscrowNotification';
 import RextroVideo from './pages/Rextro-video';
+import NotFoundPage from './pages/NotFoundPage';
 
 function AppContent() {
   const { language } = useLanguage();
@@ -62,6 +63,7 @@ function AppContent() {
               } />
             <Route path="/qr/deed/:qrId" element={<QRDeedViewPage />} />
             <Route path="/rextro" element={<RextroVideo />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </div>
       </LoaderProvider>

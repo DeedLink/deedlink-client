@@ -617,6 +617,10 @@ const en = {
     nicNumber: "NIC Number",
     address: "Address",
   },
+
+  // NotFoundPage
+  page_not_found_message: "The page you are looking for does not exist or has been moved.",
+  go_home: "Go to Home Page",
 };
 
 export default en;

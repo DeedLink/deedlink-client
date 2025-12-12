@@ -618,6 +618,10 @@ const si = {
     nicNumber: "හැඳුනුම්පත් අංකය",
     address: "ලිපිනය",
   },
+
+  // NotFoundPage
+  page_not_found_message: "ඔබ සොයන පිටුව නොපවතී හෝ මාරු කර ඇත.",
+  go_home: "මුල් පිටුවට යන්න",
 };
 
 export default si;
