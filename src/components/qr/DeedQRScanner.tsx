@@ -24,7 +24,7 @@ const DeedQRScanner: React.FC<DeedQRScannerProps> = ({ onClose }) => {
   const stopScanner = async () => {
     try {
       if (html5QrCodeRef.current) {
-        if (html5QrCodeRef.current.isScanning()) {
+        if (html5QrCodeRef.current.isScanning) {
           await html5QrCodeRef.current.stop();
         }
         await html5QrCodeRef.current.clear();
@@ -85,7 +85,7 @@ const DeedQRScanner: React.FC<DeedQRScannerProps> = ({ onClose }) => {
               return;
             }
 
-            if (scannerInstance && scannerInstance.isScanning()) {
+            if (scannerInstance && scannerInstance.isScanning) {
               await scannerInstance.stop();
             }
 
@@ -100,7 +100,7 @@ const DeedQRScanner: React.FC<DeedQRScannerProps> = ({ onClose }) => {
                 setIsChecking(false);
                 if (isMounted && scannerInstance) {
                   setTimeout(async () => {
-                    if (scannerInstance && !scannerInstance.isScanning() && isMounted) {
+                    if (scannerInstance && !scannerInstance.isScanning && isMounted) {
                       try {
                         await scannerInstance.start(
                           { facingMode: "environment" },
@@ -128,7 +128,7 @@ const DeedQRScanner: React.FC<DeedQRScannerProps> = ({ onClose }) => {
               setIsChecking(false);
               if (isMounted && scannerInstance) {
                 setTimeout(async () => {
-                  if (scannerInstance && !scannerInstance.isScanning() && isMounted) {
+                  if (scannerInstance && !scannerInstance.isScanning && isMounted) {
                     try {
                       await scannerInstance.start(
                         { facingMode: "environment" },
