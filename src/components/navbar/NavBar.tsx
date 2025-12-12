@@ -23,23 +23,27 @@ const NavBar = () => {
 
   return (
     <nav className="bg-[#00420A]/40 backdrop-blur-xl w-full fixed top-0 left-0 z-50 shadow-md">
-      <div className="max-w-boundary mx-auto px-6 sm:px-10 h-20 flex justify-between items-center">
-        <div className="flex items-center gap-4 font-extrabold text-white text-lg">
+      <div className="max-w-boundary mx-auto px-4 sm:px-6 lg:px-10 h-20 flex justify-between items-center overflow-hidden">
+        <div className="flex items-center gap-2 sm:gap-4 font-extrabold text-white text-base sm:text-lg min-w-0 flex-shrink">
           <img
             src={logo}
             alt="logo"
-            className="w-10 h-10 rounded-full border-2 border-white/30"
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white/30 flex-shrink-0"
           />
-          {about.title}
+          <span className="truncate">{about.title}</span>
         </div>
 
-      <div className="cursor-pointer flex gap-4 sm:gap-8 items-center justify-center">
-          <LanguageSwitcher />
-          <NavLinks links={user?.kycStatus==="verified"? navLinks :navLinks.filter((link)=>!link.protected)} />
+      <div className="cursor-pointer flex gap-2 sm:gap-4 lg:gap-8 items-center justify-center flex-shrink-0">
+          <div className="hidden sm:block">
+            <LanguageSwitcher />
+          </div>
+          <div className="hidden lg:block">
+            <NavLinks links={user?.kycStatus==="verified"? navLinks :navLinks.filter((link)=>!link.protected)} />
+          </div>
       </div>
 
         <button
-          className="lg:hidden text-white text-3xl"
+          className="lg:hidden text-white text-2xl sm:text-3xl flex-shrink-0"
           onClick={() => setMenuOpen(!menuOpen)}
         >
           {menuOpen ? <HiX /> : <HiMenu />}

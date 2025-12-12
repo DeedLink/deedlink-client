@@ -156,26 +156,28 @@ const QRManagement: React.FC<QRManagementProps> = ({ deed, isOpen, onClose }) =>
           className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-700 px-6 py-4 flex items-center justify-between z-10">
-            <h2 className="text-xl font-bold text-white">QR Code Management</h2>
-            <div className="flex items-center gap-3">
+          <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-700 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 z-10">
+            <h2 className="text-lg sm:text-xl font-bold text-white">QR Code Management</h2>
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <button
                 onClick={() => setShowScanner(true)}
-                className="px-4 py-2 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-400 transition flex items-center gap-2"
+                className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-emerald-500 text-white text-sm sm:text-base font-semibold rounded-lg hover:bg-emerald-400 transition flex items-center justify-center gap-2"
               >
                 <FaQrcode className="w-4 h-4" />
-                Scan QR
+                <span className="hidden sm:inline">Scan QR</span>
+                <span className="sm:hidden">Scan</span>
               </button>
               <button
                 onClick={() => setShowGenerator(true)}
-                className="px-4 py-2 bg-white text-emerald-600 font-semibold rounded-lg hover:bg-emerald-50 transition flex items-center gap-2"
+                className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-white text-emerald-600 text-sm sm:text-base font-semibold rounded-lg hover:bg-emerald-50 transition flex items-center justify-center gap-2"
               >
                 <FaQrcode className="w-4 h-4" />
-                Generate New
+                <span className="hidden sm:inline">Generate New</span>
+                <span className="sm:hidden">Generate</span>
               </button>
               <button
                 onClick={onClose}
-                className="text-white hover:bg-white/20 rounded-full p-2 transition"
+                className="text-white hover:bg-white/20 rounded-full p-2 transition flex-shrink-0"
               >
                 <FaTimes className="w-5 h-5" />
               </button>
