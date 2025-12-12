@@ -8,7 +8,8 @@ import {
   FaKey,
   FaHome,
   FaLock,
-  FaGifts
+  FaGifts,
+  FaQrcode
 } from "react-icons/fa";
 import { FaShop } from "react-icons/fa6";
 import ActionButton from "./actionButton";
@@ -41,6 +42,7 @@ interface DeedActionBarProps {
   onLastWill: () => void;
   onCancelCertificate?: () => void;
   hasActiveLastWill?: boolean;
+  onQRCode?: () => void;
 }
 
 const DeedActionBar = ({
@@ -64,6 +66,7 @@ const DeedActionBar = ({
   certificateExists,
   onCancelCertificate,
   hasActiveLastWill = false,
+  onQRCode,
 }: DeedActionBarProps) => {
   const [state, setState] = useState<"pending" | "completed" | "failed">("completed");
   const [titles, setTitles] = useState<any[]>([]);
@@ -246,6 +249,7 @@ const DeedActionBar = ({
           }
 
           {onDownload && <ActionButton icon={<FaFileDownload size={16} />} label={t("deedActions.downloadPDF")} onClick={onDownload} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
+          {onQRCode && <ActionButton icon={<FaQrcode size={16} />} label="QR Code" onClick={onQRCode} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300" />}
           {onShare && <ActionButton icon={<FaShareAlt size={16} />} label={t("deedActions.shareDeed")} onClick={onShare} color="bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hidden" />}
           {tokenId !== undefined && onViewBlockchain && <ActionButton icon={<FaEye size={16} />} label={t("deedActions.viewOnBlockchain")} onClick={onViewBlockchain} color="bg-gray-50 hover:bg-gray-100 text-gray-600 border-gray-200 hidden" />}
         </div>

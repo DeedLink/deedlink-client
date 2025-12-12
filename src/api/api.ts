@@ -402,6 +402,54 @@ export const updateDeedOwners = async (
   return res.data;
 };
 
+export const generateDeedQR = async (data: {
+  deedId: string;
+  permissionType: "public" | "restricted" | "owner_only";
+  allowedAddresses: string[];
+  encryptedData: string;
+}): Promise<any> => {
+  const res: AxiosResponse<any> = await deedApi.post("/qr/generate", data);
+  return res.data;
+};
+
+export const checkQRPermissions = async (qrId: string, scannerAddress?: string): Promise<any> => {
+  const params = scannerAddress ? { scannerAddress } : {};
+  const res: AxiosResponse<any> = await deedApi.get(`/qr/${qrId}/permissions`, { params });
+  return res.data;
+};
+
+export const getDeedByQR = async (qrId: string, scannerAddress?: string): Promise<any> => {
+  const params = scannerAddress ? { scannerAddress } : {};
+  const res: AxiosResponse<any> = await deedApi.get(`/qr/${qrId}/deed`, { params });
+  return res.data;
+};
+
+export const updateQRPermissions = async (
+  qrId: string,
+  data: {
+    permissionType: "public" | "restricted" | "owner_only";
+    allowedAddresses: string[];
+  }
+): Promise<any> => {
+  const res: AxiosResponse<any> = await deedApi.put(`/qr/${qrId}/permissions`, data);
+  return res.data;
+};
+
+export const deleteQRCode = async (qrId: string): Promise<any> => {
+  const res: AxiosResponse<any> = await deedApi.delete(`/qr/${qrId}`);
+  return res.data;
+};
+
+export const getMyQRCodes = async (): Promise<any> => {
+  const res: AxiosResponse<any> = await deedApi.get("/qr/my-codes");
+  return res.data;
+};
+
+export const getQRCodesByDeed = async (deedId: string): Promise<any> => {
+  const res: AxiosResponse<any> = await deedApi.get(`/qr/deed/${deedId}`);
+  return res.data;
+};
+
 //Notification API
 
 // const notificationApi = axios.create({
