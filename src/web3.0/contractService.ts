@@ -201,17 +201,32 @@ export async function createFractionalToken(
 }
 
 export async function getFTBalance(tokenAddress: string, account: string) {
-  if (
-    !tokenAddress ||
-    tokenAddress === "0x0000000000000000000000000000000000000000"
-  ) {
+  if (!tokenAddress || tokenAddress === "0x0000000000000000000000000000000000000000") {
     return 0;
   }
+
   try {
     const tokenContract = await getFractionalTokenContract(tokenAddress);
-    const balance = await tokenContract.balanceOf(account);
-    return Number(balance);
+    const [balanceRaw, decimals] = await Promise.all([
+      tokenContract.balanceOf(account),
+      tokenContract.decimals().catch(() => 0),
+    ]);
+
+    // If decimals is a number > 0, format using ethers.formatUnits
+    if (typeof decimals === "number" && decimals > 0) {
+      try {
+        const formatted = ethers.formatUnits(balanceRaw, decimals);
+        return Number(formatted);
+      } catch (e) {
+        // fallback to raw string
+        return Number(String(balanceRaw)) || 0;
+      }
+    }
+
+    // No decimals or decimals === 0
+    return Number(String(balanceRaw)) || 0;
   } catch (error) {
+    console.error("getFTBalance error:", error);
     return 0;
   }
 }
@@ -465,83 +480,71 @@ export async function defractionalizeProperty(nftId: number) {
     const PROPERTY_NFT_ADDRESS = import.meta.env.VITE_PROPERTY_NFT_ADDRESS as string;
     const signer = await getSigner();
     const userAddress = await signer.getAddress();
-    
-    const isFractionalized = await factory.isPropertyFractionalized(nftId);
-    if (!isFractionalized) {
-      throw new Error("Property is not fractionalized");
-    }
-    
+
     const tokenAddress = await factory.propertyToFractionToken(nftId);
-    if (tokenAddress === "0x0000000000000000000000000000000000000000") {
+    if (!tokenAddress || tokenAddress === "0x0000000000000000000000000000000000000000") {
       throw new Error("Property is not fractionalized");
     }
-    
-    const activeListings = await getActiveListingsForToken(nftId);
-    if (activeListings.length > 0) {
-      throw new Error(`Cannot defractionalize: There are ${activeListings.length} active marketplace listing(s) for this property. Please cancel them first.`);
-    }
-    
-    const [userBalanceFromFactory, totalSupply, hasFull, userBalanceFromToken, tokensInMarketplace, allHolders] = await Promise.all([
-      factory.getFractionBalance(nftId, userAddress),
-      factory.propertyToTotalSupply(nftId),
-      factory.hasFullOwnership(nftId, userAddress),
+
+    // Gather required on-chain info in parallel using existing helpers
+    const [totalSupply, userBalanceFromFactory, userBalanceFromToken, tokensInMarketplace, allHolders, hasFull] = await Promise.all([
+      getTotalSupply(nftId),
       (async () => {
         try {
-          const ftContract = await getFractionalTokenContract(tokenAddress);
-          const balance = await ftContract.balanceOf(userAddress);
-          return Number(balance);
+          return Number(await factory.getFractionBalance(nftId, userAddress));
         } catch {
           return 0;
         }
       })(),
+      getFTBalance(tokenAddress, userAddress),
       getTokensInMarketplace(nftId),
-      getAllTokenHolders(nftId)
+      getAllTokenHolders(nftId),
+      hasFullOwnership(nftId, userAddress)
     ]);
-    
+
     const totalSupplyNum = Number(totalSupply);
     const userBalanceFactoryNum = Number(userBalanceFromFactory);
     const userBalanceTokenNum = Number(userBalanceFromToken);
-    
-    
+
     if (totalSupplyNum === 0) {
       throw new Error("Invalid total supply. Property may not be properly fractionalized.");
     }
-    
+
     const actualUserBalance = Math.max(userBalanceFactoryNum, userBalanceTokenNum);
-    
+
     if (actualUserBalance === 0) {
       throw new Error("You don't own any fractional tokens of this property.");
     }
-    
+
     if (tokensInMarketplace > 0) {
       throw new Error(`Cannot defractionalize: ${tokensInMarketplace.toLocaleString()} tokens are currently in the marketplace contract. Please cancel all active listings first.`);
     }
-    
+
     const totalInOtherAddresses = allHolders
       .filter(h => h.address.toLowerCase() !== userAddress.toLowerCase())
-      .reduce((sum, h) => sum + h.balance, 0);
-    
+      .reduce((sum, h) => sum + (h.balance || 0), 0);
+
     if (totalInOtherAddresses > 0) {
       const otherHolders = allHolders
         .filter(h => h.address.toLowerCase() !== userAddress.toLowerCase() && h.balance > 0)
-        .map(h => `${h.address.substring(0, 10)}... (${h.balance.toLocaleString()} tokens)`)
+        .map(h => `${h.address.substring(0, 10)}... (${h.balance.toLocaleString()} tokens)`) 
         .join(", ");
       throw new Error(`Cannot defractionalize: ${totalInOtherAddresses.toLocaleString()} tokens are held by other addresses: ${otherHolders}. You must own all tokens to defractionalize.`);
     }
-    
+
     if (actualUserBalance !== totalSupplyNum) {
       const percentage = (actualUserBalance / totalSupplyNum) * 100;
       const missing = totalSupplyNum - actualUserBalance;
       throw new Error(`You must own 100% of the fractional tokens to defractionalize. You currently own ${actualUserBalance.toLocaleString()}/${totalSupplyNum.toLocaleString()} tokens (${percentage.toFixed(2)}%). Missing ${missing.toLocaleString()} tokens.`);
     }
-    
+
     if (!hasFull) {
       const holdersInfo = allHolders.length > 0 
         ? ` Token holders: ${allHolders.map(h => `${h.address.substring(0, 10)}... (${h.balance})`).join(", ")}`
         : "";
       throw new Error(`Ownership verification failed. You own ${actualUserBalance.toLocaleString()}/${totalSupplyNum.toLocaleString()} tokens but contract's hasFullOwnership returned false.${holdersInfo} This may indicate tokens are in escrow, marketplace, or other contracts.`);
     }
-    
+
     const tx = await factory.defractionalizeProperty(nftId, PROPERTY_NFT_ADDRESS);
     const receipt = await tx.wait();
     return {
@@ -549,7 +552,8 @@ export async function defractionalizeProperty(nftId: number) {
       txHash: receipt.hash ?? receipt.transactionHash
     };
   } catch (error: any) {
-    if (error.data && typeof error.data === 'string' && error.data.includes('fb8f41b2')) {
+    // Try to extract details from custom revert data
+    if (error && error.data && typeof error.data === 'string' && error.data.includes('fb8f41b2')) {
       const value1Hex = error.data.slice(74, 138);
       const value2Hex = error.data.slice(138, 202);
       try {
@@ -561,15 +565,15 @@ export async function defractionalizeProperty(nftId: number) {
         }
       } catch {}
     }
-    
-    if (error.reason && error.reason !== "execution reverted") {
+
+    if (error && error.reason && error.reason !== "execution reverted") {
       throw new Error(error.reason);
     }
-    
-    if (error.message && !error.message.includes("execution reverted")) {
+
+    if (error && error.message && !error.message.includes("execution reverted")) {
       throw error;
     }
-    
+
     throw new Error("Failed to defractionalize property. Please ensure you own 100% of the fractional tokens and there are no active listings.");
   }
 }
