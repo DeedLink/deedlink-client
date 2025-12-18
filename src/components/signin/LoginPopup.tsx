@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaWallet, FaLock, FaCheckCircle } from "react-icons/fa";
+import { FaWallet, FaLock, FaCheckCircle, FaCircleNotch } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { useLogin } from "../../contexts/LoginContext";
 import { useWallet } from "../../contexts/WalletContext";
@@ -15,15 +15,17 @@ const LoginPopup = () => {
   const [password, setPassword] = useState("");
   const { account, connect } = useWallet();
   const { showToast } = useToast();
+  const [ loading, setLoading ] = useState(false);
   const { t } = useLanguage();
 
   const handleLogin = async () => {
+    setLoading(true);
     try {
-      if(account){
+      if (account) {
         const walletAddress = account;
         const res = await loginUser({ email, password, walletAddress });
         if (res) {
-          if(roleBarier(res.user.role, ["user"])===false) {
+          if (roleBarier(res.user.role, ["user"]) === false) {
             showToast(t("auth.accessDenied"), "error");
             return;
           }
@@ -32,9 +34,15 @@ const LoginPopup = () => {
           closeLogin();
           showToast(t("auth.loginSuccessful"), "success");
         }
+      } else {
+        showToast(t("auth.walletNotConnected"), "error");
       }
     } catch (err) {
       showToast(t("auth.loginFailed"), "error");
+    } finally {
+      try {
+        setLoading(false);
+      } catch {}
     }
   };
 
@@ -101,14 +109,14 @@ const LoginPopup = () => {
 
         <button
           onClick={handleLogin}
-          disabled={!account || !isValidEmail(email) || !isValidPassword(password)}
+          disabled={!account || !isValidEmail(email) || !isValidPassword(password) || loading}
           className={`w-full py-2 rounded-lg mt-4 transition ${
             (account && isValidEmail(email) && isValidPassword(password))
               ? "bg-green-600 text-white hover:bg-green-700"
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
           }`}
         >
-          {t("auth.login")}
+          {!loading ? t("auth.login") : <div className="flex items-center justify-center py-1"><FaCircleNotch className="animate-spin"></FaCircleNotch></div>}
         </button>
       </div>
     </div>
