@@ -3,7 +3,7 @@ import { FaTimes } from "react-icons/fa";
 import { useToast } from "../../../contexts/ToastContext";
 import { useLoader } from "../../../contexts/LoaderContext";
 import { useWallet } from "../../../contexts/WalletContext";
-import { defractionalizeProperty, hasFullOwnership, isPropertyFractionalized } from "../../../web3.0/contractService";
+import { defractionalizeProperty, hasFullOwnership, hasFullOwnershipFallback, isPropertyFractionalized } from "../../../web3.0/contractService";
 import { createTransaction, updateFullOwnerAddress, updateDeedOwners } from "../../../api/api";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
 
@@ -59,7 +59,9 @@ const DefractionalizePopup: React.FC<DefractionalizePopupProps> = ({
           return;
         }
 
-        const hasFull = await hasFullOwnership(tokenId, account);
+        // use factory check first, then fallback to token-level exact check
+        const hasFullFactory = await hasFullOwnership(tokenId, account);
+        const hasFull = hasFullFactory || (await hasFullOwnershipFallback(tokenId, account));
         if (!hasFull) {
           setCanDefractionalize(false);
           setBlockingReason("You must own 100% of the fractional tokens to defractionalize this property.");
@@ -161,9 +163,11 @@ const DefractionalizePopup: React.FC<DefractionalizePopupProps> = ({
         return;
       }
       
-      const hasFull = await hasFullOwnership(tokenId, account);
+      // First try the factory-level check, then fallback to token exact equality
+      const hasFullFactory = await hasFullOwnership(tokenId, account);
+      const hasFullCombined = hasFullFactory || (await hasFullOwnershipFallback(tokenId, account));
       
-      if (!hasFull) {
+      if (!hasFullCombined) {
         const holdersInfo = allHolders.length > 0 
           ? ` Found ${allHolders.length} token holder(s).`
           : "";

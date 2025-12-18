@@ -289,6 +289,43 @@ export async function hasFullOwnership(nftId: number, userAddress: string): Prom
   }
 }
 
+// Enhanced check: if factory.hasFullOwnership returns false, fall back to
+// verifying equality between token contract's totalSupply and the user's
+// balance (both in raw token units). This helps catch cases where the
+// factory mapping/logic may lag or be inconsistent with token contract state.
+export async function hasFullOwnershipFallback(nftId: number, userAddress: string): Promise<boolean> {
+  try {
+    const factory = await getFactoryContract();
+    // Primary check (fast)
+    try {
+      const hasFull = await factory.hasFullOwnership(nftId, userAddress);
+      if (hasFull) return true;
+    } catch (e) {
+      // ignore and try fallback
+    }
+
+    const tokenAddress = await factory.propertyToFractionToken(nftId);
+    if (!tokenAddress || tokenAddress === "0x0000000000000000000000000000000000000000") {
+      return false;
+    }
+
+    const ft = await getFractionalTokenContract(tokenAddress);
+    // read raw BigInt values from token contract
+    const [balanceRaw, totalSupplyRaw] = await Promise.all([
+      ft.balanceOf(userAddress).catch(() => BigInt(0)),
+      ft.totalSupply().catch(() => BigInt(0))
+    ]);
+
+    // Convert to BigInt for exact comparison (ethers v6 returns bigint for uint256)
+    const bal = typeof balanceRaw === 'bigint' ? balanceRaw : BigInt(String(balanceRaw || 0));
+    const tot = typeof totalSupplyRaw === 'bigint' ? totalSupplyRaw : BigInt(String(totalSupplyRaw || 0));
+
+    return bal === tot && tot > 0n;
+  } catch (error) {
+    return false;
+  }
+}
+
 export async function getTotalSupply(nftId: number): Promise<number> {
   try {
     const factory = await getFactoryContract();
