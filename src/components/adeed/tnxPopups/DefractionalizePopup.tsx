@@ -3,7 +3,7 @@ import { FaTimes } from "react-icons/fa";
 import { useToast } from "../../../contexts/ToastContext";
 import { useLoader } from "../../../contexts/LoaderContext";
 import { useWallet } from "../../../contexts/WalletContext";
-import { defractionalizeProperty, hasFullOwnership, isPropertyFractionalized } from "../../../web3.0/contractService";
+import { defractionalizeProperty, hasFullOwnership, hasFullOwnershipFallback, isPropertyFractionalized } from "../../../web3.0/contractService";
 import { createTransaction, updateFullOwnerAddress, updateDeedOwners } from "../../../api/api";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
 
@@ -59,7 +59,9 @@ const DefractionalizePopup: React.FC<DefractionalizePopupProps> = ({
           return;
         }
 
-        const hasFull = await hasFullOwnership(tokenId, account);
+        // use factory check first, then fallback to token-level exact check
+        const hasFullFactory = await hasFullOwnership(tokenId, account);
+        const hasFull = hasFullFactory || (await hasFullOwnershipFallback(tokenId, account));
         if (!hasFull) {
           setCanDefractionalize(false);
           setBlockingReason("You must own 100% of the fractional tokens to defractionalize this property.");
@@ -112,53 +114,65 @@ const DefractionalizePopup: React.FC<DefractionalizePopupProps> = ({
         return;
       }
       
-      const [totalSupply, userBalanceFromToken, info, tokensInMarketplace, allHolders] = await Promise.all([
-        getTotalSupply(tokenId),
+      const [userBalanceFromToken, info, tokensInMarketplace, allHolders] = await Promise.all([
         getFTBalance(tokenAddress, account),
         getFractionalTokenInfo(tokenId),
         getTokensInMarketplace(tokenId),
         getAllTokenHolders(tokenId)
       ]);
-      
+
       if (!info.isFractionalized) {
         showToast("Property is not fractionalized", "error");
         return;
       }
-      
-      if (tokensInMarketplace > 0) {
-        showToast(`Cannot defractionalize: ${tokensInMarketplace.toLocaleString()} tokens are in the marketplace contract. Please cancel all listings first.`, "error");
+
+      // Prefer token-formatted balances (userBalanceFromToken) and factory totals (info.totalSupply)
+      const factoryTotal = Number(info.totalSupply || 0);
+      const tokenOwnerBalance = Number(userBalanceFromToken || 0);
+      const factoryOwnerBalance = Number(info.userBalance || 0);
+
+      // If marketplace shows tokens, block
+      if (Number(tokensInMarketplace || 0) > 0) {
+        showToast(`Cannot defractionalize: ${Number(tokensInMarketplace).toLocaleString()} tokens are in the marketplace contract. Please cancel all listings first.`, "error");
         setCanDefractionalize(false);
         return;
       }
-      
-      const actualBalance = Math.max(userBalanceFromToken, info.userBalance);
-      
+
+      // Sum other holders balances (note: allHolders balances may be raw units; attempt best-effort normalization)
       const totalInOtherAddresses = allHolders
         .filter(h => h.address.toLowerCase() !== account.toLowerCase())
-        .reduce((sum, h) => sum + h.balance, 0);
-      
+        .reduce((sum, h) => sum + (Number(h.balance) || 0), 0);
+
       if (totalInOtherAddresses > 0) {
         showToast(`Cannot defractionalize: ${totalInOtherAddresses.toLocaleString()} tokens are held by other addresses. You must own all tokens.`, "error");
         setCanDefractionalize(false);
         return;
       }
-      
-      if (actualBalance !== totalSupply) {
-        const percentage = totalSupply > 0 ? (actualBalance / totalSupply) * 100 : 0;
-        const missing = totalSupply - actualBalance;
-        showToast(`You must own 100% of the fractional tokens to defractionalize. You currently own ${actualBalance.toLocaleString()}/${totalSupply.toLocaleString()} tokens (${percentage.toFixed(2)}%). Missing ${missing.toLocaleString()} tokens.`, "error");
+
+      // Determine authoritative owner balance (prefer token-formatted value if available)
+      const ownerBalance = tokenOwnerBalance > 0 ? tokenOwnerBalance : factoryOwnerBalance;
+      const totalSupplyForComparison = factoryTotal > 0 ? factoryTotal : Number(await getTotalSupply(tokenId) || 0);
+
+      // Use a small tolerance to account for formatting/decimals differences
+      const TOL = 1e-6;
+      if (Math.abs(ownerBalance - totalSupplyForComparison) > TOL) {
+        const percentage = totalSupplyForComparison > 0 ? (ownerBalance / totalSupplyForComparison) * 100 : 0;
+        const missing = totalSupplyForComparison - ownerBalance;
+        showToast(`You must own 100% of the fractional tokens to defractionalize. You currently own ${ownerBalance.toLocaleString()}/${totalSupplyForComparison.toLocaleString()} tokens (${percentage.toFixed(2)}%). Missing ${missing.toLocaleString()} tokens.`, "error");
         setCanDefractionalize(false);
         return;
       }
       
-      const hasFull = await hasFullOwnership(tokenId, account);
+      // First try the factory-level check, then fallback to token exact equality
+      const hasFullFactory = await hasFullOwnership(tokenId, account);
+      const hasFullCombined = hasFullFactory || (await hasFullOwnershipFallback(tokenId, account));
       
-      if (!hasFull) {
+      if (!hasFullCombined) {
         const holdersInfo = allHolders.length > 0 
           ? ` Found ${allHolders.length} token holder(s).`
           : "";
-        showToast(`Ownership verification failed. You own ${actualBalance.toLocaleString()}/${totalSupply.toLocaleString()} tokens but contract reports you don't have full ownership.${holdersInfo} Check console for details.`, "error");
-        console.error(`[DEFRACTIONALIZE] hasFullOwnership returned false. Balance: ${actualBalance}/${totalSupply}, Holders:`, allHolders);
+        showToast(`Ownership verification failed. You own ${ownerBalance.toLocaleString()}/${totalSupplyForComparison.toLocaleString()} tokens but contract reports you don't have full ownership.${holdersInfo} Check console for details.`, "error");
+        console.error(`[DEFRACTIONALIZE] hasFullOwnership returned false. Balance: ${ownerBalance}/${totalSupplyForComparison}, Holders:`, allHolders);
         setCanDefractionalize(false);
         return;
       }

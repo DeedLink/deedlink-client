@@ -31,15 +31,36 @@ export const useDeedData = (deedNumber: string | undefined) => {
 
   const getNumberOfFT = async () => {
     try {
-      if (!deed?.tokenId || !account) return;
+      if (!deed?.tokenId) return;
 
       const tokenAddress = await getFractionalTokenAddress(deed.tokenId);
-      if (!ethers.isAddress(tokenAddress)) {
+      const ZERO_ADDR = "0x0000000000000000000000000000000000000000";
+
+      if (!tokenAddress || tokenAddress === ZERO_ADDR) {
+        setNumberOfFT(0);
+        return;
+      }
+
+      if (!account) {
+        // No account connected; cannot fetch user balance
+        setNumberOfFT(0);
         return;
       }
 
       const balance = await getFTBalance(tokenAddress, account);
-      setNumberOfFT(balance);
+
+      // Normalize BigNumber/string to number
+      let formatted = 0;
+      try {
+        formatted = Number(ethers.formatUnits(balance, 0));
+      } catch (e) {
+        try {
+          formatted = Number(String(balance));
+        } catch (e2) {
+          formatted = 0;
+        }
+      }
+      setNumberOfFT(formatted || 0);
     } catch (err) {
       console.error("Failed to get fractional token balance:", err);
     }
@@ -47,12 +68,24 @@ export const useDeedData = (deedNumber: string | undefined) => {
 
   const getFractionalInfo = async () => {
     try {
-      if (!deed?.tokenId || !account) return null;
+      if (!deed?.tokenId) return null;
       const info = await (await import("../web3.0/contractService")).getFractionalTokenInfo(deed.tokenId);
+
+      if (info) {
+        info.totalSupply = Number(info.totalSupply) || 0;
+        info.userBalance = Number(info.userBalance) || 0;
+        info.userPercentage = Number(info.userPercentage) || 0;
+      }
+
+      // small debug log for fractional info
+      // eslint-disable-next-line no-console
+      console.debug("useDeedData#getFractionalInfo:", { deedToken: deed.tokenId, info });
+
       setFractionalInfo(info);
       return info;
     } catch (err) {
       console.error("Failed to get fractional token info:", err);
+      setFractionalInfo(null);
       return null;
     }
   };
@@ -82,13 +115,45 @@ export const useDeedData = (deedNumber: string | undefined) => {
     const attempts = opts?.attempts ?? 8;
     const intervalMs = opts?.intervalMs ?? 1500;
 
-    if (!deed?.tokenId || !account) return null;
-
+    if (!deed?.tokenId) return null;
+    const cs = await import("../web3.0/contractService");
     for (let i = 0; i < attempts; i++) {
       try {
-        const tokenAddress = await (await import("../web3.0/contractService")).getFractionalTokenAddress(deed.tokenId);
+        const tokenAddress = await cs.getFractionalTokenAddress(deed.tokenId);
+        // debug
+        // eslint-disable-next-line no-console
+        console.debug("pollForFractionalization: attempt", i + 1, { tokenAddress });
+
         if (tokenAddress && tokenAddress !== "0x0000000000000000000000000000000000000000") {
-          // fractionalized, fetch info and balance
+          // Now wait until the owner's balance reports > 0 (or attempts exhausted)
+          if (!account) {
+            // If no account connected, just fetch info and return
+            const info = await getFractionalInfo();
+            await getNumberOfFT();
+            return info;
+          }
+
+          // check owner balance repeatedly with shorter attempts
+          const balanceAttempts = Math.max(3, Math.floor(attempts));
+          for (let j = 0; j < balanceAttempts; j++) {
+            try {
+              const bal = await getFTBalance(tokenAddress, account);
+              // eslint-disable-next-line no-console
+              console.debug("pollForFractionalization: balance check", { attempt: j + 1, balance: bal });
+              const numeric = Number(bal || 0);
+              if (numeric > 0) {
+                const info = await getFractionalInfo();
+                await getNumberOfFT();
+                return info;
+              }
+            } catch (e) {
+              // eslint-disable-next-line no-console
+              console.debug("pollForFractionalization: balance check failed", e);
+            }
+            await new Promise((res) => setTimeout(res, Math.max(500, Math.floor(intervalMs / 2))));
+          }
+
+          // If owner's balance still 0, still return fractional info (token exists)
           const info = await getFractionalInfo();
           await getNumberOfFT();
           return info;
@@ -194,8 +259,15 @@ export const useDeedData = (deedNumber: string | undefined) => {
   }, [deed]);
 
   useEffect(() => {
-    getNumberOfFT();
-  }, [deedNumber]);
+    // When token id or connected account changes, refresh fractional info and balance
+    if (deed?.tokenId) {
+      getFractionalInfo();
+      getNumberOfFT();
+    } else {
+      setFractionalInfo(null);
+      setNumberOfFT(0);
+    }
+  }, [deed?.tokenId, account]);
 
   return {
     deed,

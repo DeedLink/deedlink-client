@@ -3,10 +3,9 @@ import { FaTimes } from "react-icons/fa";
 import { useToast } from "../../../contexts/ToastContext";
 import { useLoader } from "../../../contexts/LoaderContext";
 import { useWallet } from "../../../contexts/WalletContext";
-import { createFractionalToken } from "../../../web3.0/contractService";
+import { createFractionalToken, getTotalSupply, getFractionalTokenAddress, getFTBalance } from "../../../web3.0/contractService";
 import { createTransaction, updateDeedOwners } from "../../../api/api";
 import { calculateOwnershipFromEvents } from "../../../web3.0/eventService";
-import { getTotalSupply } from "../../../web3.0/contractService";
 
 interface FractionalizePopupProps {
   isOpen: boolean;
@@ -93,6 +92,43 @@ const FractionalizePopup: React.FC<FractionalizePopupProps> = ({
           }
         } catch (updateError) {
           console.error("Failed to update deed owners after fractionalization:", updateError);
+        }
+        // After fractionalization transaction, poll until the created FT exists and owner balance is reflected
+        try {
+          const MAX_ATTEMPTS = 12;
+          const INTERVAL = 1500;
+          for (let i = 0; i < MAX_ATTEMPTS; i++) {
+            try {
+              const tokenAddr = await getFractionalTokenAddress(tokenId);
+              // eslint-disable-next-line no-console
+              console.debug("FractionalizePopup: poll tokenAddr", { attempt: i + 1, tokenAddr });
+              if (tokenAddr && tokenAddr !== "0x0000000000000000000000000000000000000000") {
+                const bal = await getFTBalance(tokenAddr, account!);
+                // eslint-disable-next-line no-console
+                console.debug("FractionalizePopup: owner balance check", { attempt: i + 1, bal });
+                if (Number(bal) > 0) {
+                  break;
+                }
+              }
+            } catch (e) {
+              // ignore and retry
+            }
+            await new Promise((r) => setTimeout(r, INTERVAL));
+          }
+          // final attempt: refresh owners once more
+          try {
+            const totalSupply2 = await getTotalSupply(tokenId);
+            const owners2 = await calculateOwnershipFromEvents(tokenId, totalSupply2);
+            if (owners2.length > 0) {
+              await updateDeedOwners(deedId, owners2);
+            }
+          } catch (e) {
+            // ignore
+          }
+        } catch (pollErr) {
+          // swallow polling errors
+          // eslint-disable-next-line no-console
+          console.debug("FractionalizePopup: polling finished with error", pollErr);
         }
       }
 
