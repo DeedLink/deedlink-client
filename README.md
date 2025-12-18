@@ -1,69 +1,65 @@
-# React + TypeScript + Vite
+# DeedLink — Web Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This repository is the React + TypeScript frontend for the DeedLink application (Vite-based). It provides the user interface for viewing deeds, registering new deeds, interacting with the marketplace, and performing on-chain actions (fractionalization, transfers, escrow flows) via the built-in web3 helpers.
 
-Currently, two official plugins are available:
+Quick overview
+- **Framework**: React + TypeScript with Vite
+- **Styling**: Tailwind CSS
+- **Web3**: Ethers-based helpers in `src/web3.0/` (factory/property/FT helpers)
+- **API**: Axios-based API clients under `src/api/`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Important files & locations
+- `src/pages/DeedRegistrationPage.tsx` — page that opens the deed registration popup.
+- `src/components/deed-registration/DeedRegistrationPopup.tsx` — the registration form UI used to submit new deeds.
+- `src/constants/sriLankaLocations.ts` — Sri Lankan districts and divisional secretariat lists (used by the registration form).
+- `src/hooks/useDeedData.ts` — shared hook that fetches deed details, fractional token info, and marketplace data.
+- `src/web3.0/contractService.ts` — on-chain helpers for fractionalization, balances, transfers and factory interactions.
 
-## Expanding the ESLint configuration
+Setup (development)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. Install dependencies
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+yarn install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Copy environment variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create a `.env` or set the following variables in your environment (example keys used by the app):
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+VITE_PROPERTY_NFT_ADDRESS=0x...
+VITE_FACTORY_ADDRESS=0x...
+VITE_RPC_URL=https://...
+```
+
+3. Start dev server
+
+```bash
+yarn dev
+```
+
+Build / production
+
+```bash
+yarn build
+```
+
+Notes on the Deed Registration form
+- The registration form uses district/division constants defined in `src/constants/sriLankaLocations.ts`.
+- The form exposes two select boxes: `district` and `division`. When a district is selected, `division` options are populated from `SRI_LANKA_DIVISIONS_BY_DISTRICT`.
+- If you need to update the district or division lists, edit `src/constants/sriLankaLocations.ts`. The app reads the arrays at runtime and will update automatically after a rebuild.
+
+Web3 and fractionalization tips
+- Fractionalization is handled by `createFractionalToken` in `src/web3.0/contractService.ts`.
+- After fractionalization the UI polls for the mapping from NFT to fractional token and then reads the user's fractional token balance; see `useDeedData.pollForFractionalization`.
+
+Testing the registration flow
+- Open the Deed Registration page in the app and fill the form. The district select uses `SRI_LANKA_DISTRICTS` and the division select uses `SRI_LANKA_DIVISIONS_BY_DISTRICT`.
+- Payment of the registration fee is performed via `src/web3.0/stampService.ts` and the UI expects a successful on-chain payment before submitting the deed data.
+
+Contributing
+- Follow existing code style and TypeScript patterns.
+- If you add or change location constants, prefer updating `src/constants/sriLankaLocations.ts` and avoid hardcoding locations in components.
+
+If you want, I can add a small script to validate the locations JSON or provide a compact TypeScript type for the constants; tell me which you'd prefer.
