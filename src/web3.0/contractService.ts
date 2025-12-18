@@ -212,6 +212,10 @@ export async function getFTBalance(tokenAddress: string, account: string) {
       tokenContract.decimals().catch(() => 0),
     ]);
 
+    // debug: small log to help track propagation/formatting
+    // eslint-disable-next-line no-console
+    console.debug("getFTBalance:", { tokenAddress, account, decimals, balanceRaw: String(balanceRaw) });
+
     // If decimals is a number > 0, format using ethers.formatUnits
     if (typeof decimals === "number" && decimals > 0) {
       try {

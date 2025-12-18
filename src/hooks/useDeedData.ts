@@ -77,6 +77,10 @@ export const useDeedData = (deedNumber: string | undefined) => {
         info.userPercentage = Number(info.userPercentage) || 0;
       }
 
+      // small debug log for fractional info
+      // eslint-disable-next-line no-console
+      console.debug("useDeedData#getFractionalInfo:", { deedToken: deed.tokenId, info });
+
       setFractionalInfo(info);
       return info;
     } catch (err) {
@@ -112,12 +116,44 @@ export const useDeedData = (deedNumber: string | undefined) => {
     const intervalMs = opts?.intervalMs ?? 1500;
 
     if (!deed?.tokenId) return null;
-
+    const cs = await import("../web3.0/contractService");
     for (let i = 0; i < attempts; i++) {
       try {
-        const tokenAddress = await (await import("../web3.0/contractService")).getFractionalTokenAddress(deed.tokenId);
+        const tokenAddress = await cs.getFractionalTokenAddress(deed.tokenId);
+        // debug
+        // eslint-disable-next-line no-console
+        console.debug("pollForFractionalization: attempt", i + 1, { tokenAddress });
+
         if (tokenAddress && tokenAddress !== "0x0000000000000000000000000000000000000000") {
-          // fractionalized, fetch info and balance
+          // Now wait until the owner's balance reports > 0 (or attempts exhausted)
+          if (!account) {
+            // If no account connected, just fetch info and return
+            const info = await getFractionalInfo();
+            await getNumberOfFT();
+            return info;
+          }
+
+          // check owner balance repeatedly with shorter attempts
+          const balanceAttempts = Math.max(3, Math.floor(attempts));
+          for (let j = 0; j < balanceAttempts; j++) {
+            try {
+              const bal = await getFTBalance(tokenAddress, account);
+              // eslint-disable-next-line no-console
+              console.debug("pollForFractionalization: balance check", { attempt: j + 1, balance: bal });
+              const numeric = Number(bal || 0);
+              if (numeric > 0) {
+                const info = await getFractionalInfo();
+                await getNumberOfFT();
+                return info;
+              }
+            } catch (e) {
+              // eslint-disable-next-line no-console
+              console.debug("pollForFractionalization: balance check failed", e);
+            }
+            await new Promise((res) => setTimeout(res, Math.max(500, Math.floor(intervalMs / 2))));
+          }
+
+          // If owner's balance still 0, still return fractional info (token exists)
           const info = await getFractionalInfo();
           await getNumberOfFT();
           return info;
